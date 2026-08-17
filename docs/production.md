@@ -13,23 +13,61 @@ As established in Phase 1: **Contabo VPS + Nginx + PM2** for the API,
 mitigation, **Let's Encrypt** for TLS. Nothing has been deployed by any
 phase so far — this repo has only ever run locally in this environment.
 
+Production domain: **https://cardhub.co.tz**. The API listens on
+**port 4006** (`PORT=4006`) and is reachable publicly at
+**https://cardhub.co.tz/api/v1** via an Nginx reverse proxy; the frontend
+build is served at the domain root. `FRONTEND_URL` (used for CORS and for
+building links like the password-reset URL) must be set to
+`https://cardhub.co.tz` in the API's production `.env` — see
+[Environment variables](#environment-variables) below.
+
 Suggested PM2 process for the API:
 
 ```bash
 cd backend
 npm install --omit=dev
 npm run migrate
-pm2 start src/server.js --name cardhub-api
+PORT=4006 pm2 start src/server.js --name cardhub-api
 pm2 save
 ```
 
-Nginx should terminate TLS, proxy `/api/` to the PM2-managed Node
-process, and serve the frontend's static build (or let Netlify serve it
-directly and just proxy the API subdomain).
+Nginx should terminate TLS for `cardhub.co.tz`, proxy `/api/` to
+`http://127.0.0.1:4006` (the PM2-managed Node process — `127.0.0.1` here
+is the loopback address Nginx uses to reach a same-host process, not a
+public URL), and serve the frontend's static build (or let Netlify serve
+it directly and just proxy the API subdomain). Example proxy block:
+
+```nginx
+server {
+    server_name cardhub.co.tz;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:4006;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        root /var/www/cardhub/dist;
+        try_files $uri /index.html;
+    }
+}
+```
 
 ## Environment variables
 
-See `backend/.env.example` for the full list. Every secret-shaped value
+See `backend/.env.example` for the full list. In production, `PORT=4006`,
+`FRONTEND_URL=https://cardhub.co.tz`, and `API_URL=https://cardhub.co.tz/api/v1`
+— the code already falls back to these same values when `NODE_ENV=production`
+and the env vars are unset (`backend/src/config/env.js`), but setting them
+explicitly in `.env` is still the supported, documented path. The frontend
+build reads `VITE_API_URL` from `.env.production` (already committed at the
+repo root, `VITE_API_URL=https://cardhub.co.tz/api/v1` — safe to commit
+since Vite inlines `VITE_` vars into the public bundle regardless, so
+there's no secret in it).
+
+Every secret-shaped value
 (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `DB_PASSWORD`, `SMTP_*`,
 `SMS_*`, `CLOUDINARY_*`) must be set to real, unique values in production
 — the fallbacks in `config/env.js` (`dev-access-secret`, etc.) exist only
@@ -98,7 +136,8 @@ protects against nothing. Use a dedicated MySQL user with only
   down, etc.), which stays server-side in the structured logs.
 
 Point uptime monitoring (e.g. a Cloudflare health check or an external
-pinger) at this endpoint, not at an arbitrary API route.
+pinger) at `https://cardhub.co.tz/api/v1/health`, not at an arbitrary API
+route.
 
 ## Payment, email, and SMS provider status
 

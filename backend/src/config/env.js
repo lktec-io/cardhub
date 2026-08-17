@@ -10,10 +10,18 @@ function required(name, fallback) {
   return value;
 }
 
+const isProd = process.env.NODE_ENV === 'production';
+
+// Falls back to the real CardHub domain in production so CORS/links never
+// silently default to localhost if an operator forgets to set the env var;
+// local development (NODE_ENV !== 'production') keeps the localhost default.
+const DEFAULT_FRONTEND_URL = isProd ? 'https://cardhub.co.tz' : 'http://localhost:5173';
+const DEFAULT_API_URL = isProd ? 'https://cardhub.co.tz/api/v1' : 'http://localhost:4006/api/v1';
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
-  isProd: process.env.NODE_ENV === 'production',
-  port: Number(process.env.PORT) || 4000,
+  isProd,
+  port: Number(process.env.PORT) || 4006,
 
   db: {
     host: required('DB_HOST', 'localhost'),
@@ -50,6 +58,6 @@ export const env = {
     senderId: process.env.SMS_SENDER_ID || '',
   },
 
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
-  apiUrl: process.env.API_URL || 'http://localhost:4000',
+  frontendUrl: process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL,
+  apiUrl: process.env.API_URL || DEFAULT_API_URL,
 };

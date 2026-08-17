@@ -97,11 +97,15 @@ npm install
 cp .env.example .env         # fill in real DB credentials and JWT secrets
 npm run migrate              # creates/updates all tables through migration 015
 npm run seed                 # baseline system_settings + the event_templates catalog
-npm run dev                  # http://localhost:4000
+npm run dev                  # http://localhost:4006
 ```
 
 The server starts even if MySQL is unreachable (it logs a warning); only
 DB-backed endpoints will fail until the connection is valid.
+
+**Production:** the API listens on port **4006** (`PORT=4006`), served at
+**https://cardhub.co.tz/api/v1** behind Nginx, with CORS restricted to
+**https://cardhub.co.tz**. See [`docs/production.md`](docs/production.md).
 
 > **Known gap:** migrations have not been run against a live database in
 > this environment (no MySQL credentials were available). Run `npm run
