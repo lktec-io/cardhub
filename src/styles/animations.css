@@ -1,0 +1,96 @@
+/* ==========================================================================
+   CARDHUB MOTION SYSTEM
+   Subtle, professional micro-interactions. Reuse these keyframes/classes
+   rather than inventing new ones per component.
+   ========================================================================== */
+
+@keyframes ch-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ch-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ch-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ch-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ch-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ch-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ch-animate-fade-in {
+  animation: ch-fade-in var(--duration-slow) var(--ease-out) both;
+}
+
+.ch-animate-slide-up {
+  animation: ch-slide-up var(--duration-slow) var(--ease-out) both;
+}
+
+.ch-animate-scale-in {
+  animation: ch-scale-in var(--duration-base) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

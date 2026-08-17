@@ -1,0 +1,34 @@
+{
+  "name": "cardhub-api",
+  "private": true,
+  "version": "0.1.0",
+  "description": "CardHub REST API — Clix Digital Works",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "lint": "eslint .",
+    "migrate": "node src/database/migrate.js up",
+    "migrate:down": "node src/database/migrate.js down",
+    "seed": "node src/database/seeds/run.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "nodemon": "^3.1.0"
+  }
+}

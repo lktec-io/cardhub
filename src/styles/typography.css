@@ -1,0 +1,116 @@
+/* ==========================================================================
+   CARDHUB TYPOGRAPHY SYSTEM
+   Centralized type scale. Components should use these classes/variables
+   instead of arbitrary font-sizes.
+   ========================================================================== */
+
+:root {
+  --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --fs-display: 3.5rem;
+  --fs-h1: 2.75rem;
+  --fs-h2: 2.125rem;
+  --fs-h3: 1.625rem;
+  --fs-h4: 1.25rem;
+  --fs-body-lg: 1.125rem;
+  --fs-body: 1rem;
+  --fs-body-sm: 0.9375rem;
+  --fs-caption: 0.8125rem;
+  --fs-label: 0.8125rem;
+  --fs-button: 0.9375rem;
+
+  --lh-tight: 1.15;
+  --lh-heading: 1.25;
+  --lh-body: 1.6;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-regular);
+  color: var(--text-primary);
+}
+
+h1,
+h2,
+h3,
+h4,
+.ch-display,
+.ch-h1,
+.ch-h2,
+.ch-h3,
+.ch-h4 {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  line-height: var(--lh-heading);
+  font-weight: var(--fw-semibold);
+  margin: 0;
+}
+
+.ch-display {
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+}
+
+h1,
+.ch-h1 {
+  font-size: var(--fs-h1);
+  letter-spacing: -0.02em;
+}
+
+h2,
+.ch-h2 {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.01em;
+}
+
+h3,
+.ch-h3 {
+  font-size: var(--fs-h3);
+}
+
+h4,
+.ch-h4 {
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-medium);
+}
+
+p {
+  margin: 0;
+}
+
+.ch-body-lg {
+  font-size: var(--fs-body-lg);
+  color: var(--text-secondary);
+}
+
+.ch-body {
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+
+.ch-body-sm {
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+}
+
+.ch-caption {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+.ch-label {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

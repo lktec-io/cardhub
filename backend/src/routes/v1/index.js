@@ -1,0 +1,32 @@
+import { Router } from 'express';
+import { healthRouter } from './health.routes.js';
+import { authRouter } from './auth.routes.js';
+import { usersRouter } from './users.routes.js';
+import { contactRouter } from './contact.routes.js';
+import { eventsRouter } from './events.routes.js';
+import { templatesRouter } from './templates.routes.js';
+import { publicRouter } from './public.routes.js';
+import { invitationsRouter } from './invitations.routes.js';
+import { rsvpRouter } from './rsvp.routes.js';
+import { notificationsRouter } from './notifications.routes.js';
+import { paymentsRouter } from './payments.routes.js';
+import { billingRouter } from './billing.routes.js';
+import { adminRouter } from './admin.routes.js';
+import { affiliatesRouter } from './affiliates.routes.js';
+
+export const v1Router = Router();
+
+v1Router.use('/health', healthRouter);
+v1Router.use('/auth', authRouter);
+v1Router.use('/users', usersRouter);
+v1Router.use('/contact', contactRouter);
+v1Router.use('/events', eventsRouter);
+v1Router.use('/templates', templatesRouter);
+v1Router.use('/public', publicRouter);
+v1Router.use('/invitations', invitationsRouter);
+v1Router.use('/rsvp', rsvpRouter);
+v1Router.use('/notifications', notificationsRouter);
+v1Router.use('/payments', paymentsRouter);
+v1Router.use('/billing', billingRouter);
+v1Router.use('/admin', adminRouter);
+v1Router.use('/affiliates', affiliatesRouter);

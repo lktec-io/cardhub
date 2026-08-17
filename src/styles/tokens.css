@@ -1,0 +1,135 @@
+/* ==========================================================================
+   CARDHUB DESIGN TOKENS
+   Centralized brand system — Deep Navy + Elegant Green + White.
+   Every color, radius, shadow, spacing and motion value used across the
+   app should be sourced from these variables. Never hardcode raw colors
+   in component CSS.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette: Navy ---- */
+  --color-navy-950: #050b14;
+  --color-navy-900: #081827;
+  --color-navy-850: #0a1e30;
+  --color-navy-800: #0d2235;
+  --color-navy-700: #122c42;
+  --color-navy-600: #1a3a55;
+
+  /* ---- Brand palette: Green ---- */
+  --color-green-300: #6ee7b7;
+  --color-green-400: #34d399;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+
+  /* ---- Neutrals ---- */
+  --color-white: #ffffff;
+  --color-slate-100: #f8fafc;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+
+  /* ---- Status ---- */
+  --color-danger-500: #f87171;
+  --color-danger-600: #ef4444;
+  --color-warning-500: #fbbf24;
+  --color-success-500: var(--color-green-500);
+  --color-info-500: #38bdf8;
+
+  /* ================= Semantic tokens ================= */
+
+  /* Surfaces */
+  --bg-primary: var(--color-navy-950);
+  --bg-secondary: var(--color-navy-900);
+  --bg-elevated: var(--color-navy-850);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+  --surface-active: rgba(255, 255, 255, 0.1);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 16px;
+
+  /* Text */
+  --text-primary: var(--color-slate-100);
+  --text-secondary: var(--color-slate-400);
+  --text-muted: var(--color-slate-500);
+  --text-on-accent: #04140c;
+  --text-inverse: var(--color-navy-950);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(52, 211, 153, 0.4);
+
+  /* Accent */
+  --accent: var(--color-green-500);
+  --accent-hover: var(--color-green-400);
+  --accent-active: var(--color-green-600);
+  --accent-soft: rgba(34, 197, 94, 0.14);
+  --accent-gradient: linear-gradient(135deg, var(--color-green-400) 0%, var(--color-green-600) 100%);
+
+  /* Status */
+  --success: var(--color-success-500);
+  --success-soft: rgba(34, 197, 94, 0.14);
+  --warning: var(--color-warning-500);
+  --warning-soft: rgba(251, 191, 36, 0.14);
+  --danger: var(--color-danger-600);
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --info: var(--color-info-500);
+  --info-soft: rgba(56, 189, 248, 0.14);
+
+  /* Backdrop gradient used behind hero / auth surfaces */
+  --gradient-hero: radial-gradient(120% 120% at 15% 0%, var(--color-navy-700) 0%, var(--color-navy-950) 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(34, 197, 94, 0.12) 0%, transparent 60%);
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ---- Shadows ---- */
+  --shadow-sm: 0 1px 2px rgba(2, 6, 16, 0.4);
+  --shadow-md: 0 8px 24px rgba(2, 6, 16, 0.35);
+  --shadow-lg: 0 20px 48px rgba(2, 6, 16, 0.45);
+  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(34, 197, 94, 0.18);
+
+  /* ---- Spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---- Layout ---- */
+  --container-max: 1240px;
+  --sidebar-width: 264px;
+  --sidebar-width-collapsed: 76px;
+  --topbar-height: 68px;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  /* ---- Z-index scale ---- */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+
+  color-scheme: dark;
+}

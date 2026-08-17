@@ -1,0 +1,18 @@
+-- +up
+CREATE TABLE subscriptions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  plan VARCHAR(20) NOT NULL DEFAULT 'free',
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  current_period_end DATETIME NULL,
+  provider VARCHAR(30) NULL,
+  provider_reference VARCHAR(190) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_subscriptions_user_id (user_id),
+  CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- +down
+DROP TABLE IF EXISTS subscriptions;

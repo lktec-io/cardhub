@@ -1,0 +1,212 @@
+/* ---------- Stats bar ---------- */
+.ch-guest-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+@media (max-width: 640px) {
+  .ch-guest-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ch-guest-stats__tile {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ch-guest-stats__value {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+
+.ch-guest-stats__label {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+.ch-guest-stats__tile--success .ch-guest-stats__value {
+  color: var(--color-green-400);
+}
+.ch-guest-stats__tile--danger .ch-guest-stats__value {
+  color: var(--color-danger-500);
+}
+
+/* ---------- Toolbar ---------- */
+.ch-guests-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.ch-guests-toolbar__search {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+.ch-guests-toolbar__filters {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.ch-guests-toolbar__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* ---------- Bulk bar ---------- */
+.ch-guests-bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-body-sm);
+}
+
+/* ---------- Table (desktop) ---------- */
+.ch-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.ch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-sm);
+}
+
+.ch-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.ch-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.ch-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ch-table__name {
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+}
+
+.ch-table__actions {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+.ch-table__icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+}
+.ch-table__icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* ---------- Guest cards (mobile) ---------- */
+.ch-guest-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ch-guest-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ch-guest-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ch-guest-card__name {
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+  margin: 0;
+}
+
+.ch-guest-card__meta {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+}
+
+.ch-guest-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* ---------- Guest form ---------- */
+.ch-guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------- Bulk import ---------- */
+.ch-bulk-import__input,
+.ch-bulk-import__preview,
+.ch-bulk-import__result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ch-bulk-import__table-wrap {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.ch-bulk-import__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
