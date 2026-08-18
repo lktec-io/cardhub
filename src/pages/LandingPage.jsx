@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  FiArrowRight,
-  FiCheck,
-  FiClock,
-  FiCreditCard,
-  FiSend,
-  FiShield,
-  FiSmartphone,
-  FiStar,
-} from 'react-icons/fi';
+import { FiArrowRight, FiCheck, FiClock, FiCreditCard, FiSend, FiShield, FiStar } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, InvitationPreview } from '../components/common';
 import { GlassCard, Badge, Skeleton } from '../components/ui';
+import { TemplateThumb } from '../components/templates';
 import { ROUTES } from '../constants/routes';
 import { templatesService } from '../services/templatesService';
 import { getCategoryLabel } from '../constants/templateCategories';
@@ -95,16 +87,10 @@ export function LandingPage() {
           {status === 'success' && (
             <div className="ch-template-teaser-grid">
               {templates.map((template) => {
-                const colors = template.config?.colors;
                 return (
                   <Link key={template.id} to={`${ROUTES.TRY}?templateId=${template.id}`} className="ch-template-teaser-link">
                     <GlassCard className="ch-template-teaser-card ch-animate-fade-in">
-                      <div
-                        className="ch-template-teaser-card__swatch"
-                        style={colors ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : undefined}
-                      >
-                        <FiSmartphone aria-hidden="true" />
-                      </div>
+                      <TemplateThumb template={template} className="ch-template-teaser-card__swatch" />
                       <p className="ch-caption">{getCategoryLabel(template.category)}</p>
                       <h3 className="ch-h4">{template.name}</h3>
                       <p className="ch-template-card__price">{formatCardPrice(template.priceTzs)}</p>

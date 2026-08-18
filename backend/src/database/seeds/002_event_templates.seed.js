@@ -16,6 +16,7 @@ const TEMPLATES = [
     slug: 'elegant-ivory',
     category: 'wedding',
     pricingTier: 'classic',
+    previewImage: '/cards/elegant-ivory.jpg',
     description: 'Soft ivory tones with refined serif-style headings for a timeless wedding invitation.',
     sortOrder: 1,
     config: {
@@ -30,6 +31,7 @@ const TEMPLATES = [
     slug: 'midnight-romance',
     category: 'wedding',
     pricingTier: 'premium',
+    previewImage: '/cards/midnight-romance.jpg',
     description: 'Deep navy and gold-green accents for an evening celebration with real presence.',
     sortOrder: 2,
     config: {
@@ -44,6 +46,7 @@ const TEMPLATES = [
     slug: 'garden-bloom',
     category: 'baby_shower',
     pricingTier: 'starter',
+    previewImage: '/cards/garden-bloom.jpg',
     description: 'Gentle, welcoming, and fresh — designed for baby showers and new beginnings.',
     sortOrder: 1,
     config: {
@@ -58,6 +61,7 @@ const TEMPLATES = [
     slug: 'modern-minimal',
     category: 'corporate',
     pricingTier: 'premium',
+    previewImage: '/cards/modern-minimal.jpg',
     description: 'Sharp, uncluttered, and confident — built for launches and corporate gatherings.',
     sortOrder: 1,
     config: {
@@ -72,6 +76,7 @@ const TEMPLATES = [
     slug: 'royal-celebration',
     category: 'birthday',
     pricingTier: 'classic',
+    previewImage: '/cards/royal-celebration.jpg',
     description: 'Bold and festive, with rich color depth for milestone birthdays and parties.',
     sortOrder: 1,
     config: {
@@ -86,6 +91,7 @@ const TEMPLATES = [
     slug: 'classic-gold',
     category: 'anniversary',
     pricingTier: 'premium',
+    previewImage: '/cards/classic-gold.jpg',
     description: 'A timeless, understated design for anniversaries and milestone achievements.',
     sortOrder: 1,
     config: {
@@ -100,6 +106,7 @@ const TEMPLATES = [
     slug: 'ascend',
     category: 'graduation',
     pricingTier: 'starter',
+    previewImage: '/cards/ascend.jpg',
     description: 'A confident, achievement-forward layout for graduation celebrations.',
     sortOrder: 1,
     config: {
@@ -114,6 +121,7 @@ const TEMPLATES = [
     slug: 'pulse',
     category: 'party',
     pricingTier: 'starter',
+    previewImage: '/cards/pulse.jpg',
     description: 'Bold, high-energy invitation styling for any celebration.',
     sortOrder: 1,
     config: {
@@ -128,13 +136,14 @@ const TEMPLATES = [
 async function seedEventTemplates(connection) {
   for (const template of TEMPLATES) {
     await connection.query(
-      `INSERT INTO event_templates (name, slug, description, category, pricing_tier, status, sort_order, config)
-       VALUES (?, ?, ?, ?, ?, 'active', ?, CAST(? AS JSON))
+      `INSERT INTO event_templates (name, slug, description, category, pricing_tier, preview_image, status, sort_order, config)
+       VALUES (?, ?, ?, ?, ?, ?, 'active', ?, CAST(? AS JSON))
        ON DUPLICATE KEY UPDATE
          name = VALUES(name),
          description = VALUES(description),
          category = VALUES(category),
          pricing_tier = VALUES(pricing_tier),
+         preview_image = VALUES(preview_image),
          sort_order = VALUES(sort_order),
          config = VALUES(config)`,
       [
@@ -143,6 +152,7 @@ async function seedEventTemplates(connection) {
         template.description,
         template.category,
         template.pricingTier || DEFAULT_PRICING_TIER,
+        template.previewImage || null,
         template.sortOrder,
         JSON.stringify(template.config),
       ]

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCheckCircle, FiSmartphone } from 'react-icons/fi';
+import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, InvitationPreview } from '../../components/common';
 import { Button, Input, EmptyState, Skeleton, GlassCard, Badge } from '../../components/ui';
+import { TemplateThumb } from '../../components/templates';
 import { templatesService } from '../../services/templatesService';
 import { ordersService } from '../../services/ordersService';
 import { getErrorMessage, mapValidationErrors } from '../../utils/mapValidationErrors';
@@ -177,7 +178,6 @@ export function TryPage() {
                 <div className="ch-try-page__template-grid">
                   {templates.map((template) => {
                     const isSelected = selectedTemplate?.id === template.id;
-                    const colors = template.config?.colors;
                     return (
                       <button
                         type="button"
@@ -185,12 +185,7 @@ export function TryPage() {
                         className={`ch-try-page__template-option ${isSelected ? 'ch-try-page__template-option--selected' : ''}`}
                         onClick={() => setSelectedTemplate(template)}
                       >
-                        <span
-                          className="ch-try-page__template-swatch"
-                          style={colors ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : undefined}
-                        >
-                          <FiSmartphone aria-hidden="true" />
-                        </span>
+                        <TemplateThumb template={template} className="ch-try-page__template-swatch" />
                         <span className="ch-try-page__template-name">{template.name}</span>
                         <span className="ch-caption">{getCategoryLabel(template.category)}</span>
                         <span className="ch-try-page__template-price">{formatCardPrice(template.priceTzs)}</span>
@@ -205,6 +200,9 @@ export function TryPage() {
           {step === 3 && selectedTemplate && (
             <div className="ch-try-page__panel">
               <h2 className="ch-h4">Preview</h2>
+              {selectedTemplate.previewImage && (
+                <TemplateThumb template={selectedTemplate} className="ch-try-page__preview-swatch" />
+              )}
               <InvitationPreview compact title={name || 'Your Name Here'} venue={selectedTemplate.name} colors={selectedTemplate.config?.colors} />
               <p className="ch-body-sm">
                 {selectedTemplate.name} &middot; {getCategoryLabel(selectedTemplate.category)} &middot;{' '}

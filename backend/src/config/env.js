@@ -38,6 +38,10 @@ export const env = {
     refreshExpires: process.env.JWT_REFRESH_EXPIRES || '30d',
   },
 
+  // Customer-uploaded images (services/providers/imageStorageProvider.js).
+  // Backend-only — the API secret is never sent to, or reachable from, the
+  // React app. Separate from public/cards/ (the manually-supplied
+  // catalogue images), which don't go through Cloudinary at all.
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
     apiKey: process.env.CLOUDINARY_API_KEY || '',
@@ -52,10 +56,24 @@ export const env = {
     password: process.env.SMTP_PASSWORD || '',
     fromAddress: process.env.SMTP_FROM_ADDRESS || '',
   },
+  // Beem (beem.africa) is CardHub's chosen SMS provider — see
+  // services/providers/smsProvider.js. `apiKey`/`secretKey` are Beem's
+  // Basic Auth credential pair, kept backend-only; no credentials exist in
+  // this environment and none were invented.
   sms: {
-    provider: process.env.SMS_PROVIDER || '',
-    apiKey: process.env.SMS_API_KEY || '',
-    senderId: process.env.SMS_SENDER_ID || '',
+    apiKey: process.env.BEEM_API_KEY || '',
+    secretKey: process.env.BEEM_SECRET_KEY || '',
+    senderId: process.env.BEEM_SENDER_ID || '',
+  },
+  // Reserved — no WhatsApp provider chosen/connected yet. The abstraction
+  // (services/providers/whatsappProvider.js) is provider-agnostic by
+  // design so either Beem's WhatsApp API or Meta's WhatsApp Cloud API can
+  // be wired in later without changing any caller.
+  whatsapp: {
+    provider: process.env.WHATSAPP_PROVIDER || '',
+    apiKey: process.env.WHATSAPP_API_KEY || '',
+    apiSecret: process.env.WHATSAPP_API_SECRET || '',
+    senderId: process.env.WHATSAPP_SENDER_ID || '',
   },
 
   frontendUrl: process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL,

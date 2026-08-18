@@ -24,8 +24,15 @@ CREATE TABLE orders (
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_orders_template FOREIGN KEY (template_id) REFERENCES event_templates (id) ON DELETE SET NULL,
   CONSTRAINT chk_orders_quantity CHECK (quantity > 0),
-  CONSTRAINT chk_orders_unit_price CHECK (unit_price_tzs > 0),
-  CONSTRAINT chk_orders_contact CHECK (user_id IS NOT NULL OR (guest_name IS NOT NULL AND guest_phone IS NOT NULL))
+  CONSTRAINT chk_orders_unit_price CHECK (unit_price_tzs > 0)
+  -- No CHECK constraint here for "must have a user or guest contact": MySQL
+  -- 8 rejects it (error 3823) because `user_id` already carries an
+  -- ON DELETE SET NULL referential action on fk_orders_user, and a column
+  -- driven by a referential action cannot also be constrained by a CHECK —
+  -- the SET NULL could otherwise put an existing row in violation outside
+  -- of normal DML. That business rule is enforced instead in
+  -- services/orders.service.js (assertHasContact), the one place an order
+  -- row is ever created.
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- +down

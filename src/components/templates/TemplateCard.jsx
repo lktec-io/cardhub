@@ -1,13 +1,10 @@
-import { FiCheck, FiSmartphone } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import { GlassCard, Badge, Button } from '../ui';
+import { TemplateThumb } from './TemplateThumb';
 import { getCategoryLabel } from '../../constants/templateCategories';
 import { formatCardPrice } from '../../constants/pricingTiers';
 
 export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected = false }) {
-  const colors = template.config?.colors;
-  const swatchStyle = colors
-    ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` }
-    : undefined;
   const hasSecondaryAction = Boolean(onPreview) || Boolean(onSelect);
 
   return (
@@ -15,14 +12,13 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected 
       hoverable
       className={`ch-template-card ${isSelected ? 'ch-template-card--selected' : ''}`}
     >
-      <div className="ch-template-card__swatch" style={swatchStyle}>
-        <FiSmartphone aria-hidden="true" />
+      <TemplateThumb template={template} className="ch-template-card__swatch">
         {isSelected && (
           <span className="ch-template-card__selected-badge">
             <FiCheck aria-hidden="true" />
           </span>
         )}
-      </div>
+      </TemplateThumb>
       <Badge variant="default">{getCategoryLabel(template.category)}</Badge>
       <h3 className="ch-h4">{template.name}</h3>
       {template.description && <p className="ch-body-sm">{template.description}</p>}

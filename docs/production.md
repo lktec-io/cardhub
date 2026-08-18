@@ -110,7 +110,12 @@ protects against nothing. Use a dedicated MySQL user with only
   numbered sequentially (currently 001–017), each with `-- +up` and
   `-- +down` sections, tracked in `schema_migrations`.
 - **Never edit an already-applied migration.** If a mistake ships, write a
-  new migration that corrects it.
+  new migration that corrects it. The one exception is a migration that
+  **failed to apply** — MySQL never recorded it in `schema_migrations`
+  (the runner only inserts that row after the `-- +up` SQL succeeds), so
+  nothing was actually created and there's nothing to "un-apply." Migration
+  016 hit exactly this case (see Known limitations below) and was
+  corrected in place rather than superseded by a new file.
 - Rollback: `npm run migrate:down` rolls back exactly the most recently
   applied migration, once. There is no bulk-rollback command by design —
   rolling back multiple migrations at once in production is exactly the
@@ -139,42 +144,69 @@ Point uptime monitoring (e.g. a Cloudflare health check or an external
 pinger) at `https://cardhub.co.tz/api/v1/health`, not at an arbitrary API
 route.
 
-## Payment, email, and SMS provider status
+## Payment, email, SMS, and WhatsApp provider status
 
-Explicitly, as of Phase 9:
+Explicitly, as of the Phase 9 correction:
 
 - **Payment provider:** abstraction implemented
   (`services/providers/paymentProvider.js`); live payment processing is
-  **not configured**. `POST /billing/upgrade` always returns a clear
-  "not connected yet" error rather than pretending to start a checkout.
-  `POST /payments/webhook` rejects every call (no signature can verify
-  against a provider that doesn't exist) rather than trusting an
-  unverified body. Order payment status (`orders.payment_status`) is only
-  ever changed by an admin manually (`PATCH /admin/orders/:id/status`) —
-  a real, audited, manual reconciliation action standing in for the
-  webhook that doesn't exist yet, never an automated/fake charge.
+  **not configured**, and no real transport code has been written yet
+  (unlike image storage and SMS below) — `isConfigured` is hardcoded
+  `false`. `POST /billing/upgrade` always returns a clear "not connected
+  yet" error rather than pretending to start a checkout. `POST
+  /payments/webhook` rejects every call (no signature can verify against a
+  provider that doesn't exist) rather than trusting an unverified body.
+  Order payment status (`orders.payment_status`) is only ever changed by
+  an admin manually (`PATCH /admin/orders/:id/status`) — a real, audited,
+  manual reconciliation action standing in for the webhook that doesn't
+  exist yet, never an automated/fake charge.
 - **Email provider:** abstraction implemented
   (`services/providers/emailProvider.js`); no SMTP credentials
-  configured. Every call reports `{ status: 'unavailable' }`.
-- **SMS provider:** abstraction implemented
-  (`services/providers/smsProvider.js`); no SMS gateway configured. Same
-  honest-unavailable behavior. This is also what "Try Our Service"
-  (`/try`, `POST /public/orders/try`) depends on for real WhatsApp/SMS
-  delivery — today it only ever saves a real `orders` row and shows a
-  "Ready to send — delivery integration coming in Phase 2" message.
-- **Image storage provider:** abstraction implemented
-  (`services/providers/imageStorageProvider.js`), reusing the already-
-  reserved `CLOUDINARY_*` env vars; no credentials configured. `POST
-  /uploads/images` performs real validation (mime type, 5MB size limit,
-  via `multer` memory storage — a file is never written to this server's
-  disk) independent of the provider, then reports `{ status: 'unavailable'
-  }` rather than faking a successful upload. The invitation builder still
-  uses paste-a-URL fields and doesn't call this endpoint yet.
+  configured, no transport code written yet. Every call reports
+  `{ status: 'unavailable' }`.
+- **SMS provider (Beem):** `services/providers/smsProvider.js` has a
+  **real** HTTP integration against Beem's documented `apisms.beem.africa`
+  endpoint (Basic Auth with `BEEM_API_KEY`/`BEEM_SECRET_KEY`, `fetch`, no
+  new dependency) — but `BEEM_API_KEY`/`BEEM_SECRET_KEY`/`BEEM_SENDER_ID`
+  are unset in this environment, so `isConfigured` is `false` and every
+  call still honestly reports `{ status: 'unavailable' }` without ever
+  reaching the network. **This code has not been exercised against a real
+  Beem account** — smoke-test it against one before relying on it in
+  production. This is also what "Try Our Service" (`/try`, `POST
+  /public/orders/try`) depends on for real SMS delivery — today it only
+  ever saves a real `orders` row and shows a "Ready to send — delivery
+  integration coming in Phase 2" message.
+- **WhatsApp provider:** `services/providers/whatsappProvider.js` is a
+  clean abstraction (`sendCardMessage`/`sendCardImage`) with **no real
+  provider integrated yet** — deliberately, this phase only prepared the
+  extension point. `WHATSAPP_PROVIDER` is unset, so `isConfigured` is
+  always `false`. It's written so a real implementation can pick either
+  Beem's WhatsApp API or Meta's WhatsApp Cloud API behind
+  `env.whatsapp.provider` without changing any caller.
+- **Image storage provider (Cloudinary):** `services/providers/imageStorageProvider.js`
+  has a **real** Cloudinary SDK integration (base64 upload, `destroy`,
+  `url` — the official `cloudinary` npm package) — but
+  `CLOUDINARY_CLOUD_NAME`/`CLOUDINARY_API_KEY`/`CLOUDINARY_API_SECRET` are
+  unset in this environment, so `isConfigured` is `false` and uploads
+  still honestly report unavailable. **This code has not been exercised
+  against a real Cloudinary account** — smoke-test it before relying on
+  it. `POST /uploads/images` performs real validation (mime type, 5MB size
+  limit, via `multer` memory storage — a file is never written to this
+  server's disk) independent of the provider. This is for
+  **customer-uploaded** images only; it's unrelated to the
+  [real card catalogue](../README.md#real-card-catalogue-phase-9-correction),
+  which uses manually-supplied local files under `public/cards/`, not
+  Cloudinary. The invitation builder still uses paste-a-URL fields and
+  doesn't call this endpoint yet.
 
-Connecting a real provider means implementing the `send`/
-`createCheckout`/`verifyWebhookSignature`/`uploadImage` bodies in these
-four files — nothing else in the codebase needs to change, since every
-caller already goes through these interfaces.
+Connecting the two providers that still have no transport code
+(payment, email) means implementing their `createCheckout`/
+`verifyWebhookSignature`/`send` bodies. Connecting WhatsApp means picking
+a provider and implementing `sendCardMessage`/`sendCardImage`. Beem SMS
+and Cloudinary already have real transport code — connecting them is
+purely a matter of setting the right environment variables and verifying
+against a real account. Nothing else in the codebase needs to change in
+any case, since every caller already goes through these five interfaces.
 
 ## Security posture summary
 
@@ -217,7 +249,7 @@ Carried forward from every earlier phase and re-verified in Phase 9:
   client — `middleware/errorHandler.js` normalizes everything to the
   standard envelope and only logs detail server-side.
 
-## Known limitations (honest, as of Phase 9)
+## Known limitations (honest, as of the Phase 9 correction)
 
 - No live MySQL database has been available in any environment this
   project has been developed in. Every phase's backend work has been
@@ -225,10 +257,25 @@ Carried forward from every earlier phase and re-verified in Phase 9:
   enforcement without a live DB (including targeted validator unit tests
   and hand-signed JWTs to reach past `authenticate`), but no actual
   row has ever been created, read, updated, or deleted through the API.
-- Payment, email, SMS, and image storage are architecturally ready but
-  not connected — see above. "Try Our Service" saves a real order but
-  does not send a real WhatsApp/SMS message; the invitation builder still
-  uses paste-a-URL image fields, not the new upload endpoint.
+  **This includes migration 016** — it originally failed against a real
+  MySQL 8 database (error 3823: a CHECK constraint can't reference a
+  column that also carries an `ON DELETE SET NULL` foreign-key action).
+  It's been corrected here (the CHECK moved to application-layer
+  enforcement in `orders.service.js#assertHasContact` — see
+  `docs/architecture.md`), but that correction has **not** been verified
+  by re-running it against a real database in this environment, because
+  none is available here either. Re-run
+  `mysql -u root -p cardhub < backend/src/database/migrations/016_create_orders_table.sql`
+  (or `npm run migrate`) against the real database and confirm it
+  succeeds before treating this as production-ready.
+- Payment and email have no real transport code yet. SMS (Beem) and
+  image storage (Cloudinary) have real transport code but no real
+  credentials in this environment, and **neither has been exercised
+  against a real account** — smoke-test both before relying on them.
+  WhatsApp has an abstraction but no provider chosen yet. "Try Our
+  Service" saves a real order but does not send a real SMS/WhatsApp
+  message; the invitation builder still uses paste-a-URL image fields,
+  not the new upload endpoint.
 - Analytics is a single aggregate view counter per event, not
   per-visitor/unique-visitor tracking — a deliberate scope decision (see
   `docs/architecture.md`) to avoid both privacy overreach and unbounded

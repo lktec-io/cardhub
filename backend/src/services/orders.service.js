@@ -7,6 +7,24 @@ import { ORDER_SOURCE } from '../constants/orderStatus.js';
 import { toOrderDTO } from '../utils/serializeOrder.js';
 import { parsePagination, buildPaginationMeta } from '../utils/pagination.js';
 
+/**
+ * The "an order must belong to a real user OR carry guest contact info"
+ * rule cannot be a MySQL CHECK constraint here — user_id already carries
+ * an ON DELETE SET NULL referential action (fk_orders_user in migration
+ * 016), and MySQL 8 rejects a column driven by a referential action also
+ * being part of a CHECK (error 3823: the SET NULL could otherwise put an
+ * existing row in violation outside of normal DML). So this is the one
+ * place that rule is actually enforced — called before every order is
+ * created, regardless of source.
+ */
+function assertHasContact({ userId, guestName, guestPhone }) {
+  const hasUser = userId !== null && userId !== undefined;
+  const hasGuestContact = Boolean(guestName) && Boolean(guestPhone);
+  if (!hasUser && !hasGuestContact) {
+    throw ApiError.badRequest('An order needs either a signed-in customer or a guest name and phone number');
+  }
+}
+
 export const ordersService = {
   /**
    * Public, unauthenticated — the /try conversion flow. No SMS/WhatsApp
@@ -26,11 +44,15 @@ export const ordersService = {
     const unitPriceTzs = tier.priceTzs;
     const subtotalTzs = unitPriceTzs * qty;
 
+    const guestName = name.trim();
+    const guestPhone = phone.trim();
+    assertHasContact({ userId: null, guestName, guestPhone });
+
     const order = await orderRepository.create({
       userId: null,
       templateId: template.id,
-      guestName: name.trim(),
-      guestPhone: phone.trim(),
+      guestName,
+      guestPhone,
       pricingTier: tier.id,
       unitPriceTzs,
       quantity: qty,

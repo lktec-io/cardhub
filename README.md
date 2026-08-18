@@ -26,7 +26,7 @@ implements:
 Payment processing, live email delivery, SMS/WhatsApp delivery, and real
 image storage are architecturally wired but not connected to a real
 provider — see
-[Payment, email, and SMS provider status](docs/production.md#payment-email-and-sms-provider-status).
+[Payment, email, SMS, and WhatsApp provider status](docs/production.md#payment-email-sms-and-whatsapp-provider-status).
 QR check-in, an affiliate program, and a vendor marketplace are not part
 of this build — see [Roadmap](#roadmap).
 
@@ -134,11 +134,16 @@ Frontend: `VITE_API_URL`.
 
 Backend: `NODE_ENV`, `PORT`, `DB_HOST/PORT/NAME/USER/PASSWORD`,
 `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES`,
-`JWT_REFRESH_EXPIRES`, `CLOUDINARY_*` (still reserved/unused — now the
-image *upload* foundation's storage provider too, see
-[Image upload foundation](#image-upload-foundation-phase-9)), `FRONTEND_URL`,
-`API_URL`, `SMTP_*` and `SMS_*` (Phase 7, reserved — see
-[Payment, email, and SMS provider status](docs/production.md#payment-email-and-sms-provider-status)).
+`JWT_REFRESH_EXPIRES`, `CLOUDINARY_*` (customer-uploaded images —
+`imageStorageProvider.js` has a real Cloudinary SDK integration behind it,
+still unconfigured/reserved in every environment this project has run in
+— see [Image upload foundation](#image-upload-foundation-phase-9)),
+`FRONTEND_URL`, `API_URL`, `SMTP_*` (email, reserved), `BEEM_API_KEY` /
+`BEEM_SECRET_KEY` / `BEEM_SENDER_ID` (SMS via Beem — real HTTP integration
+behind it, still unconfigured/reserved), `WHATSAPP_PROVIDER` /
+`WHATSAPP_API_KEY` / `WHATSAPP_API_SECRET` / `WHATSAPP_SENDER_ID`
+(reserved — no WhatsApp provider chosen yet) — see
+[Payment, email, SMS, and WhatsApp provider status](docs/production.md#payment-email-sms-and-whatsapp-provider-status).
 
 ## Database & migrations
 
@@ -350,11 +355,29 @@ confirming mobile money outside the app), never an automated/fake charge.
 (`multer`, memory storage only — never written to disk): JPEG/PNG/WEBP
 only, 5MB limit, one file per request. It calls
 [`imageStorageProvider`](backend/src/services/providers/imageStorageProvider.js),
-which — like `emailProvider`/`smsProvider`/`paymentProvider` — honestly
-reports storage as not configured (`CLOUDINARY_*` unset) rather than
-faking a successful upload. The invitation builder's paste-a-URL fields
-are untouched by this; wiring a real provider behind this same interface,
-and switching the builder over to real uploads, is Phase 2 work.
+which has a real Cloudinary SDK integration behind it — but with
+`CLOUDINARY_*` unset in every environment this project has run in, it
+honestly reports storage as not configured rather than faking a
+successful upload, the same pattern as `emailProvider`/`smsProvider`/
+`paymentProvider`. This is for **customer-uploaded** images only — it's
+separate from the [real card catalogue](#real-card-catalogue-phase-9)
+below, which uses manually-supplied local files, not Cloudinary. The
+invitation builder's paste-a-URL fields are untouched by this; switching
+the builder over to real uploads is Phase 2 work.
+
+## Real card catalogue (Phase 9 correction)
+
+Catalogue card images are **not** AI-generated or remote-URL placeholders
+— they're real, manually-supplied files dropped into `public/cards/`
+(served by Vite at `/cards/...`). Each `event_templates` row's
+`preview_image` column points at one of these paths (see
+[`public/cards/README.md`](public/cards/README.md) for the expected
+filenames, matching the current seed data). `TemplateThumb` (shared by
+the catalogue, Try Our Service, and the landing page's catalogue preview)
+renders the real image when `previewImage` is set and loads successfully,
+falling back to the existing CSS-gradient-and-icon placeholder — never a
+broken-image icon — for any template whose file hasn't been dropped in
+yet.
 
 ## Roadmap
 
@@ -389,18 +412,28 @@ vendor marketplace — these were explicitly out of scope.
   sample data — but no actual database row has ever been created, edited,
   published, or fetched through the API in this environment. Run
   `npm run migrate && npm run seed` against a real database before
-  testing any flow end to end.
-- No real image storage — see
-  [Image upload foundation](#image-upload-foundation-phase-9). The builder
-  still uses paste-a-URL fields — see [Image handling](#image-handling-phase-4).
-- Payment, email, SMS, and image storage are all architecturally wired
-  (provider abstraction, server-side call sites, honest
-  "unavailable"/"not connected" responses) but not connected to a live
-  provider — see
-  [`docs/production.md`](docs/production.md#payment-email-and-sms-provider-status).
+  testing any flow end to end. **Migration 016 specifically**: it
+  originally failed against a real MySQL 8 database with error 3823 (a
+  `CHECK` constraint referencing a column that also carries an `ON DELETE
+  SET NULL` foreign-key action). It's been corrected (see
+  `docs/architecture.md`), but that fix has not itself been re-verified
+  against a real database in this environment — re-run it and confirm
+  before treating it as production-ready.
+- No real image storage for customer uploads — see
+  [Image upload foundation](#image-upload-foundation-phase-9) (Cloudinary
+  SDK integration exists but is unconfigured and unverified against a real
+  account). The builder still uses paste-a-URL fields — see
+  [Image handling](#image-handling-phase-4). Catalogue images are separate
+  and already real (manually-supplied local files) — see
+  [Real card catalogue](#real-card-catalogue-phase-9-correction).
+- Payment and email have no real transport code yet. SMS (Beem) and image
+  storage (Cloudinary) have real transport code but no real credentials
+  and have never been exercised against a real account. WhatsApp has a
+  clean abstraction but no provider chosen. See
+  [`docs/production.md`](docs/production.md#payment-email-sms-and-whatsapp-provider-status).
   Password reset and the contact form both work end-to-end on the backend
   but stop at "log it / store it," same as earlier phases. "Try Our
-  Service" saves a real order but does not send a real WhatsApp/SMS
+  Service" saves a real order but does not send a real SMS/WhatsApp
   message, for the same reason.
 - Analytics is a single aggregate view counter per event (`events.view_count`,
   incremented fire-and-forget on each public fetch), not per-visitor

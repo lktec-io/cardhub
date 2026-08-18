@@ -668,14 +668,21 @@ the exact same fields (template, tier, unit price, quantity, subtotal,
 status/paymentStatus/deliveryStatus), so splitting them would just be two
 schemas for one concept. Since Try Our Service explicitly requires **no
 account** (`user_id` is nullable), the row instead carries `guest_name`/
-`guest_phone` directly; a `CHECK` constraint
-(`user_id IS NOT NULL OR (guest_name IS NOT NULL AND guest_phone IS NOT
-NULL)`) makes "who is this order for" a DB-enforced invariant, not just an
-application-level convention. `unit_price_tzs` and `subtotal_tzs` are
-always computed server-side from the template's pricing tier in
-`orders.service.js#submitTryService` — never accepted from the client —
-the same anti-tampering principle as the invitation-config validator's
-"whitelist reconstruction" from Phase 4.
+`guest_phone` directly. "Who is this order for" (a user, or a guest
+name+phone) was originally a `CHECK` constraint, but MySQL 8 rejects that:
+`user_id` already carries an `ON DELETE SET NULL` referential action
+(`fk_orders_user`), and a column driven by a referential action cannot
+also be constrained by a `CHECK` (error 3823) — the `SET NULL` could
+otherwise put an existing row in violation outside of normal DML. So this
+rule is enforced in `orders.service.js#assertHasContact` instead, the one
+function every order-creation path calls before `orderRepository.create`
+— an application-layer invariant rather than a DB-level one, same
+enforcement guarantee (there's exactly one creation path today), just not
+expressible as a `CHECK` given the `SET NULL` behavior the FK needs.
+`unit_price_tzs` and `subtotal_tzs` are always computed server-side from
+the template's pricing tier in `orders.service.js#submitTryService` —
+never accepted from the client — the same anti-tampering principle as the
+invitation-config validator's "whitelist reconstruction" from Phase 4.
 
 Three independent status fields (`status`, `payment_status`,
 `delivery_status`) rather than one combined enum, because they genuinely
@@ -709,23 +716,87 @@ delivered when no delivery mechanism exists.
 
 `services/providers/imageStorageProvider.js` follows the exact same shape
 as `emailProvider`/`smsProvider`/`paymentProvider`: an `isConfigured`
-flag (derived from the already-reserved `CLOUDINARY_*` env vars) and
-methods that honestly return `{ status: 'unavailable' }` rather than
-faking success. What's new for this one is that there's real work to do
-*before* the provider is even reached: `POST /uploads/images` uses
-`multer` (memory storage only — a file is never written to this server's
-disk; it either reaches a real provider or is discarded) with a
-`fileFilter` rejecting anything outside `image/jpeg|png|webp` and a 5MB
-`limits.fileSize`, both enforced independent of whether a provider is
-configured. This means the security-relevant part (reject unsafe/oversized
-files) is real and testable today, while the actual storage call
-consistently reports "not connected yet" — verified directly: a `.txt`
-renamed with an image field name is rejected by `multer` before
-`uploadsService` ever runs, and a valid PNG with a valid `purpose` gets
-exactly one honest error, not a fake success. The invitation builder's
-existing paste-a-URL fields (`utils/safeImageUrl.js`, Phase 4) are
-completely untouched — this endpoint is additive infrastructure, not yet
-wired into any UI that replaces those fields.
+flag and methods that honestly return `{ status: 'unavailable' }` rather
+than faking success. Unlike the original Phase 9 version, this one now has
+a **real Cloudinary SDK integration** behind it (the official `cloudinary`
+npm package — base64-upload for `uploadImage`, `uploader.destroy` for
+`deleteImage`, `cloudinary.url()` for `getImageUrl`), gated by whether
+`CLOUDINARY_CLOUD_NAME`/`CLOUDINARY_API_KEY`/`CLOUDINARY_API_SECRET` are
+actually set. In this environment they aren't, so `isConfigured` is
+`false` and every call still honestly reports unavailable without ever
+reaching Cloudinary's network — but the code path exists and has never
+been exercised against a real Cloudinary account, so it needs a smoke
+test the first time real credentials are set, not a blind trust that it
+works. There's also real work *before* the provider is even reached:
+`POST /uploads/images` uses `multer` (memory storage only — a file is
+never written to this server's disk; it either reaches a real provider or
+is discarded) with a `fileFilter` rejecting anything outside
+`image/jpeg|png|webp` and a 5MB `limits.fileSize`, both enforced
+independent of whether a provider is configured — verified directly: a
+`.txt` renamed with an image field name is rejected by `multer` before
+`uploadsService` ever runs. The invitation builder's existing
+paste-a-URL fields (`utils/safeImageUrl.js`, Phase 4) are completely
+untouched — this endpoint is additive infrastructure, not yet wired into
+any UI that replaces those fields.
+
+### Real card catalogue: manually-supplied images, not generated ones
+
+The catalogue's `TemplateCard`/`TemplateThumb` originally never rendered
+an actual photo — `event_templates.preview_image` was never populated by
+the seed, so every card showed the same CSS-gradient-and-icon swatch
+regardless of design. The Phase 9 correction fixes this **without** AI
+generation or remote placeholder URLs, per explicit instruction: the seed
+(`002_event_templates.seed.js`) now sets each template's `previewImage`
+to a local path like `/cards/elegant-ivory.jpg`, and `public/cards/`
+(served by Vite at the site root) is where real files get dropped in —
+see `public/cards/README.md` for the expected filenames. `TemplateThumb`
+(`src/components/templates/TemplateThumb.jsx`) is the one shared
+component (used by the catalogue, Try Our Service, and the landing page's
+catalogue preview — previously each had its own copy-pasted swatch
+markup) that renders the real `<img>` when `previewImage` is set and
+loads successfully, and falls back to the original gradient+icon
+placeholder on `onError` — so a template whose file hasn't been dropped
+in yet degrades gracefully instead of showing a broken-image icon. No
+validation was added on `preview_image` itself: it's system/admin-managed
+seed data, not customer input, the same trust boundary as every other
+`event_templates` column.
+
+### Beem SMS: real transport, still unconfigured
+
+`services/providers/smsProvider.js` was rewritten from a generic
+"whatever SMS provider" placeholder to a **Beem-specific** implementation
+— CardHub's chosen SMS gateway. It makes a real HTTP request (Node's
+built-in `fetch`, no new dependency) to Beem's documented
+`apisms.beem.africa/v1/send` endpoint, with Basic Auth built from
+`BEEM_API_KEY`/`BEEM_SECRET_KEY` and the `recipients[]` JSON shape Beem
+expects. `isConfigured` requires all three Beem env vars
+(`BEEM_API_KEY`/`BEEM_SECRET_KEY`/`BEEM_SENDER_ID`); with them unset here,
+every call still returns `{ status: 'unavailable' }` before any network
+call is attempted. The return shape distinguishes `unavailable` (no
+provider configured) from `failed` (a real request that Beem rejected —
+network error, bad credentials, insufficient send credit) from `queued`
+(Beem accepted the message for delivery) — this "queued, not delivered"
+distinction matters because Beem confirms submission synchronously but
+reports final delivery asynchronously via a separate delivery-report
+callback that this codebase does not implement a webhook for yet. Like
+Cloudinary, this transport code has not been exercised against a real
+Beem account.
+
+### WhatsApp: a clean swap point, no provider chosen
+
+`services/providers/whatsappProvider.js` is new: `sendCardMessage`
+(text + the public card link) and `sendCardImage` (the card's image +
+caption + link) are the only two shapes CardHub's business logic should
+ever call. Deliberately, **no real provider is integrated** — the prompt
+that requested this explicitly said not to yet. `env.whatsapp.provider`
+is reserved but never set to a value in this codebase, so `isConfigured`
+is always `false` regardless of environment. The reason both Beem's
+WhatsApp API and Meta's WhatsApp Cloud API fit behind the same two method
+signatures: both are capable of sending a message with an attached image
+and a link to a phone number — neither method needed a
+provider-specific shape. Choosing one and filling in the transport code
+(likely branching on `env.whatsapp.provider`, mirroring how
+`smsProvider.js` now works for Beem) is Phase 2 work.
 
 ### Admin: "Customers" is a relabeled "Users," not a duplicate
 
