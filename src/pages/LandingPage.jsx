@@ -1,56 +1,70 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FiArrowRight,
-  FiCheckCircle,
-  FiLayers,
+  FiCheck,
+  FiClock,
+  FiCreditCard,
   FiSend,
+  FiShield,
   FiSmartphone,
   FiStar,
-  FiUsers,
 } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, InvitationPreview } from '../components/common';
-import { GlassCard, Badge } from '../components/ui';
+import { GlassCard, Badge, Skeleton } from '../components/ui';
 import { ROUTES } from '../constants/routes';
-import { DEMO_TEMPLATES } from '../constants/templates';
+import { templatesService } from '../services/templatesService';
+import { getCategoryLabel } from '../constants/templateCategories';
+import { formatCardPrice, PRICING_TIER_LIST } from '../constants/pricingTiers';
 
 const VALUE_PROPS = [
-  { icon: FiStar, title: 'Beautiful by design', description: 'Every template follows CardHub’s premium visual language, so your invitation looks intentional from the first glance.' },
-  { icon: FiUsers, title: 'Built for your guests', description: 'Invitations are fast, mobile-friendly, and effortless to open — no app required.' },
-  { icon: FiSend, title: 'Easy to share', description: 'One link, shareable anywhere — WhatsApp, SMS, or social, as CardHub’s sharing tools roll out.' },
-  { icon: FiCheckCircle, title: 'Smart RSVP', description: 'Guest responses land in one organized place as CardHub’s RSVP engine comes online.' },
-  { icon: FiLayers, title: 'Event ready', description: 'From your first invitation to full event management — CardHub grows with your event.' },
+  { icon: FiStar, title: 'Beautiful by design', description: 'Every card follows CardHub’s premium visual language, so it looks intentional from the first glance.' },
+  { icon: FiCreditCard, title: 'Simple, per-card pricing', description: 'No subscriptions, no packages you don’t need — pay only for the cards you actually send.' },
+  { icon: FiSend, title: 'Easy to share', description: 'Every card is fast, mobile-friendly, and effortless for your guests to open — no app required.' },
+  { icon: FiClock, title: 'Fast to try', description: 'Try Our Service in a few quick steps — pick a card, tell us who it’s for, done.' },
+  { icon: FiShield, title: 'Built by Clix Digital Works', description: 'A Tanzanian team building CardHub for real celebrations, from send-offs to weddings to birthdays.' },
 ];
 
 const JOURNEY_STEPS = [
-  { step: '01', title: 'Choose your style', description: 'Browse CardHub’s template catalog and pick the look that fits your event.' },
-  { step: '02', title: 'Create your invitation', description: 'Personalize your details — names, date, venue — in a guided, premium editor.' },
-  { step: '03', title: 'Share with guests', description: 'Send a single link your guests can open instantly from any device.' },
-  { step: '04', title: 'Celebrate', description: 'Bring your event together with CardHub as your invitations and guest tools grow.' },
+  { step: '01', title: 'Browse the catalogue', description: 'Explore CardHub’s card catalogue by category — wedding, send-off, birthday, and more.' },
+  { step: '02', title: 'Choose your card', description: 'Pick the design that fits your celebration and see its price per card upfront.' },
+  { step: '03', title: 'Try Our Service', description: 'Tell us your name and phone number — no account required to get started.' },
+  { step: '04', title: 'Receive your card', description: 'Your request is saved instantly, and our team follows up to bring your card to life.' },
 ];
 
 export function LandingPage() {
+  const [templates, setTemplates] = useState([]);
+  const [status, setStatus] = useState('loading');
+
+  useEffect(() => {
+    templatesService
+      .list({ limit: 4 })
+      .then((res) => {
+        const list = res.data.data.templates;
+        setTemplates(list);
+        setStatus(list.length === 0 ? 'empty' : 'success');
+      })
+      .catch(() => setStatus('error'));
+  }, []);
+
   return (
     <>
-      <Seo description="CardHub is a premium digital invitation and event platform by Clix Digital Works. Create beautiful invitations, share them with your guests, and bring your event together in one place." />
+      <Seo description="CardHub is a premium digital card service by Clix Digital Works. Browse the catalogue, see the price per card, and try the service in minutes." />
 
       <section className="ch-hero">
         <Container>
           <div className="ch-hero__grid">
             <div className="ch-hero__content ch-animate-slide-up">
-              <Badge variant="accent">Now in early access &mdash; Tanzania</Badge>
+              <Badge variant="accent">Now serving Tanzania</Badge>
               <h1 className="ch-display ch-hero__title">CardHub</h1>
-              <p className="ch-hero__subtitle">Create. Invite. Celebrate.</p>
-              <p className="ch-hero__description">
-                Create beautiful digital invitations, share them with your guests, and bring your
-                event together in one place.
-              </p>
+              <p className="ch-hero__subtitle">Digital cards made simple.</p>
               <div className="ch-hero__actions">
-                <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--primary ch-btn--lg">
-                  Create your invitation
+                <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary ch-btn--lg">
+                  Create Your Card
                   <FiArrowRight aria-hidden="true" />
                 </Link>
-                <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--secondary ch-btn--lg">
-                  Explore templates
+                <Link to={ROUTES.TRY} className="ch-btn ch-btn--secondary ch-btn--lg">
+                  Try Our Service
                 </Link>
               </div>
             </div>
@@ -61,12 +75,76 @@ export function LandingPage() {
         </Container>
       </section>
 
+      <section className="ch-section" id="catalogue">
+        <Container>
+          <SectionHeader
+            eyebrow="Card Catalogue"
+            title="A card for every celebration"
+            description="Real designs from CardHub's catalogue, priced per card."
+            align="center"
+          />
+
+          {status === 'loading' && (
+            <div className="ch-template-teaser-grid">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} height="200px" radius="var(--radius-lg)" />
+              ))}
+            </div>
+          )}
+
+          {status === 'success' && (
+            <div className="ch-template-teaser-grid">
+              {templates.map((template) => {
+                const colors = template.config?.colors;
+                return (
+                  <Link key={template.id} to={`${ROUTES.TRY}?templateId=${template.id}`} className="ch-template-teaser-link">
+                    <GlassCard className="ch-template-teaser-card ch-animate-fade-in">
+                      <div
+                        className="ch-template-teaser-card__swatch"
+                        style={colors ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : undefined}
+                      >
+                        <FiSmartphone aria-hidden="true" />
+                      </div>
+                      <p className="ch-caption">{getCategoryLabel(template.category)}</p>
+                      <h3 className="ch-h4">{template.name}</h3>
+                      <p className="ch-template-card__price">{formatCardPrice(template.priceTzs)}</p>
+                    </GlassCard>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="ch-journey-cta">
+            <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--outline ch-btn--sm">
+              Browse the full catalogue
+              <FiArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        </Container>
+      </section>
+
+      <section className="ch-section ch-section--alt" id="how-it-works">
+        <Container>
+          <SectionHeader eyebrow="How CardHub works" title="From browsing to your card, in four steps" align="center" />
+          <div className="ch-journey-grid">
+            {JOURNEY_STEPS.map(({ step, title, description }) => (
+              <div key={step} className="ch-journey-card">
+                <span className="ch-journey-card__step">{step}</span>
+                <h3 className="ch-h4">{title}</h3>
+                <p className="ch-body-sm">{description}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
       <section className="ch-section" id="why-cardhub">
         <Container>
           <SectionHeader
             eyebrow="Why CardHub"
-            title="Everything you need to host unforgettable events"
-            description="A single, elegant platform to design, share, and bring your invitations to life."
+            title="Everything you need, priced per card"
+            description="A single, elegant service to browse, choose, and send your digital card."
             align="center"
           />
           <div className="ch-value-grid">
@@ -83,69 +161,54 @@ export function LandingPage() {
         </Container>
       </section>
 
-      <section className="ch-section ch-section--alt" id="how-it-works">
+      <section className="ch-section ch-section--alt" id="pricing">
         <Container>
           <SectionHeader
-            eyebrow="How CardHub works"
-            title="From idea to invitation, in four steps"
+            eyebrow="Pricing"
+            title="Simple pricing, per card"
+            description="No subscriptions. Choose the tier that fits your card."
             align="center"
           />
-          <div className="ch-journey-grid">
-            {JOURNEY_STEPS.map(({ step, title, description }) => (
-              <div key={step} className="ch-journey-card">
-                <span className="ch-journey-card__step">{step}</span>
-                <h3 className="ch-h4">{title}</h3>
-                <p className="ch-body-sm">{description}</p>
-              </div>
+          <div className="ch-landing-pricing-grid">
+            {PRICING_TIER_LIST.map((tier) => (
+              <GlassCard key={tier.id} className="ch-landing-pricing-card">
+                <h3 className="ch-h4">{tier.name}</h3>
+                <p className="ch-landing-pricing-card__price">{formatCardPrice(tier.priceTzs)}</p>
+              </GlassCard>
             ))}
           </div>
           <div className="ch-journey-cta">
-            <Link to={ROUTES.HOW_IT_WORKS} className="ch-btn ch-btn--outline ch-btn--sm">
-              See the full journey
+            <Link to={ROUTES.PRICING} className="ch-btn ch-btn--outline ch-btn--sm">
+              See full pricing details
               <FiArrowRight aria-hidden="true" />
             </Link>
           </div>
         </Container>
       </section>
 
-      <section className="ch-section" id="templates">
+      <section className="ch-section ch-cta" id="try">
         <Container>
-          <SectionHeader
-            eyebrow="Templates"
-            title="A catalog built for every kind of celebration"
-            description="A first look at CardHub's template styles — the full builder is on its way."
-            align="center"
-          />
-          <div className="ch-template-teaser-grid">
-            {DEMO_TEMPLATES.slice(0, 4).map((template) => (
-              <GlassCard key={template.id} className="ch-template-teaser-card ch-animate-fade-in">
-                <div
-                  className="ch-template-teaser-card__swatch"
-                  style={{ background: `linear-gradient(135deg, ${template.palette[0]}, ${template.palette[1]})` }}
-                >
-                  <FiSmartphone aria-hidden="true" />
-                </div>
-                <p className="ch-caption">{template.category}</p>
-                <h3 className="ch-h4">{template.title}</h3>
-              </GlassCard>
-            ))}
-          </div>
-          <div className="ch-journey-cta">
-            <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--outline ch-btn--sm">
-              Browse all templates
+          <GlassCard className="ch-cta__card">
+            <FiCheck className="ch-cta__icon" aria-hidden="true" />
+            <h2 className="ch-h2">Not ready to commit? Try it first.</h2>
+            <p className="ch-body-lg">
+              Tell us your name, your phone number, and the card you like — no account required.
+            </p>
+            <Link to={ROUTES.TRY} className="ch-btn ch-btn--primary ch-btn--lg">
+              Try Our Service
               <FiArrowRight aria-hidden="true" />
             </Link>
-          </div>
+          </GlassCard>
         </Container>
       </section>
 
       <section className="ch-section ch-cta">
         <Container>
           <GlassCard className="ch-cta__card">
-            <h2 className="ch-h2">Ready to create your first invitation?</h2>
-            <p className="ch-body-lg">Join CardHub today and bring your next event to life.</p>
-            <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--primary ch-btn--lg">
-              Create your CardHub account
+            <h2 className="ch-h2">Ready to create your card?</h2>
+            <p className="ch-body-lg">Browse CardHub's catalogue and see the price per card upfront.</p>
+            <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary ch-btn--lg">
+              Create Your Card
               <FiArrowRight aria-hidden="true" />
             </Link>
           </GlassCard>

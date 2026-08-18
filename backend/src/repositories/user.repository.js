@@ -43,18 +43,23 @@ export const userRepository = {
     const params = [];
 
     if (search) {
-      conditions.push("(name LIKE ? ESCAPE '\\\\' OR email LIKE ? ESCAPE '\\\\')");
-      params.push(`%${search}%`, `%${search}%`);
+      conditions.push("(u.name LIKE ? ESCAPE '\\\\' OR u.email LIKE ? ESCAPE '\\\\' OR u.phone LIKE ? ESCAPE '\\\\')");
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [rows] = await pool.query(
-      `SELECT id, name, email, phone, role, status, preferred_language, created_at, updated_at
-       FROM users ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT u.id, u.name, u.email, u.phone, u.role, u.status, u.preferred_language, u.created_at, u.updated_at,
+              COUNT(o.id) AS order_count
+       FROM users u
+       LEFT JOIN orders o ON o.user_id = u.id
+       ${whereClause}
+       GROUP BY u.id
+       ORDER BY u.created_at DESC LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
-    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM users ${whereClause}`, params);
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM users u ${whereClause}`, params);
 
     return { rows, total: countRows[0].total };
   },
@@ -66,6 +71,11 @@ export const userRepository = {
 
   async countAll() {
     const [rows] = await pool.query('SELECT COUNT(*) AS total FROM users');
+    return rows[0].total;
+  },
+
+  async countByRole(role) {
+    const [rows] = await pool.query('SELECT COUNT(*) AS total FROM users WHERE role = ?', [role]);
     return rows[0].total;
   },
 };

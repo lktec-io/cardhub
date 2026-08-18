@@ -10,6 +10,7 @@ const COLUMNS = [
       { label: 'How It Works', to: ROUTES.HOW_IT_WORKS },
       { label: 'Templates', to: ROUTES.TEMPLATES },
       { label: 'Pricing', to: ROUTES.PRICING },
+      { label: 'Try Our Service', to: ROUTES.TRY },
     ],
   },
   {

@@ -50,6 +50,34 @@ export const adminController = {
     sendSuccess(res, { message: 'Template status updated', data: { template } });
   }),
 
+  updateTemplatePricingTier: asyncHandler(async (req, res) => {
+    validateId(req.params.id);
+    const template = await adminService.updateTemplatePricingTier(
+      req.params.id,
+      req.body.pricingTier,
+      req.user.id,
+      requestMetaFrom(req)
+    );
+    sendSuccess(res, { message: 'Template pricing tier updated', data: { template } });
+  }),
+
+  listOrders: asyncHandler(async (req, res) => {
+    const result = await adminService.listOrders(req.query);
+    sendSuccess(res, { data: result });
+  }),
+
+  getOrder: asyncHandler(async (req, res) => {
+    validateId(req.params.id);
+    const order = await adminService.getOrder(req.params.id);
+    sendSuccess(res, { data: { order } });
+  }),
+
+  updateOrderStatus: asyncHandler(async (req, res) => {
+    validateId(req.params.id);
+    const order = await adminService.updateOrderStatus(req.params.id, req.body, req.user.id, requestMetaFrom(req));
+    sendSuccess(res, { message: 'Order updated', data: { order } });
+  }),
+
   listAuditLogs: asyncHandler(async (req, res) => {
     const result = await adminService.listAuditLogs(req.query);
     sendSuccess(res, { data: result });

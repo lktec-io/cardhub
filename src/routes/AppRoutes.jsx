@@ -10,6 +10,7 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { TemplatesPage } from '../pages/public/TemplatesPage';
 import { PricingPage } from '../pages/public/PricingPage';
 import { HowItWorksPage } from '../pages/public/HowItWorksPage';
+import { TryPage } from '../pages/public/TryPage';
 import { AboutPage } from '../pages/public/AboutPage';
 import { ContactPage } from '../pages/public/ContactPage';
 import { FaqPage } from '../pages/public/FaqPage';
@@ -24,6 +25,7 @@ import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { DashboardHomePage } from '../pages/dashboard/DashboardHomePage';
 import { NotificationsPage } from '../pages/dashboard/NotificationsPage';
 import { BillingPage } from '../pages/dashboard/BillingPage';
+import { OrdersPage } from '../pages/dashboard/OrdersPage';
 import { SettingsLayout } from '../pages/dashboard/settings/SettingsLayout';
 import { ProfileSettingsPage } from '../pages/dashboard/settings/ProfileSettingsPage';
 import { SecuritySettingsPage } from '../pages/dashboard/settings/SecuritySettingsPage';
@@ -42,9 +44,11 @@ import { EventAnalyticsPage } from '../pages/dashboard/events/EventAnalyticsPage
 import { InvitationPage } from '../pages/public/InvitationPage';
 
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
-import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
+import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
+import { AdminCustomerDetailPage } from '../pages/admin/AdminCustomerDetailPage';
 import { AdminEventsPage } from '../pages/admin/AdminEventsPage';
 import { AdminTemplatesPage } from '../pages/admin/AdminTemplatesPage';
+import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -59,6 +63,7 @@ export function AppRoutes() {
         <Route path={ROUTES.TEMPLATES} element={<TemplatesPage />} />
         <Route path={ROUTES.PRICING} element={<PricingPage />} />
         <Route path={ROUTES.HOW_IT_WORKS} element={<HowItWorksPage />} />
+        <Route path={ROUTES.TRY} element={<TryPage />} />
         <Route path={ROUTES.ABOUT} element={<AboutPage />} />
         <Route path={ROUTES.CONTACT} element={<ContactPage />} />
         <Route path={ROUTES.FAQ} element={<FaqPage />} />
@@ -88,6 +93,7 @@ export function AppRoutes() {
           </Route>
 
           <Route path={ROUTES.DASHBOARD_BILLING} element={<BillingPage />} />
+          <Route path={ROUTES.DASHBOARD_ORDERS} element={<OrdersPage />} />
 
           <Route path={ROUTES.DASHBOARD_SETTINGS} element={<SettingsLayout />}>
             <Route index element={<Navigate to={ROUTES.DASHBOARD_SETTINGS_PROFILE} replace />} />
@@ -106,9 +112,11 @@ export function AppRoutes() {
       <Route element={<AdminRoute />}>
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.ADMIN} element={<AdminDashboardPage />} />
-          <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />
+          <Route path={ROUTES.ADMIN_CUSTOMERS} element={<AdminCustomersPage />} />
+          <Route path={ROUTES.ADMIN_CUSTOMER_DETAIL} element={<AdminCustomerDetailPage />} />
           <Route path={ROUTES.ADMIN_EVENTS} element={<AdminEventsPage />} />
           <Route path={ROUTES.ADMIN_TEMPLATES} element={<AdminTemplatesPage />} />
+          <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrdersPage />} />
           <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<AdminAuditLogsPage />} />
         </Route>
       </Route>

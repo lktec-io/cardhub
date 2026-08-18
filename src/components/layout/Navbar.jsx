@@ -5,6 +5,7 @@ import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../hooks/useAuth';
 
 const NAV_LINKS = [
+  { label: 'Home', to: ROUTES.HOME },
   { label: 'Templates', to: ROUTES.TEMPLATES },
   { label: 'Pricing', to: ROUTES.PRICING },
   { label: 'How It Works', to: ROUTES.HOW_IT_WORKS },
@@ -39,8 +40,8 @@ export function Navbar() {
     };
   }, [isOpen]);
 
-  const ctaTarget = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.REGISTER;
-  const ctaLabel = isAuthenticated ? 'Go to dashboard' : 'Create Invitation';
+  const ctaTarget = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.TEMPLATES;
+  const ctaLabel = isAuthenticated ? 'Go to dashboard' : 'Create Your Card';
 
   return (
     <header className="ch-navbar">
@@ -51,7 +52,7 @@ export function Navbar() {
 
         <nav className="ch-navbar__links ch-navbar__links--desktop" aria-label="Primary">
           {NAV_LINKS.map((link) => (
-            <NavLink key={link.to} to={link.to}>
+            <NavLink key={link.to} to={link.to} end={link.to === ROUTES.HOME}>
               {link.label}
             </NavLink>
           ))}

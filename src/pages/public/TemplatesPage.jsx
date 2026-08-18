@@ -7,6 +7,7 @@ import { TemplateCard, TemplateFilters } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
+import { formatCardPrice } from '../../constants/pricingTiers';
 
 export function TemplatesPage() {
   const { templates, pagination, status, category, setCategory, search, setSearch, page, setPage, retry } =
@@ -20,6 +21,10 @@ export function TemplatesPage() {
     navigate(isAuthenticated ? ROUTES.DASHBOARD_CREATE_EVENT : ROUTES.REGISTER);
   }
 
+  function handleUseCard(template) {
+    navigate(`${ROUTES.TRY}?templateId=${template.id}`);
+  }
+
   return (
     <div className="ch-templates-page">
       <Seo
@@ -28,9 +33,9 @@ export function TemplatesPage() {
       />
       <Container>
         <SectionHeader
-          eyebrow="Templates"
-          title="A template for every celebration"
-          description="Explore CardHub's template catalog. The full drag-and-drop builder is on its way — for now, preview a design and reserve your account."
+          eyebrow="Card Catalogue"
+          title="A card for every celebration"
+          description="Browse CardHub's digital card catalogue, priced per card. Preview a design, then try the service or build a full invitation."
         />
 
         <TemplateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
@@ -69,7 +74,7 @@ export function TemplatesPage() {
           <>
             <div className="ch-templates-grid">
               {templates.map((template) => (
-                <TemplateCard key={template.id} template={template} onPreview={setPreviewTemplate} />
+                <TemplateCard key={template.id} template={template} onPreview={setPreviewTemplate} onUse={handleUseCard} />
               ))}
             </div>
             <Pagination page={page} totalPages={pagination?.totalPages} onChange={setPage} />
@@ -86,8 +91,11 @@ export function TemplatesPage() {
             <Button variant="ghost" onClick={() => setPreviewTemplate(null)}>
               Close
             </Button>
+            <Button variant="secondary" onClick={() => previewTemplate && handleUseCard(previewTemplate)}>
+              Use This Card
+            </Button>
             <Button variant="primary" onClick={handleUseTemplate}>
-              Use this template
+              Build full invitation
             </Button>
           </>
         }
@@ -96,6 +104,9 @@ export function TemplatesPage() {
           <div className="ch-templates-page__preview">
             <InvitationPreview compact title="Your Names Here" venue={previewTemplate.name} colors={previewTemplate.config?.colors} />
             <p className="ch-body-sm">{previewTemplate.description}</p>
+            {typeof previewTemplate.priceTzs === 'number' && (
+              <p className="ch-templates-page__preview-price">{formatCardPrice(previewTemplate.priceTzs)}</p>
+            )}
           </div>
         )}
       </Modal>

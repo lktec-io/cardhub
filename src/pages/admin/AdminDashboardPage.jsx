@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiAlertCircle, FiCalendar, FiCheckCircle, FiDollarSign, FiSend, FiUsers } from 'react-icons/fi';
+import { FiAlertCircle, FiClock, FiCreditCard, FiDollarSign, FiShoppingBag, FiUsers } from 'react-icons/fi';
 import { PageHeader, Seo } from '../../components/common';
 import { Button, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
@@ -64,12 +64,15 @@ export function AdminDashboardPage() {
 
       {status === 'success' && stats && (
         <div className="ch-admin-stats-grid">
-          <StatTile icon={FiUsers} label="Total Users" value={stats.totalUsers} />
-          <StatTile icon={FiCalendar} label="Total Events" value={stats.totalEvents} />
-          <StatTile icon={FiSend} label="Published Invitations" value={stats.publishedInvitations} />
-          <StatTile icon={FiUsers} label="Total Guests" value={stats.totalGuests} />
-          <StatTile icon={FiCheckCircle} label="RSVP Responses" value={stats.rsvpResponses} />
-          <StatTile icon={FiDollarSign} label="Revenue (TZS)" value={stats.revenueTzs === 0 ? 'Unavailable' : stats.revenueTzs} />
+          <StatTile icon={FiUsers} label="Total Customers" value={stats.totalCustomers} />
+          <StatTile icon={FiShoppingBag} label="Total Orders" value={stats.totalOrders} />
+          <StatTile icon={FiClock} label="Pending Orders" value={stats.pendingOrders} />
+          <StatTile icon={FiCreditCard} label="Cards Sold" value={stats.cardsSold} />
+          <StatTile
+            icon={FiDollarSign}
+            label="Revenue (TZS)"
+            value={stats.revenueTzs === 0 ? '0 (no paid orders yet)' : new Intl.NumberFormat('en-TZ').format(stats.revenueTzs)}
+          />
         </div>
       )}
     </div>

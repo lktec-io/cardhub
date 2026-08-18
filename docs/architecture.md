@@ -629,13 +629,136 @@ answering the one question the analytics page actually needs to answer
 separate analytics table, since the guests table itself is already the
 source of truth for RSVP counts.
 
+## Phase 9 — Commercial Foundation
+
+### Why "Phase 9" and not "Phase 1"
+
+The prompt that produced this work was itself titled "CARDHUB — PHASE 1"
+— a fresh commercial pivot (catalogue, per-card pricing, Try Our Service,
+orders) layered on top of the invitation platform the previous eight
+phases already built, explicitly *not* a rebuild of that platform. Reusing
+the literal label "Phase 1" here would collide with the actual Phase 1
+(Foundation, Architecture & Brand System) already documented throughout
+this file and the README, so this work is numbered Phase 9 in both docs —
+same content, a collision-free label.
+
+### Per-card pricing is a second, independent pricing model
+
+`constants/pricingTiers.js` (`STARTER`/`PREMIUM`/`CLASSIC`, 1,200/1,500/
+2,000 TZS) is deliberately a **separate** constant from the existing
+`constants/plans.js` (`free`/`pro`/`premium` **per-event** subscription
+limits from Phase 8) — they answer different questions. `plans.js` still
+gates how many events/guests/published invitations a customer's *account*
+gets; `pricingTiers.js` prices an individual **card design** a visitor
+picks from the catalogue, logged in or not. `event_templates` gained a
+`pricing_tier` column (migration 017, `ENUM('starter','premium','classic')
+DEFAULT 'starter'`) so each design is priced individually by an admin
+(`PATCH /admin/templates/:id/pricing-tier`), and `toPublicTemplate`
+resolves that column to a real `priceTzs` server-side on every catalogue
+response — the same "one source of truth, server computes the number"
+pattern `plans.js` already established, just for a different concept.
+
+### Orders: one table for both the catalogue and Try Our Service
+
+`orders` (migration 016) is deliberately a single table serving two
+origins (`source = 'try_service' | 'dashboard'`) rather than a separate
+"leads" table plus a separate "orders" table — a Try Our Service
+submission and a future logged-in catalogue purchase both end up wanting
+the exact same fields (template, tier, unit price, quantity, subtotal,
+status/paymentStatus/deliveryStatus), so splitting them would just be two
+schemas for one concept. Since Try Our Service explicitly requires **no
+account** (`user_id` is nullable), the row instead carries `guest_name`/
+`guest_phone` directly; a `CHECK` constraint
+(`user_id IS NOT NULL OR (guest_name IS NOT NULL AND guest_phone IS NOT
+NULL)`) makes "who is this order for" a DB-enforced invariant, not just an
+application-level convention. `unit_price_tzs` and `subtotal_tzs` are
+always computed server-side from the template's pricing tier in
+`orders.service.js#submitTryService` — never accepted from the client —
+the same anti-tampering principle as the invitation-config validator's
+"whitelist reconstruction" from Phase 4.
+
+Three independent status fields (`status`, `payment_status`,
+`delivery_status`) rather than one combined enum, because they genuinely
+vary independently: an order can be `processing` while `payment_status`
+is still `unpaid` and `delivery_status` is `pending` — collapsing these
+into one field would force inventing compound states like
+"processing-unpaid-pending". Admin can update any subset of the three via
+one endpoint (`PATCH /admin/orders/:id/status`,
+`validateOrderStatusUpdate` requires at least one field) — this is a real,
+audited, manual reconciliation action (the same audit-log pattern as
+every other admin mutation in this codebase), standing in for a payment
+webhook that doesn't exist yet. It never simulates an automated charge.
+
+### Try Our Service is public, rate-limited, and honest about delivery
+
+`POST /public/orders/try` lives in `public.routes.js` — unauthenticated,
+`tryServiceLimiter` (10/hour/IP, tighter than `rsvpLimiter` since this is
+a single-visitor lead-gen form, not a household responding for several
+guests) — the same "small, separate, unauthenticated router module"
+pattern the Phase 5 public invitation endpoint established. The frontend
+`/try` page is a 5-step local-state wizard (name → phone → choose a card →
+preview → send); nothing is persisted until the final step's real API
+call. On success, the confirmation view shows a `Ready to send` badge and
+an explicit sentence that WhatsApp/SMS delivery is "coming in Phase 2" —
+mirroring the exact honesty pattern already used for the contact form and
+password-reset email (Phase 2) and the payment/email/SMS providers
+(Phase 7/8): a real row is saved, but nothing claims a message was
+delivered when no delivery mechanism exists.
+
+### Image upload foundation: a fourth provider abstraction, not a fifth pattern
+
+`services/providers/imageStorageProvider.js` follows the exact same shape
+as `emailProvider`/`smsProvider`/`paymentProvider`: an `isConfigured`
+flag (derived from the already-reserved `CLOUDINARY_*` env vars) and
+methods that honestly return `{ status: 'unavailable' }` rather than
+faking success. What's new for this one is that there's real work to do
+*before* the provider is even reached: `POST /uploads/images` uses
+`multer` (memory storage only — a file is never written to this server's
+disk; it either reaches a real provider or is discarded) with a
+`fileFilter` rejecting anything outside `image/jpeg|png|webp` and a 5MB
+`limits.fileSize`, both enforced independent of whether a provider is
+configured. This means the security-relevant part (reject unsafe/oversized
+files) is real and testable today, while the actual storage call
+consistently reports "not connected yet" — verified directly: a `.txt`
+renamed with an image field name is rejected by `multer` before
+`uploadsService` ever runs, and a valid PNG with a valid `purpose` gets
+exactly one honest error, not a fake success. The invitation builder's
+existing paste-a-URL fields (`utils/safeImageUrl.js`, Phase 4) are
+completely untouched — this endpoint is additive infrastructure, not yet
+wired into any UI that replaces those fields.
+
+### Admin: "Customers" is a relabeled "Users," not a duplicate
+
+`/admin/customers` (renamed from `/admin/users` in Phase 8) is the same
+underlying `GET /admin/users` API and `userRepository.findAllPaginated` —
+only the frontend route/label changed, plus two additions: an
+`order_count` per row (a `LEFT JOIN orders ... GROUP BY u.id`, present
+only on this admin listing — `toPublicUser`'s `orderCount` field is
+`undefined`, and therefore omitted from the JSON response, everywhere
+else) and a customer detail view (`GET /admin/users/:id` now also returns
+that customer's own orders via `orderRepository.findAllByUserIdForAdmin`).
+Renaming a route label to match new commercial terminology, rather than
+standing up a parallel `/admin/customers` API next to the still-working
+`/admin/users` one, avoids exactly the kind of duplicated backend surface
+this project has avoided everywhere else.
+
+Admin's template editing stays intentionally narrow for this phase: only
+the pricing tier is editable (`PATCH /admin/templates/:id/pricing-tier`).
+Creating a new template design, or editing its name/description/config,
+is real content-authoring work with its own validation/versioning
+questions (see the Phase 3 "Template configuration safety & versioning"
+section above) that doesn't belong bolted onto a pricing-model phase —
+deferred to Phase 2 of this commercial track, not silently dropped.
+
 ## What's deliberately not here yet
 
 QR check-in, an affiliate/referral program, and a vendor marketplace were
-explicitly out of scope for Phases 1–8 — see the roadmap in the root
-README. As of Phase 8, every dashboard sidebar item and event workspace
+explicitly out of scope for this build — see the roadmap in the root
+README. As of Phase 9, every dashboard sidebar item and event workspace
 tab is real and wired to a working page; there are no remaining "Soon"
-placeholders left in the primary customer flows. Payment, email, and SMS
-delivery are architecturally complete but not connected to a live
-provider — see [`docs/production.md`](production.md) for exactly what
-that means and how to connect one.
+placeholders left in the primary customer flows (only admin's Messages,
+Analytics, and Settings nav items remain "Soon" — see the Phase 9 section
+above). Payment, email, SMS, and image storage delivery are
+architecturally complete but not connected to a live provider — see
+[`docs/production.md`](production.md) for exactly what that means and how
+to connect one.

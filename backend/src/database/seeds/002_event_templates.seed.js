@@ -8,12 +8,14 @@
 import mysql from 'mysql2/promise';
 import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
+import { DEFAULT_PRICING_TIER } from '../../constants/pricingTiers.js';
 
 const TEMPLATES = [
   {
     name: 'Elegant Ivory',
     slug: 'elegant-ivory',
     category: 'wedding',
+    pricingTier: 'classic',
     description: 'Soft ivory tones with refined serif-style headings for a timeless wedding invitation.',
     sortOrder: 1,
     config: {
@@ -27,6 +29,7 @@ const TEMPLATES = [
     name: 'Midnight Romance',
     slug: 'midnight-romance',
     category: 'wedding',
+    pricingTier: 'premium',
     description: 'Deep navy and gold-green accents for an evening celebration with real presence.',
     sortOrder: 2,
     config: {
@@ -40,6 +43,7 @@ const TEMPLATES = [
     name: 'Garden Bloom',
     slug: 'garden-bloom',
     category: 'baby_shower',
+    pricingTier: 'starter',
     description: 'Gentle, welcoming, and fresh — designed for baby showers and new beginnings.',
     sortOrder: 1,
     config: {
@@ -53,6 +57,7 @@ const TEMPLATES = [
     name: 'Modern Minimal',
     slug: 'modern-minimal',
     category: 'corporate',
+    pricingTier: 'premium',
     description: 'Sharp, uncluttered, and confident — built for launches and corporate gatherings.',
     sortOrder: 1,
     config: {
@@ -66,6 +71,7 @@ const TEMPLATES = [
     name: 'Royal Celebration',
     slug: 'royal-celebration',
     category: 'birthday',
+    pricingTier: 'classic',
     description: 'Bold and festive, with rich color depth for milestone birthdays and parties.',
     sortOrder: 1,
     config: {
@@ -79,6 +85,7 @@ const TEMPLATES = [
     name: 'Classic Gold',
     slug: 'classic-gold',
     category: 'anniversary',
+    pricingTier: 'premium',
     description: 'A timeless, understated design for anniversaries and milestone achievements.',
     sortOrder: 1,
     config: {
@@ -92,6 +99,7 @@ const TEMPLATES = [
     name: 'Ascend',
     slug: 'ascend',
     category: 'graduation',
+    pricingTier: 'starter',
     description: 'A confident, achievement-forward layout for graduation celebrations.',
     sortOrder: 1,
     config: {
@@ -105,6 +113,7 @@ const TEMPLATES = [
     name: 'Pulse',
     slug: 'pulse',
     category: 'party',
+    pricingTier: 'starter',
     description: 'Bold, high-energy invitation styling for any celebration.',
     sortOrder: 1,
     config: {
@@ -119,15 +128,24 @@ const TEMPLATES = [
 async function seedEventTemplates(connection) {
   for (const template of TEMPLATES) {
     await connection.query(
-      `INSERT INTO event_templates (name, slug, description, category, status, sort_order, config)
-       VALUES (?, ?, ?, ?, 'active', ?, CAST(? AS JSON))
+      `INSERT INTO event_templates (name, slug, description, category, pricing_tier, status, sort_order, config)
+       VALUES (?, ?, ?, ?, ?, 'active', ?, CAST(? AS JSON))
        ON DUPLICATE KEY UPDATE
          name = VALUES(name),
          description = VALUES(description),
          category = VALUES(category),
+         pricing_tier = VALUES(pricing_tier),
          sort_order = VALUES(sort_order),
          config = VALUES(config)`,
-      [template.name, template.slug, template.description, template.category, template.sortOrder, JSON.stringify(template.config)]
+      [
+        template.name,
+        template.slug,
+        template.description,
+        template.category,
+        template.pricingTier || DEFAULT_PRICING_TIER,
+        template.sortOrder,
+        JSON.stringify(template.config),
+      ]
     );
   }
   logger.info(`Seeded ${TEMPLATES.length} event_templates rows`);

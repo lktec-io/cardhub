@@ -22,6 +22,18 @@ export const adminService = {
   updateTemplateStatus(id, status) {
     return api.patch(`/admin/templates/${id}/status`, { status });
   },
+  updateTemplatePricingTier(id, pricingTier) {
+    return api.patch(`/admin/templates/${id}/pricing-tier`, { pricingTier });
+  },
+  listOrders(params) {
+    return api.get('/admin/orders', { params });
+  },
+  getOrder(id) {
+    return api.get(`/admin/orders/${id}`);
+  },
+  updateOrderStatus(id, payload) {
+    return api.patch(`/admin/orders/${id}/status`, payload);
+  },
   listAuditLogs(params) {
     return api.get('/admin/audit-logs', { params });
   },

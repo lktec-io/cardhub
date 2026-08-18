@@ -19,5 +19,10 @@ adminRouter.get('/events', adminController.listEvents);
 
 adminRouter.get('/templates', adminController.listTemplates);
 adminRouter.patch('/templates/:id/status', writeLimiter, adminController.updateTemplateStatus);
+adminRouter.patch('/templates/:id/pricing-tier', writeLimiter, adminController.updateTemplatePricingTier);
+
+adminRouter.get('/orders', adminController.listOrders);
+adminRouter.get('/orders/:id', adminController.getOrder);
+adminRouter.patch('/orders/:id/status', writeLimiter, adminController.updateOrderStatus);
 
 adminRouter.get('/audit-logs', adminController.listAuditLogs);

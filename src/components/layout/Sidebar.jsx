@@ -7,14 +7,16 @@ import {
   FiLayers,
   FiMessageSquare,
   FiSettings,
+  FiShoppingBag,
   FiUsers,
 } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', to: ROUTES.DASHBOARD, icon: FiGrid, enabled: true, end: true },
-  { label: 'My Events', to: ROUTES.DASHBOARD_EVENTS, icon: FiImage, enabled: true },
+  { label: 'My Cards', to: ROUTES.DASHBOARD_EVENTS, icon: FiImage, enabled: true },
   { label: 'Templates', to: ROUTES.TEMPLATES, icon: FiLayers, enabled: true },
+  { label: 'Orders', to: ROUTES.DASHBOARD_ORDERS, icon: FiShoppingBag, enabled: true },
   { label: 'Guests', icon: FiUsers, enabled: false },
   { label: 'Messages', icon: FiMessageSquare, enabled: false },
   { label: 'Analytics', icon: FiBarChart2, enabled: false },

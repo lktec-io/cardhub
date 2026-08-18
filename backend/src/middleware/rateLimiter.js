@@ -42,3 +42,14 @@ export const rsvpLimiter = rateLimit({
   legacyHeaders: false,
   handler: limitHandler,
 });
+
+// Public, unauthenticated "Try Our Service" lead-gen submissions — tighter
+// than rsvpLimiter since this is a single-visitor conversion form, not a
+// household responding for several guests.
+export const tryServiceLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: limitHandler,
+});

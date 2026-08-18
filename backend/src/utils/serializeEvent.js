@@ -1,3 +1,5 @@
+import { getPricingTier } from '../constants/pricingTiers.js';
+
 function safeParseConfig(config) {
   if (!config) return null;
   if (typeof config === 'object') return config;
@@ -41,6 +43,7 @@ export function toEventDTO(row) {
 }
 
 export function toPublicTemplate(row) {
+  const tier = getPricingTier(row.pricing_tier);
   return {
     id: row.id,
     name: row.name,
@@ -49,7 +52,13 @@ export function toPublicTemplate(row) {
     category: row.category,
     status: row.status,
     previewImage: row.preview_image,
+    // Always computed here from the template's assigned tier — never a
+    // client-supplied or hardcoded-in-a-component number. See
+    // constants/pricingTiers.js.
+    pricingTier: tier.id,
+    priceTzs: tier.priceTzs,
     config: safeParseConfig(row.config),
+    createdAt: row.created_at,
   };
 }
 

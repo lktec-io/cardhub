@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { FiAlertCircle } from 'react-icons/fi';
 import { PageHeader, Seo, Pagination } from '../../components/common';
-import { Button, Badge, EmptyState, Skeleton } from '../../components/ui';
+import { Button, Badge, Select, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
 import { getCategoryLabel } from '../../constants/templateCategories';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
+import { PRICING_TIER_LIST } from '../../constants/pricingTiers';
+
+const TIER_OPTIONS = PRICING_TIER_LIST.map((tier) => ({ value: tier.id, label: tier.name }));
 
 const PAGE_SIZE = 20;
 
@@ -56,10 +59,28 @@ export function AdminTemplatesPage() {
     }
   }
 
+  async function changeTier(template, pricingTier) {
+    setUpdatingId(template.id);
+    try {
+      const res = await adminService.updateTemplatePricingTier(template.id, pricingTier);
+      const updated = res.data.data.template;
+      setTemplates((prev) => prev.map((t) => (t.id === template.id ? updated : t)));
+      toast.success('Pricing tier updated');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Could not update the pricing tier'));
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   return (
     <div className="ch-admin-page">
       <Seo title="Admin — Templates" />
-      <PageHeader eyebrow="CardHub Admin" title="Templates" description="Deactivating a template removes it from the public catalog — existing events keep working." />
+      <PageHeader
+        eyebrow="CardHub Admin"
+        title="Cards / Templates"
+        description="Deactivating a card removes it from the public catalogue — existing events keep working. Creating a brand-new card design and editing name/description/config are deferred to Phase 2; the pricing tier is editable here today."
+      />
 
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
@@ -77,6 +98,8 @@ export function AdminTemplatesPage() {
                 <tr>
                   <th>Name</th>
                   <th>Category</th>
+                  <th>Price tier</th>
+                  <th>Created</th>
                   <th>Status</th>
                   <th aria-label="Actions" />
                 </tr>
@@ -86,6 +109,16 @@ export function AdminTemplatesPage() {
                   <tr key={template.id}>
                     <td className="ch-table__name">{template.name}</td>
                     <td>{getCategoryLabel(template.category)}</td>
+                    <td>
+                      <Select
+                        value={template.pricingTier}
+                        disabled={updatingId === template.id}
+                        options={TIER_OPTIONS}
+                        onChange={(e) => changeTier(template, e.target.value)}
+                        className="ch-admin-orders__select"
+                      />
+                    </td>
+                    <td>{new Date(template.createdAt).toLocaleDateString()}</td>
                     <td>
                       <Badge variant={template.status === 'active' ? 'success' : 'default'}>{template.status}</Badge>
                     </td>

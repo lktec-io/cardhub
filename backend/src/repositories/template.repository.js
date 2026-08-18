@@ -56,4 +56,9 @@ export const templateRepository = {
     await pool.query('UPDATE event_templates SET status = ? WHERE id = ?', [status, id]);
     return this.findById(id);
   },
+
+  async updatePricingTier(id, pricingTier) {
+    await pool.query('UPDATE event_templates SET pricing_tier = ? WHERE id = ?', [pricingTier, id]);
+    return this.findById(id);
+  },
 };

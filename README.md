@@ -1,9 +1,12 @@
 # CardHub
 
-**Create. Invite. Celebrate.**
+**Digital cards made simple.**
 
-CardHub is a premium digital invitation and event platform by **Clix Digital
-Works** (Tanzania). This repository currently implements:
+CardHub is a premium digital card service by **Clix Digital Works**
+(Tanzania) — a per-card marketplace (browse the catalogue, see the price,
+try the service or build a full invitation) built on top of CardHub's
+original invitation-platform foundation. This repository currently
+implements:
 
 - **Phase 1 — Foundation, Architecture & Brand System**
 - **Phase 2 — Public Website + Authentication + Customer Account**
@@ -13,9 +16,16 @@ Works** (Tanzania). This repository currently implements:
 - **Phase 6 — Guest Management + RSVP Engine**
 - **Phase 7 — Messaging + Notifications + Sharing**
 - **Phase 8 — Billing + Admin + Analytics + Production Hardening**
+- **Phase 9 — Commercial Foundation: Card Catalogue, Per-Card Pricing, Try
+  Our Service, Orders** (this phase's own prompt called itself "Phase 1" of
+  a fresh commercial pivot; renumbered here to Phase 9 to avoid colliding
+  with the existing Phase 1 above — see
+  [`docs/architecture.md`](docs/architecture.md#phase-9--commercial-foundation)
+  for why)
 
-Payment processing, live email delivery, and SMS delivery are
-architecturally wired but not connected to a real provider — see
+Payment processing, live email delivery, SMS/WhatsApp delivery, and real
+image storage are architecturally wired but not connected to a real
+provider — see
 [Payment, email, and SMS provider status](docs/production.md#payment-email-and-sms-provider-status).
 QR check-in, an affiliate program, and a vendor marketplace are not part
 of this build — see [Roadmap](#roadmap).
@@ -27,7 +37,9 @@ of this build — see [Roadmap](#roadmap).
 `src/styles/tokens.css`).
 
 **Backend** — Node.js, Express, MySQL 8 (via `mysql2`), JWT auth
-(`jsonwebtoken`), `bcryptjs`, a hand-rolled SQL migration runner.
+(`jsonwebtoken`), `bcryptjs`, a hand-rolled SQL migration runner, `multer`
+(memory-storage file validation for the image upload foundation — see
+[Image upload foundation](#image-upload-foundation-phase-9)).
 
 **Infrastructure target** — Contabo VPS + Nginx + PM2 + Cloudflare + Let's
 Encrypt for the API, Netlify for the frontend. Nothing is deployed by this
@@ -47,29 +59,30 @@ cardhub/
       guests/              # GuestStatsBar, GuestStatusBadge, GuestFormModal, BulkImportModal
       invitation/           # InvitationRenderer + sections/ — THE one invitation rendering engine (incl. RsvpSection)
     pages/
-      public/              # Templates, Pricing, ..., FAQ, Terms, Privacy, InvitationPage (/invite/:slug)
+      public/              # Templates (catalogue), Pricing, TryPage (/try), ..., InvitationPage (/invite/:slug)
       auth/                # Register, Login, Forgot/Reset password
       dashboard/
         settings/           # Profile, Security, Notifications, Language
-        events/              # Create wizard, My Events, event workspace (Overview/Settings/Guests/Analytics)
+        events/              # Create wizard, My Events ("My Cards"), event workspace (Overview/Settings/Guests/Analytics)
           builder/            # InvitationBuilderPage + its panels — the invitation builder
           guests/              # GuestsPage
         BillingPage.jsx        # Plan, usage, payment history (Phase 8)
         NotificationsPage.jsx  # Notification center (Phase 7)
-      admin/                 # AdminDashboard/Users/Events/Templates/AuditLogs pages (Phase 8)
+        OrdersPage.jsx         # "My Orders" — a customer's own card orders (Phase 9)
+      admin/                 # AdminDashboard/Customers/CustomerDetail/Events/Templates/Orders/AuditLogs pages
     layouts/               # PublicLayout, AuthLayout, DashboardLayout, AdminLayout
     routes/                # AppRoutes, ProtectedRoute, AdminRoute
     hooks/                  # useAuth, useToast, useTemplateCatalog, useCanvasScale, useMediaQuery, ...
     context/                # AuthContext, ToastContext
     services/               # axios instance + API service modules
     utils/                  # incl. shareMessage.js (WhatsApp/native share)
-    constants/              # routes, eventTypes, invitationSections, fonts, plans, rsvpStatus, pricing/faq demo data
+    constants/              # routes, eventTypes, invitationSections, fonts, plans, pricingTiers, orderStatus, rsvpStatus, faq demo data
     styles/                 # tokens.css, typography.css, base.css, animations.css
 
   backend/
     src/
       config/ controllers/ services/ repositories/ routes/v1/ middleware/ validators/ utils/ constants/
-        services/providers/  # emailProvider, smsProvider, paymentProvider — honest "unavailable" abstractions
+        services/providers/  # emailProvider, smsProvider, paymentProvider, imageStorageProvider — honest "unavailable" abstractions
       database/
         migrations/         # hand-rolled up/down SQL migrations
         seeds/               # dev-only seed scripts (clearly labeled)
@@ -95,8 +108,8 @@ npm run dev                  # http://localhost:5173
 cd backend
 npm install
 cp .env.example .env         # fill in real DB credentials and JWT secrets
-npm run migrate              # creates/updates all tables through migration 015
-npm run seed                 # baseline system_settings + the event_templates catalog
+npm run migrate              # creates/updates all tables through migration 017
+npm run seed                 # baseline system_settings + the event_templates catalog (now with per-card pricing tiers)
 npm run dev                  # http://localhost:4006
 ```
 
@@ -121,9 +134,10 @@ Frontend: `VITE_API_URL`.
 
 Backend: `NODE_ENV`, `PORT`, `DB_HOST/PORT/NAME/USER/PASSWORD`,
 `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES`,
-`JWT_REFRESH_EXPIRES`, `CLOUDINARY_*` (still reserved/unused — see
-[Image handling](#image-handling-phase-4)), `FRONTEND_URL`, `API_URL`,
-`SMTP_*` and `SMS_*` (Phase 7, reserved — see
+`JWT_REFRESH_EXPIRES`, `CLOUDINARY_*` (still reserved/unused — now the
+image *upload* foundation's storage provider too, see
+[Image upload foundation](#image-upload-foundation-phase-9)), `FRONTEND_URL`,
+`API_URL`, `SMTP_*` and `SMS_*` (Phase 7, reserved — see
 [Payment, email, and SMS provider status](docs/production.md#payment-email-and-sms-provider-status)).
 
 ## Database & migrations
@@ -153,6 +167,8 @@ Tables:
 | 013 | `subscriptions` | Phase 8 |
 | 014 | `payments` | Phase 8 |
 | 015 | `events.view_count` | Phase 8 |
+| 016 | `orders` | Phase 9 |
+| 017 | `event_templates.pricing_tier` | Phase 9 |
 
 Never modify an already-applied migration by hand — add a new one instead.
 Rollback and backup strategy: see [`docs/production.md`](docs/production.md).
@@ -212,6 +228,11 @@ POST   /api/v1/notifications/read-all
 
 GET    /api/v1/billing/summary        # plan, usage, payment history — Phase 8
 POST   /api/v1/billing/upgrade        # honest 501/error — no payment provider connected
+
+GET    /api/v1/orders                 # a customer's own card orders — Phase 9
+GET    /api/v1/orders/:id
+
+POST   /api/v1/uploads/images         # multipart, real validation, honest "not connected yet" — Phase 9
 ```
 
 **Public catalog (no auth):**
@@ -226,6 +247,7 @@ GET    /api/v1/templates/:id
 ```text
 GET    /api/v1/public/invitations/:slug
 POST   /api/v1/public/invitations/:slug/rsvp   # rate-limited, Phase 6
+POST   /api/v1/public/orders/try               # "Try Our Service" — rate-limited, Phase 9
 ```
 
 Only returns published, non-deleted events, through a dedicated DTO
@@ -233,15 +255,20 @@ Only returns published, non-deleted events, through a dedicated DTO
 timestamps, and template id/status — see
 [`docs/architecture.md`](docs/architecture.md#public-api-data-minimization).
 
-**Admin (Phase 8, `authenticate` + `authorize('admin')`):**
+**Admin (`authenticate` + `authorize('admin')`):**
 
 ```text
-GET    /api/v1/admin/stats
-GET    /api/v1/admin/users
+GET    /api/v1/admin/stats             # totalCustomers, totalOrders, pendingOrders, cardsSold, revenueTzs — Phase 9
+GET    /api/v1/admin/users             # the "Customers" screen; getUser also returns that customer's orders
+GET    /api/v1/admin/users/:id
 PATCH  /api/v1/admin/users/:id/status
 GET    /api/v1/admin/events            # read-only by design
 GET    /api/v1/admin/templates
 PATCH  /api/v1/admin/templates/:id/status
+PATCH  /api/v1/admin/templates/:id/pricing-tier   # Phase 9 — the one template field editable so far
+GET    /api/v1/admin/orders                       # Phase 9
+GET    /api/v1/admin/orders/:id
+PATCH  /api/v1/admin/orders/:id/status            # manual status/payment/delivery reconciliation — never a fake payment success
 GET    /api/v1/admin/audit-logs
 ```
 
@@ -253,7 +280,7 @@ POST   /api/v1/payments/webhook
 
 Plus everything from earlier phases: `/auth/*`, `/users/me*`, `/contact`,
 `/health`. `affiliates` remains a reserved placeholder (`501`) — out of
-scope for Phases 1–8.
+scope for this build.
 
 ## The invitation renderer (Phase 4 + 5)
 
@@ -277,13 +304,57 @@ event-level overrides are layered.
 
 ## Image handling (Phase 4)
 
-No file upload / storage infrastructure exists (no Cloudinary credentials
-were available, and none were invented). Cover images, background images,
-and gallery images are all **paste-a-URL** fields: the customer links to
-an already-hosted image. The backend validates the URL is `https(s)` with
-a plausible image extension before storing it — real, working validation,
-not a fake upload progress bar. Wiring up actual storage (Cloudinary or
-S3-compatible) is future work, tracked in [Remaining issues](#remaining-issues-carried-forward).
+Cover images, background images, and gallery images in the invitation
+builder are still **paste-a-URL** fields: the customer links to an
+already-hosted image. The backend validates the URL is `https(s)` with a
+plausible image extension before storing it — real, working validation,
+not a fake upload progress bar. This is unchanged by Phase 9's upload
+foundation below — the builder doesn't call the new upload endpoint yet.
+
+## Card catalogue & per-card pricing (Phase 9)
+
+`GET /templates` (the `/templates` catalogue page) now returns each
+template's `pricingTier` and a server-computed `priceTzs` — see
+[`constants/pricingTiers.js`](backend/src/constants/pricingTiers.js), the
+one place a card's price is ever computed (`STARTER` 1,200 / `PREMIUM`
+1,500 / `CLASSIC` 2,000 TZS). No component hardcodes a price; changing a
+number means editing that one file. Every catalogue card shows its price,
+a **Preview** button, and a **Use This Card** button that goes straight to
+`/try` with that card pre-selected.
+
+## Try Our Service (Phase 9)
+
+`/try` is a 5-step, no-login flow (name → phone → choose a card → preview
+→ send) that calls `POST /public/orders/try`. It saves a real `orders` row
+(rate-limited, same pattern as public RSVP submission) and is explicit
+about what happens next: a `Ready to send` badge plus "Delivery
+integration is coming in Phase 2" — it never claims a WhatsApp/SMS message
+was actually sent, because no provider is connected. See
+[`docs/architecture.md`](docs/architecture.md#try-our-service--card-orders-phase-9).
+
+## Card orders (Phase 9)
+
+`orders` (migration 016) is the commercial order record — customer or
+guest contact, template, pricing tier, unit price, quantity, subtotal,
+and three independent status fields (`status`, `paymentStatus`,
+`deliveryStatus`), each with real DB constraints (`CHECK`s, FKs,
+indexes). A logged-in customer sees their own orders at `/dashboard/orders`
+(`GET /orders`, scoped to `req.user.id`); admins see and manually
+reconcile every order at `/admin/orders`. No payment gateway exists yet —
+marking an order `paid` is an honest manual admin action (e.g. after
+confirming mobile money outside the app), never an automated/fake charge.
+
+## Image upload foundation (Phase 9)
+
+`POST /uploads/images` is real, authenticated, and does real validation
+(`multer`, memory storage only — never written to disk): JPEG/PNG/WEBP
+only, 5MB limit, one file per request. It calls
+[`imageStorageProvider`](backend/src/services/providers/imageStorageProvider.js),
+which — like `emailProvider`/`smsProvider`/`paymentProvider` — honestly
+reports storage as not configured (`CLOUDINARY_*` unset) rather than
+faking a successful upload. The invitation builder's paste-a-URL fields
+are untouched by this; wiring a real provider behind this same interface,
+and switching the builder over to real uploads, is Phase 2 work.
 
 ## Roadmap
 
@@ -299,14 +370,18 @@ S3-compatible) is future work, tracked in [Remaining issues](#remaining-issues-c
 8. **Billing + Admin + Analytics + Production Hardening** — done, this
    repo (payment processing is abstracted but not connected — see
    [`docs/production.md`](docs/production.md)).
+9. **Commercial Foundation: Card Catalogue, Per-Card Pricing, Try Our
+   Service, Orders** — done, this repo (real image upload and
+   WhatsApp/SMS delivery for Try Our Service are abstracted but not
+   connected — see [`docs/production.md`](docs/production.md)).
 
 Not part of this build: QR check-in, an affiliate/referral program, and a
-vendor marketplace — these were explicitly out of scope for Phases 1–8.
+vendor marketplace — these were explicitly out of scope.
 
 ## Remaining issues (carried forward)
 
 - **No live MySQL database has been available in any environment this
-  project has been developed in**, across all 8 phases. Every route was
+  project has been developed in**, across all 9 phases. Every route was
   verified for correct auth-guarding, ownership-query shape, and payload
   validation (including standalone unit tests of validators against
   XSS/malformed/oversized payloads, and hand-signed JWTs to reach past
@@ -315,13 +390,18 @@ vendor marketplace — these were explicitly out of scope for Phases 1–8.
   published, or fetched through the API in this environment. Run
   `npm run migrate && npm run seed` against a real database before
   testing any flow end to end.
-- No real image storage — see [Image handling](#image-handling-phase-4).
-- Payment, email, and SMS are architecturally wired (provider abstraction,
-  server-side call sites, honest "unavailable"/"not connected" responses)
-  but not connected to a live provider — see
+- No real image storage — see
+  [Image upload foundation](#image-upload-foundation-phase-9). The builder
+  still uses paste-a-URL fields — see [Image handling](#image-handling-phase-4).
+- Payment, email, SMS, and image storage are all architecturally wired
+  (provider abstraction, server-side call sites, honest
+  "unavailable"/"not connected" responses) but not connected to a live
+  provider — see
   [`docs/production.md`](docs/production.md#payment-email-and-sms-provider-status).
   Password reset and the contact form both work end-to-end on the backend
-  but stop at "log it / store it," same as earlier phases.
+  but stop at "log it / store it," same as earlier phases. "Try Our
+  Service" saves a real order but does not send a real WhatsApp/SMS
+  message, for the same reason.
 - Analytics is a single aggregate view counter per event (`events.view_count`,
   incremented fire-and-forget on each public fetch), not per-visitor
   tracking — a deliberate scope decision, see

@@ -3,36 +3,52 @@ import { userRepository } from '../repositories/user.repository.js';
 import { eventRepository } from '../repositories/event.repository.js';
 import { templateRepository } from '../repositories/template.repository.js';
 import { guestRepository } from '../repositories/guest.repository.js';
+import { orderRepository } from '../repositories/order.repository.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { toPublicUser } from '../utils/serializeUser.js';
 import { toEventDTO, toPublicTemplate } from '../utils/serializeEvent.js';
+import { toOrderDTO, toAdminOrderDTO } from '../utils/serializeOrder.js';
 import { escapeLike } from '../utils/escapeLike.js';
 import { parsePagination, buildPaginationMeta } from '../utils/pagination.js';
+import { ROLES } from '../constants/roles.js';
+import { PRICING_TIER_VALUES } from '../constants/pricingTiers.js';
+import { ORDER_STATUS } from '../constants/orderStatus.js';
+import { validateOrderStatusUpdate } from '../validators/orders.validator.js';
 
 const USER_STATUS_VALUES = ['active', 'inactive', 'suspended'];
 const TEMPLATE_STATUS_VALUES = ['active', 'inactive'];
 
 export const adminService = {
   async getStats() {
-    const [totalUsers, totalEvents, publishedInvitations, guestStats] = await Promise.all([
-      userRepository.countAll(),
-      eventRepository.countAll(),
-      eventRepository.countAllPublished(),
-      guestRepository.getPlatformStats(),
-    ]);
+    const [totalCustomers, totalEvents, publishedInvitations, guestStats, totalOrders, pendingOrders, cardsSold, revenueTzs] =
+      await Promise.all([
+        userRepository.countByRole(ROLES.CUSTOMER),
+        eventRepository.countAll(),
+        eventRepository.countAllPublished(),
+        guestRepository.getPlatformStats(),
+        orderRepository.countAll(),
+        orderRepository.countByStatus(ORDER_STATUS.PENDING),
+        orderRepository.sumCardsSold(),
+        orderRepository.sumRevenue(),
+      ]);
 
     return {
-      totalUsers,
+      totalCustomers,
       totalEvents,
       publishedInvitations,
       totalGuests: guestStats.total,
       rsvpResponses: guestStats.attending + guestStats.declined,
       attending: guestStats.attending,
       declined: guestStats.declined,
-      // No payment provider is connected — these are real zeros from real
-      // (empty) tables, not invented figures. See docs/architecture.md.
+      totalOrders,
+      pendingOrders,
+      cardsSold,
+      // Real (possibly zero) figures from the orders table — revenueTzs
+      // only counts orders marked payment_status = 'paid'. No payment
+      // provider is connected yet, so today that will always be 0 from a
+      // genuinely empty set, never an invented number.
+      revenueTzs,
       activeSubscriptions: 0,
-      revenueTzs: 0,
     };
   },
 
@@ -53,7 +69,11 @@ export const adminService = {
   async getUser(id) {
     const user = await userRepository.findById(id);
     if (!user) throw ApiError.notFound('User not found');
-    return toPublicUser(user);
+    // Customer identity is already known from `user` above — no need to
+    // re-join it per order, so this uses the plain order DTO, not the
+    // admin one.
+    const orders = await orderRepository.findAllByUserIdForAdmin(id);
+    return { ...toPublicUser(user), orders: orders.map(toOrderDTO) };
   },
 
   async updateUserStatus(id, status, adminUserId, requestMeta) {
@@ -126,6 +146,83 @@ export const adminService = {
     });
 
     return toPublicTemplate(template);
+  },
+
+  /**
+   * Foundation-level template editing for Phase 9 — assigning which price
+   * tier a design belongs to. Editing a template's name/description/config
+   * or creating a brand-new template from admin is deliberately deferred
+   * to Phase 2 of this commercial track (see docs/architecture.md "Phase
+   * 9 — Commercial Foundation") rather than half-built here.
+   */
+  async updateTemplatePricingTier(id, pricingTier, adminUserId, requestMeta) {
+    if (!PRICING_TIER_VALUES.includes(pricingTier)) {
+      throw ApiError.validation([{ field: 'pricingTier', message: 'Invalid pricing tier' }]);
+    }
+    const existing = await templateRepository.findById(id);
+    if (!existing) throw ApiError.notFound('Template not found');
+
+    const template = await templateRepository.updatePricingTier(id, pricingTier);
+
+    await auditLogRepository.record({
+      userId: adminUserId,
+      action: 'admin.template_pricing_tier_changed',
+      entityType: 'template',
+      entityId: id,
+      metadata: { pricingTier },
+      ipAddress: requestMeta?.ipAddress,
+      userAgent: requestMeta?.userAgent,
+    });
+
+    return toPublicTemplate(template);
+  },
+
+  async listOrders({ page, limit, status, search }) {
+    const pagination = parsePagination({ page, limit });
+    const { rows, total } = await orderRepository.findAllAdmin({
+      limit: pagination.limit,
+      offset: pagination.offset,
+      status,
+      search: search ? escapeLike(search) : undefined,
+    });
+
+    return {
+      orders: rows.map(toAdminOrderDTO),
+      pagination: buildPaginationMeta({ page: pagination.page, limit: pagination.limit, total }),
+    };
+  },
+
+  async getOrder(id) {
+    const order = await orderRepository.findById(id);
+    if (!order) throw ApiError.notFound('Order not found');
+    return toAdminOrderDTO(order);
+  },
+
+  /**
+   * Manual status reconciliation — the honest foundation before a real
+   * payment/delivery provider exists. An admin marking an order "paid"
+   * here reflects a real-world manual confirmation (e.g. mobile money
+   * received outside the app); it is never an automated/fake success.
+   */
+  async updateOrderStatus(id, { status, paymentStatus, deliveryStatus }, adminUserId, requestMeta) {
+    validateOrderStatusUpdate({ status, paymentStatus, deliveryStatus });
+
+    const existing = await orderRepository.findById(id);
+    if (!existing) throw ApiError.notFound('Order not found');
+
+    const order = await orderRepository.updateStatusFields(id, { status, paymentStatus, deliveryStatus });
+
+    await auditLogRepository.record({
+      userId: adminUserId,
+      action: 'admin.order_status_changed',
+      entityType: 'order',
+      entityId: id,
+      metadata: { status, paymentStatus, deliveryStatus },
+      ipAddress: requestMeta?.ipAddress,
+      userAgent: requestMeta?.userAgent,
+    });
+
+    return toAdminOrderDTO(order);
   },
 
   async listAuditLogs({ page, limit, action, userId }) {

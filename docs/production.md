@@ -107,7 +107,7 @@ protects against nothing. Use a dedicated MySQL user with only
 ## Migration strategy
 
 - Every schema change is a new file in `backend/src/database/migrations/`,
-  numbered sequentially (currently 001–015), each with `-- +up` and
+  numbered sequentially (currently 001–017), each with `-- +up` and
   `-- +down` sections, tracked in `schema_migrations`.
 - **Never edit an already-applied migration.** If a mistake ships, write a
   new migration that corrects it.
@@ -141,7 +141,7 @@ route.
 
 ## Payment, email, and SMS provider status
 
-Explicitly, as of Phase 8:
+Explicitly, as of Phase 9:
 
 - **Payment provider:** abstraction implemented
   (`services/providers/paymentProvider.js`); live payment processing is
@@ -149,48 +149,75 @@ Explicitly, as of Phase 8:
   "not connected yet" error rather than pretending to start a checkout.
   `POST /payments/webhook` rejects every call (no signature can verify
   against a provider that doesn't exist) rather than trusting an
-  unverified body.
+  unverified body. Order payment status (`orders.payment_status`) is only
+  ever changed by an admin manually (`PATCH /admin/orders/:id/status`) —
+  a real, audited, manual reconciliation action standing in for the
+  webhook that doesn't exist yet, never an automated/fake charge.
 - **Email provider:** abstraction implemented
   (`services/providers/emailProvider.js`); no SMTP credentials
   configured. Every call reports `{ status: 'unavailable' }`.
 - **SMS provider:** abstraction implemented
   (`services/providers/smsProvider.js`); no SMS gateway configured. Same
-  honest-unavailable behavior.
+  honest-unavailable behavior. This is also what "Try Our Service"
+  (`/try`, `POST /public/orders/try`) depends on for real WhatsApp/SMS
+  delivery — today it only ever saves a real `orders` row and shows a
+  "Ready to send — delivery integration coming in Phase 2" message.
+- **Image storage provider:** abstraction implemented
+  (`services/providers/imageStorageProvider.js`), reusing the already-
+  reserved `CLOUDINARY_*` env vars; no credentials configured. `POST
+  /uploads/images` performs real validation (mime type, 5MB size limit,
+  via `multer` memory storage — a file is never written to this server's
+  disk) independent of the provider, then reports `{ status: 'unavailable'
+  }` rather than faking a successful upload. The invitation builder still
+  uses paste-a-URL fields and doesn't call this endpoint yet.
 
 Connecting a real provider means implementing the `send`/
-`createCheckout`/`verifyWebhookSignature` bodies in these three files —
-nothing else in the codebase needs to change, since every caller already
-goes through these interfaces.
+`createCheckout`/`verifyWebhookSignature`/`uploadImage` bodies in these
+four files — nothing else in the codebase needs to change, since every
+caller already goes through these interfaces.
 
 ## Security posture summary
 
-Carried forward from every earlier phase and re-verified in Phase 8:
+Carried forward from every earlier phase and re-verified in Phase 9:
 
 - Every mutating endpoint requires `authenticate`; admin endpoints
   additionally require `authorize('admin')` — verified live in this
-  phase with hand-signed customer vs. admin JWTs (403 vs. pass-through).
+  phase with hand-signed customer vs. admin JWTs (403 vs. pass-through),
+  including the new `/orders`, `/uploads/images`, `/admin/orders`, and
+  `/admin/templates/:id/pricing-tier` endpoints.
 - Ownership is enforced in the query itself (`WHERE id = ? AND user_id =
-  ?`), not as an after-the-fact check, for events, guests, and
-  notifications alike.
+  ?`), not as an after-the-fact check, for events, guests, notifications,
+  and orders alike.
 - Plan limits (`services/plan.service.js`) are enforced in the same
   services that create resources — a disabled frontend button is UX only,
   the backend re-checks independently on every create/publish/guest-add.
-- Public endpoints (`/public/invitations/:slug`, its `/rsvp` submission)
-  never require a JWT and return deliberately minimal DTOs — see
-  `docs/architecture.md` → "Public API data minimization".
+- Order pricing (`unit_price_tzs`/`subtotal_tzs`) is always computed
+  server-side from the template's assigned pricing tier
+  (`constants/pricingTiers.js`) in `orders.service.js` — a client can send
+  any `templateId` it likes, but never a price.
+- Public endpoints (`/public/invitations/:slug`, its `/rsvp` submission,
+  and `/public/orders/try`) never require a JWT and return deliberately
+  minimal DTOs — see `docs/architecture.md` → "Public API data
+  minimization".
+- Image uploads (`POST /uploads/images`) are validated by `multer`
+  independent of whether a storage provider is configured: disallowed
+  mime types and oversized files (>5MB) are rejected before the request
+  body is ever fully buffered, and nothing is ever written to this
+  server's disk.
 - Rate limiting: `authLimiter` (login/register/reset), `writeLimiter`
-  (general authenticated mutations, now including admin and billing
-  writes), `rsvpLimiter` (20/hour/IP on public RSVP submission — high
-  enough for a family responding for several guests, low enough to blunt
-  scripted flooding). The payment webhook is deliberately **not**
-  rate-limited — a real provider controls its own retry volume, and the
-  signature check (which currently rejects everything) is the actual
-  gate, not request frequency.
+  (general authenticated mutations, including admin/billing/order-status
+  writes), `rsvpLimiter` (20/hour/IP on public RSVP submission),
+  `tryServiceLimiter` (10/hour/IP on the public Try Our Service
+  submission — tighter than RSVP since this is a single-visitor lead-gen
+  form, not a household responding for several guests). The payment
+  webhook is deliberately **not** rate-limited — a real provider controls
+  its own retry volume, and the signature check (which currently rejects
+  everything) is the actual gate, not request frequency.
 - No stack traces, SQL errors, or filesystem paths are ever returned to a
   client — `middleware/errorHandler.js` normalizes everything to the
   standard envelope and only logs detail server-side.
 
-## Known limitations (honest, as of Phase 8)
+## Known limitations (honest, as of Phase 9)
 
 - No live MySQL database has been available in any environment this
   project has been developed in. Every phase's backend work has been
@@ -198,8 +225,10 @@ Carried forward from every earlier phase and re-verified in Phase 8:
   enforcement without a live DB (including targeted validator unit tests
   and hand-signed JWTs to reach past `authenticate`), but no actual
   row has ever been created, read, updated, or deleted through the API.
-- Payment, email, and SMS are architecturally ready but not connected —
-  see above.
+- Payment, email, SMS, and image storage are architecturally ready but
+  not connected — see above. "Try Our Service" saves a real order but
+  does not send a real WhatsApp/SMS message; the invitation builder still
+  uses paste-a-URL image fields, not the new upload endpoint.
 - Analytics is a single aggregate view counter per event, not
   per-visitor/unique-visitor tracking — a deliberate scope decision (see
   `docs/architecture.md`) to avoid both privacy overreach and unbounded
