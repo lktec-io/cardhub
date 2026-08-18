@@ -95,8 +95,16 @@ export function Navbar() {
           backdrop-filter, which (per spec) makes it a containing block for
           position:fixed descendants, trapping them inside the navbar's own
           ~68px-tall box instead of the viewport. Keeping these as siblings
-          of <header> avoids that entirely. */}
-      {isOpen && <div className="ch-navbar-overlay" onClick={() => setIsOpen(false)} aria-hidden="true" />}
+          of <header> avoids that entirely.
+          Always mounted (not `{isOpen && ...}`) so the opacity transition
+          below can animate on both open AND close — a conditionally
+          mounted element disappears instantly on close, which is exactly
+          the "jump/flicker" this is avoiding. */}
+      <div
+        className={`ch-navbar-overlay ${isOpen ? 'ch-navbar-overlay--visible' : ''}`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside id="ch-navbar-sidebar" className={`ch-navbar__sidebar ${isOpen ? 'ch-navbar__sidebar--open' : ''}`}>
         <nav aria-label="Mobile" className="ch-navbar__sidebar-nav">
