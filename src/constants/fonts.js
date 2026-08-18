@@ -1,2 +1,2 @@
-export const FONT_OPTIONS = [{ value: 'poppins', label: 'Poppins' }];
-export const DEFAULT_FONT = 'poppins';
+export const FONT_OPTIONS = [{ value: 'nunito', label: 'Nunito' }];
+export const DEFAULT_FONT = 'nunito';

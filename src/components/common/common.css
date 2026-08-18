@@ -108,7 +108,7 @@
 .ch-invite-preview__card {
   position: relative;
   z-index: 1;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
@@ -134,7 +134,7 @@
 
 .ch-invite-preview__title {
   font-size: var(--fs-h3);
-  font-family: 'Poppins', serif;
+  font-family: var(--font-sans);
   margin: 0 0 var(--space-2);
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiCheck, FiClock, FiCreditCard, FiSend, FiShield, FiStar } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, InvitationPreview } from '../components/common';
+import { Container, SectionHeader, Seo, InvitationPreview, RotatingHeadline } from '../components/common';
 import { GlassCard, Badge, Skeleton } from '../components/ui';
 import { TemplateThumb } from '../components/templates';
 import { ROUTES } from '../constants/routes';
@@ -9,12 +9,19 @@ import { templatesService } from '../services/templatesService';
 import { getCategoryLabel } from '../constants/templateCategories';
 import { formatCardPrice, PRICING_TIER_LIST } from '../constants/pricingTiers';
 
+const HERO_MESSAGES = [
+  'Your Moment. Your Card.',
+  'Beautiful Cards. Made Simple.',
+  'Celebrate. Share. Remember.',
+  'Create. Send. Celebrate.',
+];
+
 const VALUE_PROPS = [
-  { icon: FiStar, title: 'Beautiful by design', description: 'Every card follows CardHub’s premium visual language, so it looks intentional from the first glance.' },
-  { icon: FiCreditCard, title: 'Simple, per-card pricing', description: 'No subscriptions, no packages you don’t need — pay only for the cards you actually send.' },
-  { icon: FiSend, title: 'Easy to share', description: 'Every card is fast, mobile-friendly, and effortless for your guests to open — no app required.' },
-  { icon: FiClock, title: 'Fast to try', description: 'Try Our Service in a few quick steps — pick a card, tell us who it’s for, done.' },
-  { icon: FiShield, title: 'Built by Clix Digital Works', description: 'A Tanzanian team building CardHub for real celebrations, from send-offs to weddings to birthdays.' },
+  { icon: FiStar, tone: 'blue', title: 'Beautiful by design', description: 'Every card follows CardHub’s premium visual language, so it looks intentional from the first glance.' },
+  { icon: FiCreditCard, tone: 'gold', title: 'Simple, per-card pricing', description: 'No subscriptions, no packages you don’t need — pay only for the cards you actually send.' },
+  { icon: FiSend, tone: 'mint', title: 'Easy to share', description: 'Every card is fast, mobile-friendly, and effortless for your guests to open — no app required.' },
+  { icon: FiClock, tone: 'gold', title: 'Fast to try', description: 'Try Our Service in a few quick steps — pick a card, tell us who it’s for, done.' },
+  { icon: FiShield, tone: 'blue', title: 'Built by Clix Digital Works', description: 'A Tanzanian team building CardHub for real celebrations, from send-offs to weddings to birthdays.' },
 ];
 
 const JOURNEY_STEPS = [
@@ -49,7 +56,11 @@ export function LandingPage() {
             <div className="ch-hero__content ch-animate-slide-up">
               <Badge variant="accent">Now serving Tanzania</Badge>
               <h1 className="ch-display ch-hero__title">CardHub</h1>
-              <p className="ch-hero__subtitle">Digital cards made simple.</p>
+              <RotatingHeadline as="p" className="ch-hero__subtitle" messages={HERO_MESSAGES} />
+              <p className="ch-hero__description">
+                CardHub helps you create and send beautiful digital invitations and cards — browse a real
+                catalogue, see the price per card, and share with your guests in minutes.
+              </p>
               <div className="ch-hero__actions">
                 <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary ch-btn--lg">
                   Create Your Card
@@ -60,8 +71,23 @@ export function LandingPage() {
                 </Link>
               </div>
             </div>
-            <div className="ch-hero__preview ch-animate-scale-in">
-              <InvitationPreview />
+            <div className="ch-hero__visual ch-animate-scale-in">
+              <div className="ch-hero__photo">
+                <img
+                  src="/images/hero-couple.jpg"
+                  alt="A couple celebrating their engagement — CardHub turns moments like this into a shareable digital card"
+                  className="ch-hero__photo-img"
+                  loading="eager"
+                  decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement.classList.add('ch-hero__photo--fallback');
+                  }}
+                />
+              </div>
+              <div className="ch-hero__preview-card">
+                <InvitationPreview compact />
+              </div>
             </div>
           </div>
         </Container>
@@ -134,9 +160,9 @@ export function LandingPage() {
             align="center"
           />
           <div className="ch-value-grid">
-            {VALUE_PROPS.map(({ icon: Icon, title, description }) => (
+            {VALUE_PROPS.map(({ icon: Icon, tone, title, description }) => (
               <div key={title} className="ch-value-card">
-                <div className="ch-value-card__icon">
+                <div className={`ch-value-card__icon ch-value-card__icon--${tone}`}>
                   <Icon aria-hidden="true" />
                 </div>
                 <h3 className="ch-h4">{title}</h3>

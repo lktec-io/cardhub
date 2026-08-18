@@ -7,7 +7,7 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  background: rgba(5, 11, 20, 0.7);
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -62,49 +62,175 @@
   color: var(--text-primary);
 }
 
-.ch-navbar__toggle {
-  display: none;
-  margin-left: auto;
-  background: transparent;
+/* ---------- Language toggle (EN / SW) ---------- */
+.ch-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.ch-lang-toggle__option {
   border: none;
-  color: var(--text-primary);
-  font-size: 1.4rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  padding: var(--space-2);
+  transition: background var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
 }
 
-.ch-navbar__mobile {
-  border-top: 1px solid var(--border);
-  padding: var(--space-4) var(--space-6) var(--space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.ch-lang-toggle__option:hover {
+  color: var(--text-primary);
 }
 
-.ch-navbar__mobile nav {
-  display: flex;
-  flex-direction: column;
+.ch-lang-toggle__option--active {
+  background: var(--accent-gradient);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-sm);
+}
+.ch-lang-toggle__option--active:hover {
+  color: var(--text-on-accent);
+}
+
+/* ---------- Mobile bar (language toggle + hamburger, far right) ---------- */
+.ch-navbar__mobile-bar {
+  display: none;
+  align-items: center;
   gap: var(--space-3);
+  margin-left: auto;
 }
 
-.ch-navbar__mobile nav a {
+.ch-navbar__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
+}
+.ch-navbar__toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.ch-navbar__toggle-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-navbar__toggle-icon-menu,
+.ch-navbar__toggle-icon-close {
+  position: absolute;
+  inset: 0;
+  font-size: 1.2rem;
+  transition: opacity var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+}
+
+.ch-navbar__toggle-icon-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.7);
+}
+
+.ch-navbar__toggle-icon--open .ch-navbar__toggle-icon-menu {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.7);
+}
+.ch-navbar__toggle-icon--open .ch-navbar__toggle-icon-close {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* ---------- Mobile off-canvas menu ----------
+   Both start below the navbar's own height (not inset:0) so the navbar —
+   and the hamburger/close toggle inside it — always stays visible and
+   clickable above the panel, never covered by it. */
+.ch-navbar-overlay {
+  position: fixed;
+  top: var(--topbar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: calc(var(--z-sticky) - 1);
+  animation: ch-fade-in var(--duration-base) var(--ease-out) both;
+}
+
+.ch-navbar__sidebar {
+  position: fixed;
+  top: var(--topbar-height);
+  right: 0;
+  bottom: 0;
+  width: min(320px, 84vw);
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-sticky);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  transform: translateX(100%);
+  transition: transform var(--duration-slow) var(--ease-out);
+  overflow-y: auto;
+}
+
+.ch-navbar__sidebar--open {
+  transform: translateX(0);
+}
+
+.ch-navbar__sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ch-navbar__sidebar-nav a {
   color: var(--text-secondary);
-  font-size: var(--fs-body);
-  padding: var(--space-2) 0;
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-medium);
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.ch-navbar__sidebar-nav a:hover {
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
-.ch-navbar__mobile-actions {
+.ch-navbar__sidebar-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-top: var(--space-3);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 
-.ch-navbar__mobile-actions a:first-child {
+.ch-navbar__sidebar-actions a:first-child {
   text-align: center;
   padding: var(--space-2) 0;
   color: var(--text-secondary);
+  font-weight: var(--fw-medium);
 }
 
 @media (max-width: 860px) {
@@ -112,8 +238,15 @@
   .ch-navbar__actions--desktop {
     display: none;
   }
-  .ch-navbar__toggle {
-    display: inline-flex;
+  .ch-navbar__mobile-bar {
+    display: flex;
+  }
+}
+
+@media (min-width: 861px) {
+  .ch-navbar-overlay,
+  .ch-navbar__sidebar {
+    display: none;
   }
 }
 

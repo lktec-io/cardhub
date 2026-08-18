@@ -21,6 +21,33 @@
   --color-green-500: #22c55e;
   --color-green-600: #16a34a;
 
+  /* ---- Premium celebration palette (public/marketing pages) ----
+     Royal blue + warm gold/champagne + cream, activated via
+     .ch-public-theme below (see PublicLayout). Dashboard/admin keep the
+     navy+green identity above unchanged. */
+  --color-royal-700: #16256b;
+  --color-royal-600: #1e3399;
+  --color-royal-500: #2a44c7;
+  --color-royal-400: #4a63e0;
+
+  --color-gold-600: #a97a2e;
+  --color-gold-500: #c99a45;
+  --color-gold-400: #e0b968;
+  --color-gold-300: #f0d69c;
+
+  --color-cream-100: #fbf3e6;
+  --color-cream-50: #fefaf3;
+
+  --color-blue-mist-100: #eaf1fb;
+  --color-blue-mist-50: #f4f8fd;
+
+  /* Always-available brand accents, independent of theme scope — used
+     sparingly for gold highlights (featured pricing tier, dividers,
+     hero touches) wherever they improve hierarchy, per the celebration
+     palette direction. */
+  --color-accent-gold: var(--color-gold-500);
+  --color-accent-gold-soft: rgba(201, 154, 69, 0.14);
+
   /* ---- Neutrals ---- */
   --color-white: #ffffff;
   --color-slate-100: #f8fafc;
@@ -69,6 +96,11 @@
   --accent-active: var(--color-green-600);
   --accent-soft: rgba(34, 197, 94, 0.14);
   --accent-gradient: linear-gradient(135deg, var(--color-green-400) 0%, var(--color-green-600) 100%);
+  /* Readable text color for content sitting on --accent-soft (e.g. Badge's
+     "accent" variant) — kept separate from --accent itself since a soft
+     tinted background often needs a lighter/different shade than the
+     solid accent color to stay readable. */
+  --accent-contrast-text: var(--color-green-400);
 
   /* Status */
   --success: var(--color-success-500);
@@ -132,4 +164,65 @@
   --z-toast: 1400;
 
   color-scheme: dark;
+}
+
+/* ==========================================================================
+   PUBLIC / MARKETING THEME OVERRIDE
+   Applied via a single wrapper class (PublicLayout — landing, catalogue,
+   pricing, Try Our Service, how-it-works, about, contact, faq, terms,
+   privacy). Every UI primitive (Button, Card, GlassCard, Input, Badge, ...)
+   already reads colors through the semantic tokens above, so redefining
+   them here reflows the whole public surface to the warmer celebration
+   palette without touching a single component's CSS or JSX. The dashboard,
+   admin, and auth screens are deliberately NOT wrapped in this class and
+   keep the original dark navy + green identity — this pass targets the
+   first-impression marketing surface, not the authenticated app shell.
+   ========================================================================== */
+.ch-public-theme {
+  color-scheme: light;
+
+  --bg-primary: var(--color-cream-50);
+  --bg-secondary: var(--color-blue-mist-50);
+  --bg-elevated: var(--color-white);
+  --surface: rgba(22, 32, 61, 0.045);
+  --surface-hover: rgba(22, 32, 61, 0.075);
+  --surface-active: rgba(22, 32, 61, 0.11);
+
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(22, 32, 61, 0.08);
+  --glass-blur: 16px;
+
+  --text-primary: var(--color-navy-950);
+  --text-secondary: #4b5468;
+  --text-muted: #6d7690;
+  --text-on-accent: #ffffff;
+  --text-inverse: var(--color-white);
+
+  --border: rgba(22, 32, 61, 0.09);
+  --border-strong: rgba(22, 32, 61, 0.16);
+  --border-accent: rgba(201, 154, 69, 0.5);
+
+  --accent: var(--color-royal-500);
+  --accent-hover: var(--color-royal-400);
+  --accent-active: var(--color-royal-600);
+  --accent-soft: rgba(42, 68, 199, 0.1);
+  --accent-gradient: linear-gradient(135deg, var(--color-royal-400) 0%, var(--color-royal-600) 100%);
+  --accent-contrast-text: var(--color-royal-600);
+
+  --gradient-hero: radial-gradient(120% 100% at 18% 0%, var(--color-blue-mist-100) 0%, var(--color-cream-50) 55%),
+    radial-gradient(70% 55% at 100% 8%, var(--color-accent-gold-soft) 0%, transparent 62%);
+
+  --shadow-sm: 0 1px 2px rgba(22, 32, 61, 0.06);
+  --shadow-md: 0 8px 24px rgba(22, 32, 61, 0.08);
+  --shadow-lg: 0 20px 48px rgba(22, 32, 61, 0.14);
+  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(201, 154, 69, 0.22);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--bg-primary);
+  background-image: var(--gradient-hero);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }

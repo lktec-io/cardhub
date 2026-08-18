@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../hooks/useAuth';
+import { LanguageToggle } from './LanguageToggle';
 
 const NAV_LINKS = [
   { label: 'Home', to: ROUTES.HOME },
@@ -44,59 +45,74 @@ export function Navbar() {
   const ctaLabel = isAuthenticated ? 'Go to dashboard' : 'Create Your Card';
 
   return (
-    <header className="ch-navbar">
-      <div className="ch-navbar__inner">
-        <Link to={ROUTES.HOME} className="ch-navbar__brand">
-          CardHub
-        </Link>
-
-        <nav className="ch-navbar__links ch-navbar__links--desktop" aria-label="Primary">
-          {NAV_LINKS.map((link) => (
-            <NavLink key={link.to} to={link.to} end={link.to === ROUTES.HOME}>
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="ch-navbar__actions ch-navbar__actions--desktop">
-          {!isAuthenticated && (
-            <NavLink to={ROUTES.LOGIN} className="ch-navbar__login">
-              Log in
-            </NavLink>
-          )}
-          <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--sm">
-            {ctaLabel}
+    <>
+      <header className="ch-navbar">
+        <div className="ch-navbar__inner">
+          <Link to={ROUTES.HOME} className="ch-navbar__brand">
+            CardHub
           </Link>
-        </div>
 
-        <button
-          type="button"
-          className="ch-navbar__toggle"
-          aria-label={isOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen((prev) => !prev)}
-        >
-          {isOpen ? <FiX /> : <FiMenu />}
-        </button>
-      </div>
-
-      {isOpen && (
-        <div className="ch-navbar__mobile ch-animate-slide-down">
-          <nav aria-label="Mobile">
+          <nav className="ch-navbar__links ch-navbar__links--desktop" aria-label="Primary">
             {NAV_LINKS.map((link) => (
-              <Link key={link.to} to={link.to}>
+              <NavLink key={link.to} to={link.to} end={link.to === ROUTES.HOME}>
                 {link.label}
-              </Link>
+              </NavLink>
             ))}
           </nav>
-          <div className="ch-navbar__mobile-actions">
-            {!isAuthenticated && <Link to={ROUTES.LOGIN}>Log in</Link>}
-            <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--full">
+
+          <div className="ch-navbar__actions ch-navbar__actions--desktop">
+            <LanguageToggle />
+            {!isAuthenticated && (
+              <NavLink to={ROUTES.LOGIN} className="ch-navbar__login">
+                Log in
+              </NavLink>
+            )}
+            <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--sm">
               {ctaLabel}
             </Link>
           </div>
+
+          <div className="ch-navbar__mobile-bar">
+            <LanguageToggle className="ch-navbar__mobile-lang" />
+            <button
+              type="button"
+              className="ch-navbar__toggle"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              aria-controls="ch-navbar-sidebar"
+              onClick={() => setIsOpen((prev) => !prev)}
+            >
+              <span className={`ch-navbar__toggle-icon ${isOpen ? 'ch-navbar__toggle-icon--open' : ''}`}>
+                <FiMenu className="ch-navbar__toggle-icon-menu" aria-hidden="true" />
+                <FiX className="ch-navbar__toggle-icon-close" aria-hidden="true" />
+              </span>
+            </button>
+          </div>
         </div>
-      )}
-    </header>
+      </header>
+
+      {/* Deliberately rendered outside <header> — .ch-navbar has a
+          backdrop-filter, which (per spec) makes it a containing block for
+          position:fixed descendants, trapping them inside the navbar's own
+          ~68px-tall box instead of the viewport. Keeping these as siblings
+          of <header> avoids that entirely. */}
+      {isOpen && <div className="ch-navbar-overlay" onClick={() => setIsOpen(false)} aria-hidden="true" />}
+
+      <aside id="ch-navbar-sidebar" className={`ch-navbar__sidebar ${isOpen ? 'ch-navbar__sidebar--open' : ''}`}>
+        <nav aria-label="Mobile" className="ch-navbar__sidebar-nav">
+          {NAV_LINKS.map((link) => (
+            <Link key={link.to} to={link.to}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="ch-navbar__sidebar-actions">
+          {!isAuthenticated && <Link to={ROUTES.LOGIN}>Log in</Link>}
+          <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--full">
+            {ctaLabel}
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }

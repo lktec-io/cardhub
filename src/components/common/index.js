@@ -6,3 +6,4 @@ export { SectionHeader } from './SectionHeader';
 export { Seo } from './Seo';
 export { InvitationPreview } from './InvitationPreview';
 export { Pagination } from './Pagination';
+export { RotatingHeadline } from './RotatingHeadline';

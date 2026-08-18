@@ -430,7 +430,7 @@
 }
 .ch-badge--accent {
   background: var(--accent-soft);
-  color: var(--color-green-400);
+  color: var(--accent-contrast-text);
   border-color: var(--border-accent);
 }
 .ch-badge--success {

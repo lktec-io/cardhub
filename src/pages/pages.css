@@ -1,13 +1,13 @@
 /* ---------- Hero ---------- */
 .ch-hero {
-  padding: var(--space-24) 0 var(--space-20);
+  padding: var(--space-16) 0 var(--space-20);
   text-align: center;
   overflow: hidden;
 }
 
 .ch-hero__grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1.05fr 0.95fr;
   align-items: center;
   gap: var(--space-12);
   text-align: left;
@@ -17,35 +17,41 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-5);
-}
-
-.ch-hero__preview {
-  order: 3;
+  gap: var(--space-4);
 }
 
 @media (max-width: 960px) {
+  .ch-hero {
+    padding: 0 0 var(--space-12);
+  }
   .ch-hero__grid {
     grid-template-columns: 1fr;
+    gap: var(--space-8);
     text-align: center;
   }
   .ch-hero__content {
     align-items: center;
+    padding: 0 var(--space-2);
+  }
+  /* Photo first on mobile — the couple stays the immediate focal point,
+     per the "must communicate what CardHub does within seconds" brief. */
+  .ch-hero__visual {
+    order: 1;
+  }
+  .ch-hero__content {
+    order: 2;
   }
 }
 
 .ch-hero__title {
   margin-top: var(--space-2);
-  background: linear-gradient(135deg, var(--color-white) 20%, var(--color-green-300) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-primary);
 }
 
 .ch-hero__subtitle {
   font-size: var(--fs-h3);
-  font-weight: var(--fw-medium);
-  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  color: var(--accent);
   margin: 0;
 }
 
@@ -60,19 +66,135 @@
   flex-wrap: wrap;
   gap: var(--space-4);
   justify-content: center;
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.ch-hero__actions .ch-btn {
+  border-radius: var(--radius-full);
 }
 
 @media (max-width: 640px) {
-  .ch-hero {
-    padding: var(--space-16) 0 var(--space-12);
-  }
   .ch-hero__actions {
     flex-direction: column;
     width: 100%;
   }
   .ch-hero__actions .ch-btn {
     width: 100%;
+  }
+}
+
+/* ---------- Hero rotating headline ---------- */
+.ch-rotating-headline {
+  display: block;
+  min-height: 2.6em;
+  line-height: 1.3;
+}
+
+.ch-rotating-headline__text {
+  display: inline-block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
+}
+
+.ch-rotating-headline__text--leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.ch-rotating-headline__caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  background: currentColor;
+  vertical-align: -0.1em;
+  animation: ch-caret-blink 900ms steps(1) infinite;
+}
+
+@keyframes ch-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Hero photo ---------- */
+.ch-hero__visual {
+  position: relative;
+  padding-bottom: var(--space-8);
+}
+
+.ch-hero__photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(155deg, var(--color-royal-500) 0%, var(--color-royal-700) 55%, var(--color-gold-600) 130%);
+}
+
+.ch-hero__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+@media (max-width: 640px) {
+  .ch-hero__photo {
+    max-width: 340px;
+    aspect-ratio: 1 / 1;
+  }
+  .ch-hero__photo-img {
+    object-position: center 22%;
+  }
+}
+
+/* Shown automatically (via the <img> onError handler) when
+   /images/hero-couple.jpg hasn't been supplied yet — a soft celebration
+   gradient instead of a broken-image icon. See public/images/README.md. */
+.ch-hero__photo--fallback::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 60% at 30% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
+}
+
+.ch-hero__preview-card {
+  position: absolute;
+  right: var(--space-4);
+  bottom: 0;
+  width: 190px;
+  filter: drop-shadow(0 16px 32px rgba(22, 32, 61, 0.22));
+}
+
+.ch-hero__preview-card .ch-invite-preview {
+  max-width: none;
+}
+
+.ch-hero__preview-card .ch-invite-preview__card {
+  padding: var(--space-5) var(--space-4);
+}
+
+.ch-hero__preview-card .ch-invite-preview__title {
+  font-size: var(--fs-body);
+}
+
+@media (max-width: 640px) {
+  .ch-hero__preview-card {
+    width: 150px;
+    right: var(--space-2);
+  }
+  .ch-hero__preview-card .ch-invite-preview__card {
+    padding: var(--space-4) var(--space-3);
   }
 }
 
@@ -143,6 +265,17 @@
   margin-bottom: var(--space-2);
 }
 
+/* A touch of the celebration palette's variety across value-prop icons —
+   not every card reads as the same solid brand-color block. */
+.ch-value-card__icon--gold {
+  background: var(--color-accent-gold-soft);
+  color: var(--color-gold-600);
+}
+.ch-value-card__icon--mint {
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--color-green-600);
+}
+
 /* ---------- Journey (how it works) ---------- */
 .ch-journey-grid {
   display: grid;
@@ -206,7 +339,8 @@
 }
 
 .ch-template-teaser-card__swatch {
-  height: 120px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -222,6 +356,10 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+.ch-template-teaser-card:hover .ch-template-teaser-card__swatch img {
+  transform: scale(1.06);
 }
 
 /* ---------- CTA ---------- */
@@ -302,7 +440,7 @@
 .ch-template-card__swatch {
   position: relative;
   width: 100%;
-  height: 140px;
+  aspect-ratio: 3 / 4;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -319,6 +457,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.ch-template-card:hover .ch-template-card__swatch img {
+  transform: scale(1.06);
 }
 
 .ch-template-card .ch-btn {
@@ -903,8 +1046,8 @@
 /* ---------- Per-card price (catalogue + teaser cards) ---------- */
 .ch-template-card__price,
 .ch-templates-page__preview-price {
-  font-size: var(--fs-body-sm);
-  font-weight: var(--fw-semibold);
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-bold);
   color: var(--accent);
   margin: 0;
 }

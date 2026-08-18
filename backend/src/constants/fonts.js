@@ -1,3 +1,3 @@
 /** Curated font allowlist — customers pick an identifier, never arbitrary CSS/URLs. */
-export const FONT_OPTIONS = ['poppins'];
-export const DEFAULT_FONT = 'poppins';
+export const FONT_OPTIONS = ['nunito'];
+export const DEFAULT_FONT = 'nunito';
