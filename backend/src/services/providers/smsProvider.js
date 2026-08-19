@@ -4,6 +4,11 @@ import { logger } from '../../utils/logger.js';
 const BEEM_SEND_URL = 'https://apisms.beem.africa/v1/send';
 const PROVIDER = 'beem';
 
+/** Beem expects dest_addr as digits only (e.g. "255712345678") — a leading '+' is rejected. `to` arrives E.164-normalized (see utils/phone.js), which always has one. */
+function toBeemRecipient(e164) {
+  return e164.startsWith('+') ? e164.slice(1) : e164;
+}
+
 const isConfigured = Boolean(env.sms.apiKey && env.sms.secretKey && env.sms.senderId);
 
 /**
@@ -47,9 +52,10 @@ export const smsProvider = {
         },
         body: JSON.stringify({
           source_addr: env.sms.senderId,
+          schedule_time: '',
           encoding: 0,
           message: payload.message,
-          recipients: [{ recipient_id: 1, dest_addr: payload.to }],
+          recipients: [{ recipient_id: 1, dest_addr: toBeemRecipient(payload.to) }],
         }),
       });
     } catch (error) {
