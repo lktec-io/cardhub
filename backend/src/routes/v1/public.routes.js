@@ -12,6 +12,12 @@ export const publicRouter = Router();
 publicRouter.get('/invitations/:slug', publicController.getInvitation);
 publicRouter.post('/invitations/:slug/rsvp', rsvpLimiter, publicRsvpController.submit);
 
-// "Try Our Service" — the conversion flow's data foundation (see
-// docs/architecture.md). Saves a real order row; never claims delivery.
+// "Try Our Service" — real SMS/WhatsApp delivery (Phase 2). Saves a real
+// order row and honestly attempts delivery; never claims a channel
+// succeeded unless its provider actually accepted the message.
 publicRouter.post('/orders/try', tryServiceLimiter, publicOrdersController.submitTryService);
+
+// The order confirmation page a customer reaches via the SMS/WhatsApp
+// link — keyed by the order's unguessable public_token, never its
+// sequential id (see utils/publicUrl.js).
+publicRouter.get('/orders/:token', publicOrdersController.getByToken);

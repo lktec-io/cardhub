@@ -32,6 +32,8 @@ export const ROUTES = {
 
   INVITE: '/invite/:slug',
   invite: (slug) => `/invite/${slug}`,
+  CARD: '/card/:token',
+  card: (token) => `/card/${token}`,
   DASHBOARD_NOTIFICATIONS: '/dashboard/notifications',
   DASHBOARD_BILLING: '/dashboard/billing',
   DASHBOARD_ORDERS: '/dashboard/orders',

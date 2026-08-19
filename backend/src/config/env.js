@@ -65,15 +65,18 @@ export const env = {
     secretKey: process.env.BEEM_SECRET_KEY || '',
     senderId: process.env.BEEM_SENDER_ID || '',
   },
-  // Reserved — no WhatsApp provider chosen/connected yet. The abstraction
-  // (services/providers/whatsappProvider.js) is provider-agnostic by
-  // design so either Beem's WhatsApp API or Meta's WhatsApp Cloud API can
-  // be wired in later without changing any caller.
+  // WhatsApp — services/providers/whatsappProvider.js. `provider` selects
+  // the transport (only 'meta', the official WhatsApp Cloud API, is
+  // implemented as of Phase 2 — see the provider file for why unofficial
+  // WhatsApp Web automation/scraping was never an option). No credentials
+  // exist in this environment and none were invented; leaving these unset
+  // keeps `isConfigured` false and every send honestly "unavailable".
   whatsapp: {
     provider: process.env.WHATSAPP_PROVIDER || '',
-    apiKey: process.env.WHATSAPP_API_KEY || '',
-    apiSecret: process.env.WHATSAPP_API_SECRET || '',
-    senderId: process.env.WHATSAPP_SENDER_ID || '',
+    accessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',
+    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
+    businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || '',
+    apiVersion: process.env.WHATSAPP_API_VERSION || 'v21.0',
   },
 
   frontendUrl: process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL,

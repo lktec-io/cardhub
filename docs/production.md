@@ -146,7 +146,7 @@ route.
 
 ## Payment, email, SMS, and WhatsApp provider status
 
-Explicitly, as of the Phase 9 correction:
+Explicitly, as of Phase 2 (real SMS + WhatsApp delivery):
 
 - **Payment provider:** abstraction implemented
   (`services/providers/paymentProvider.js`); live payment processing is
@@ -172,17 +172,23 @@ Explicitly, as of the Phase 9 correction:
   call still honestly reports `{ status: 'unavailable' }` without ever
   reaching the network. **This code has not been exercised against a real
   Beem account** — smoke-test it against one before relying on it in
-  production. This is also what "Try Our Service" (`/try`, `POST
-  /public/orders/try`) depends on for real SMS delivery — today it only
-  ever saves a real `orders` row and shows a "Ready to send — delivery
-  integration coming in Phase 2" message.
-- **WhatsApp provider:** `services/providers/whatsappProvider.js` is a
-  clean abstraction (`sendCardMessage`/`sendCardImage`) with **no real
-  provider integrated yet** — deliberately, this phase only prepared the
-  extension point. `WHATSAPP_PROVIDER` is unset, so `isConfigured` is
-  always `false`. It's written so a real implementation can pick either
-  Beem's WhatsApp API or Meta's WhatsApp Cloud API behind
-  `env.whatsapp.provider` without changing any caller.
+  production. "Try Our Service" (`/try`, `POST /public/orders/try`) calls
+  this directly as of Phase 2 — with real credentials it will actually
+  send; without them it saves a real `orders` row and honestly reports
+  `sms.status: 'unavailable'`, never a fake success.
+- **WhatsApp provider (Meta Cloud API):** `services/providers/whatsappProvider.js`
+  has a **real** HTTP integration against the official Meta WhatsApp Cloud
+  API (`graph.facebook.com/{version}/{phone_number_id}/messages`, Bearer
+  token, `fetch`) — deliberately the official Business API only, never
+  unofficial WhatsApp Web automation/scraping. `WHATSAPP_ACCESS_TOKEN`/
+  `WHATSAPP_PHONE_NUMBER_ID`/`WHATSAPP_BUSINESS_ACCOUNT_ID` are unset in
+  this environment, so `isConfigured` is `false` and every call still
+  honestly reports `{ status: 'unavailable' }`. **This code has not been
+  exercised against a real Meta Business account** — smoke-test it before
+  relying on it in production. `env.whatsapp.provider` exists so a second
+  provider could be added later behind the same two method signatures
+  (`sendCardMessage`/`sendCardImage`) without touching any caller; only
+  `'meta'` is implemented today, per this phase's explicit scope.
 - **Image storage provider (Cloudinary):** `services/providers/imageStorageProvider.js`
   has a **real** Cloudinary SDK integration (base64 upload, `destroy`,
   `url` — the official `cloudinary` npm package) — but

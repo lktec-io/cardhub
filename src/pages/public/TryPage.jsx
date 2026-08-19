@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, InvitationPreview } from '../../components/common';
-import { Button, Input, EmptyState, Skeleton, GlassCard, Badge } from '../../components/ui';
+import { Button, Input, Checkbox, EmptyState, Skeleton, GlassCard, Badge } from '../../components/ui';
 import { TemplateThumb } from '../../components/templates';
 import { templatesService } from '../../services/templatesService';
 import { ordersService } from '../../services/ordersService';
 import { getErrorMessage, mapValidationErrors } from '../../utils/mapValidationErrors';
 import { formatCardPrice } from '../../constants/pricingTiers';
 import { getCategoryLabel } from '../../constants/templateCategories';
+import { DELIVERY_CHANNELS, CHANNEL_STATUS_BADGE } from '../../constants/orderStatus';
 import { ROUTES } from '../../constants/routes';
 
 const STEPS = ['Your name', 'Your phone', 'Choose a card', 'Preview', 'Send'];
@@ -21,6 +22,7 @@ export function TryPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [channels, setChannels] = useState([DELIVERY_CHANNELS[0].value, DELIVERY_CHANNELS[1].value]);
   const [fieldErrors, setFieldErrors] = useState({});
 
   const [templates, setTemplates] = useState([]);
@@ -28,7 +30,12 @@ export function TryPage() {
 
   const [submitStatus, setSubmitStatus] = useState('idle'); // idle | submitting | success | error
   const [order, setOrder] = useState(null);
+  const [deliveryMessage, setDeliveryMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  function toggleChannel(value) {
+    setChannels((prev) => (prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]));
+  }
 
   useEffect(() => {
     templatesService
@@ -65,16 +72,31 @@ export function TryPage() {
   }
 
   async function handleSubmit() {
+    if (channels.length === 0) {
+      setFieldErrors({ channels: 'Choose at least one delivery method' });
+      return;
+    }
+
     setSubmitStatus('submitting');
     setSubmitError('');
+    // Fresh per deliberate submit attempt — if the browser/network retries
+    // this exact request behind the scenes, the retry carries the same
+    // key and the backend replays the already-computed result instead of
+    // creating a second order and sending the card twice. See
+    // backend/src/utils/idempotencyCache.js.
+    const idempotencyKey = crypto.randomUUID();
+
     try {
       const res = await ordersService.submitTryService({
         name: name.trim(),
         phone: phone.trim(),
         templateId: selectedTemplate.id,
         quantity: 1,
+        channels,
+        idempotencyKey,
       });
       setOrder(res.data.data.order);
+      setDeliveryMessage(res.data.message);
       setSubmitStatus('success');
     } catch (error) {
       setFieldErrors(mapValidationErrors(error));
@@ -95,11 +117,25 @@ export function TryPage() {
               We've saved your request for a <strong>{order.template?.name}</strong> card ({order.pricingTier}) at{' '}
               {formatCardPrice(order.unitPriceTzs)}.
             </p>
-            <Badge variant="accent">Ready to send</Badge>
+            <p className="ch-body-lg">{deliveryMessage}</p>
+            <div className="ch-try-page__success-actions">
+              {order.sms?.status !== 'not_requested' && (
+                <Badge variant={CHANNEL_STATUS_BADGE[order.sms?.status] || 'default'}>SMS: {order.sms?.status}</Badge>
+              )}
+              {order.whatsapp?.status !== 'not_requested' && (
+                <Badge variant={CHANNEL_STATUS_BADGE[order.whatsapp?.status] || 'default'}>
+                  WhatsApp: {order.whatsapp?.status}
+                </Badge>
+              )}
+            </div>
             <p className="ch-body-sm ch-try-page__success-note">
-              Delivery integration (WhatsApp/SMS) is coming in Phase 2 — for now, our team will follow up with you
-              directly using the phone number you provided. We never mark a message as delivered unless it actually
-              was.
+              "Queued"/"sent" means the provider accepted your card for delivery — we never mark a channel as
+              successful unless it actually was. You can also view your card directly:{' '}
+              {order.publicUrl && (
+                <a href={order.publicUrl} target="_blank" rel="noreferrer">
+                  {order.publicUrl}
+                </a>
+              )}
             </p>
             <div className="ch-try-page__success-actions">
               <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--secondary">
@@ -232,14 +268,40 @@ export function TryPage() {
                   <dd>{formatCardPrice(selectedTemplate.priceTzs)}</dd>
                 </div>
               </dl>
+
+              <div>
+                <p className="ch-field__label" style={{ marginBottom: 'var(--space-2)' }}>
+                  Send my card via
+                </p>
+                <div className="ch-try-page__channels">
+                  {DELIVERY_CHANNELS.map((channel) => (
+                    <Checkbox
+                      key={channel.value}
+                      label={channel.label}
+                      checked={channels.includes(channel.value)}
+                      onChange={() => toggleChannel(channel.value)}
+                      className={`ch-try-page__channel-option ${
+                        channels.includes(channel.value) ? 'ch-try-page__channel-option--checked' : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+                {fieldErrors.channels && (
+                  <p className="ch-field__error" role="alert">
+                    {fieldErrors.channels}
+                  </p>
+                )}
+              </div>
+
               {submitStatus === 'error' && (
                 <p className="ch-field__error" role="alert">
                   {submitError}
                 </p>
               )}
               <p className="ch-caption">
-                No SMS/WhatsApp provider is connected yet — this saves your request so our team can follow up. We
-                never claim a message was delivered when it wasn't.
+                We'll try to send your card automatically through the methods you choose above. If a provider isn't
+                connected or can't be reached, your request is still saved and our team can follow up — we never
+                claim a message was delivered when it wasn't.
               </p>
             </div>
           )}

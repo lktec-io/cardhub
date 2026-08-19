@@ -7,11 +7,23 @@ const ORDER_SELECT = `
 `;
 
 export const orderRepository = {
-  async create({ userId, templateId, guestName, guestPhone, pricingTier, unitPriceTzs, quantity, subtotalTzs, source, notes }) {
+  async create({
+    userId,
+    templateId,
+    guestName,
+    guestPhone,
+    pricingTier,
+    unitPriceTzs,
+    quantity,
+    subtotalTzs,
+    source,
+    notes,
+    publicToken,
+  }) {
     const [result] = await pool.query(
       `INSERT INTO orders
-         (user_id, template_id, guest_name, guest_phone, pricing_tier, unit_price_tzs, quantity, subtotal_tzs, source, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (user_id, template_id, guest_name, guest_phone, pricing_tier, unit_price_tzs, quantity, subtotal_tzs, source, notes, public_token)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId ?? null,
         templateId ?? null,
@@ -23,6 +35,7 @@ export const orderRepository = {
         subtotalTzs,
         source,
         notes ?? null,
+        publicToken ?? null,
       ]
     );
     return this.findById(result.insertId);
@@ -30,6 +43,12 @@ export const orderRepository = {
 
   async findById(id) {
     const [rows] = await pool.query(`${ORDER_SELECT} WHERE o.id = ? LIMIT 1`, [id]);
+    return rows[0] || null;
+  },
+
+  /** Public, unauthenticated lookup — the order confirmation page reached via SMS/WhatsApp. Never by sequential id. */
+  async findByPublicToken(token) {
+    const [rows] = await pool.query(`${ORDER_SELECT} WHERE o.public_token = ? LIMIT 1`, [token]);
     return rows[0] || null;
   },
 
@@ -105,6 +124,31 @@ export const orderRepository = {
 
     params.push(id);
     await pool.query(`UPDATE orders SET ${sets.join(', ')} WHERE id = ?`, params);
+    return this.findById(id);
+  },
+
+  /** Persists a delivery.service.js result — the overall status plus each requested channel's independent state. */
+  async updateDeliveryResult(
+    id,
+    { deliveryStatus, smsStatus, smsProviderMessageId, smsError, whatsappStatus, whatsappProviderMessageId, whatsappError }
+  ) {
+    await pool.query(
+      `UPDATE orders SET
+         delivery_status = ?,
+         sms_status = ?, sms_provider_message_id = ?, sms_error = ?,
+         whatsapp_status = ?, whatsapp_provider_message_id = ?, whatsapp_error = ?
+       WHERE id = ?`,
+      [
+        deliveryStatus,
+        smsStatus,
+        smsProviderMessageId ?? null,
+        smsError ?? null,
+        whatsappStatus,
+        whatsappProviderMessageId ?? null,
+        whatsappError ?? null,
+        id,
+      ]
+    );
     return this.findById(id);
   },
 

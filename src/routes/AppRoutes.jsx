@@ -42,6 +42,7 @@ import { GuestsPage } from '../pages/dashboard/events/guests/GuestsPage';
 import { EventAnalyticsPage } from '../pages/dashboard/events/EventAnalyticsPage';
 
 import { InvitationPage } from '../pages/public/InvitationPage';
+import { OrderCardPage } from '../pages/public/OrderCardPage';
 
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
@@ -123,6 +124,9 @@ export function AppRoutes() {
 
       {/* Public invitation — no auth, no dashboard/marketing chrome; the customer's invitation is the whole page */}
       <Route path={ROUTES.INVITE} element={<InvitationPage />} />
+
+      {/* Order confirmation — the link sent over SMS/WhatsApp, no auth required */}
+      <Route path={ROUTES.CARD} element={<OrderCardPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

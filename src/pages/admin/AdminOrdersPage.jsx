@@ -5,7 +5,12 @@ import { Button, Input, Select, Badge, EmptyState, Skeleton } from '../../compon
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
-import { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES, DELIVERY_STATUS_VALUES } from '../../constants/orderStatus';
+import {
+  ORDER_STATUS_VALUES,
+  PAYMENT_STATUS_VALUES,
+  DELIVERY_STATUS_VALUES,
+  CHANNEL_STATUS_BADGE,
+} from '../../constants/orderStatus';
 
 const PAGE_SIZE = 20;
 
@@ -110,6 +115,8 @@ export function AdminOrdersPage() {
                   <th>Status</th>
                   <th>Payment</th>
                   <th>Delivery</th>
+                  <th>SMS</th>
+                  <th>WhatsApp</th>
                   <th>Placed</th>
                 </tr>
               </thead>
@@ -154,6 +161,18 @@ export function AdminOrdersPage() {
                           onChange={(e) => updateField(order, 'deliveryStatus', e.target.value)}
                           className="ch-admin-orders__select"
                         />
+                      </td>
+                      <td>
+                        <Badge variant={CHANNEL_STATUS_BADGE[order.sms?.status] || 'default'}>
+                          {order.sms?.status || 'not_requested'}
+                        </Badge>
+                        {order.sms?.error && <span className="ch-admin-orders__phone">{order.sms.error}</span>}
+                      </td>
+                      <td>
+                        <Badge variant={CHANNEL_STATUS_BADGE[order.whatsapp?.status] || 'default'}>
+                          {order.whatsapp?.status || 'not_requested'}
+                        </Badge>
+                        {order.whatsapp?.error && <span className="ch-admin-orders__phone">{order.whatsapp.error}</span>}
                       </td>
                       <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                     </tr>

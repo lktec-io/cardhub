@@ -1,19 +1,30 @@
 import { ApiError } from '../utils/ApiError.js';
-import { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES, DELIVERY_STATUS_VALUES } from '../constants/orderStatus.js';
+import { ORDER_STATUS_VALUES, PAYMENT_STATUS_VALUES, DELIVERY_STATUS_VALUES, DELIVERY_CHANNEL_VALUES } from '../constants/orderStatus.js';
+import { normalizePhoneForDelivery } from '../utils/phone.js';
 
-const PHONE_RE = /^[0-9+()\-\s]{7,20}$/;
 const NAME_MAX = 150;
 const MAX_QUANTITY = 500;
 
-export function validateTryServicePayload({ name, phone, templateId, quantity }) {
+/**
+ * Validates the Try Our Service payload and returns the normalized phone
+ * number (E.164) so the caller never has to re-derive it — a single
+ * source of truth for "what does this phone number actually look like."
+ * Throws (rather than silently defaulting) on an invalid phone or an
+ * empty/invalid channel selection, per the delivery pipeline's honesty
+ * requirements — there is no such thing as "deliver to no channel."
+ */
+export function validateTryServicePayload({ name, phone, templateId, quantity, channels }) {
   const details = [];
 
   if (!name || typeof name !== 'string' || name.trim().length < 2 || name.length > NAME_MAX) {
     details.push({ field: 'name', message: 'Full name is required' });
   }
-  if (!phone || typeof phone !== 'string' || !PHONE_RE.test(phone)) {
-    details.push({ field: 'phone', message: 'A valid phone number is required' });
+
+  const normalizedPhone = typeof phone === 'string' ? normalizePhoneForDelivery(phone) : null;
+  if (!normalizedPhone) {
+    details.push({ field: 'phone', message: 'Please enter a valid phone number (e.g. 0712 345 678)' });
   }
+
   if (!templateId || !/^\d+$/.test(String(templateId))) {
     details.push({ field: 'templateId', message: 'Please choose a card' });
   }
@@ -24,7 +35,16 @@ export function validateTryServicePayload({ name, phone, templateId, quantity })
     }
   }
 
+  let normalizedChannels = channels;
+  if (channels === undefined) {
+    normalizedChannels = [...DELIVERY_CHANNEL_VALUES];
+  } else if (!Array.isArray(channels) || channels.length === 0 || !channels.every((c) => DELIVERY_CHANNEL_VALUES.includes(c))) {
+    details.push({ field: 'channels', message: 'Choose at least one delivery method (WhatsApp and/or SMS)' });
+  }
+
   if (details.length) throw ApiError.validation(details);
+
+  return { normalizedPhone, normalizedChannels: [...new Set(normalizedChannels)] };
 }
 
 export function validateOrderId(id) {
