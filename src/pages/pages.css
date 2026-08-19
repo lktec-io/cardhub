@@ -6,29 +6,6 @@
   overflow: hidden;
 }
 
-/* Optional hero video background (LandingPage.jsx) — absolutely
-   positioned so it never participates in layout (no shift), sits behind
-   everything via z-index, and gracefully disappears (via onError) if
-   /videos/cardhub-hero.mp4 hasn't been supplied yet — the existing
-   --gradient-hero background on <body> shows through exactly as before. */
-.ch-hero__video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.ch-hero__video-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(254, 250, 243, 0.88) 0%, rgba(254, 250, 243, 0.72) 45%, rgba(254, 250, 243, 0.92) 100%);
-}
-
 .ch-hero__grid {
   position: relative;
   z-index: 2;
@@ -59,12 +36,12 @@
     align-items: center;
     padding: 0 var(--space-2);
   }
-  /* Photo first on mobile — the couple stays the immediate focal point,
-     per the "must communicate what CardHub does within seconds" brief. */
-  .ch-hero__visual {
+  /* Content (headline → CTAs → video) first on mobile, exactly the
+     order the copy reads in — the photo slideshow follows below it. */
+  .ch-hero__content {
     order: 1;
   }
-  .ch-hero__content {
+  .ch-hero__visual {
     order: 2;
   }
 }
@@ -106,6 +83,48 @@
   }
   .ch-hero__actions .ch-btn {
     width: 100%;
+  }
+}
+
+/* ---------- Hero video (LandingPage.jsx) ----------
+   A real foreground element below the hero text/CTAs — never a
+   background, never sits under or behind anything. Participates in
+   normal document flow like any other content, so it can never cause
+   layout shift the way an absolutely-positioned background would. */
+.ch-hero__video-wrap {
+  width: 100%;
+  max-width: 480px;
+  margin-top: var(--space-2);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  background: var(--surface);
+}
+
+.ch-hero__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ch-hero__video-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.75);
+  background: linear-gradient(150deg, var(--color-royal-500) 0%, var(--color-royal-700) 60%, var(--color-gold-600) 130%);
+}
+
+@media (max-width: 640px) {
+  .ch-hero__video-wrap {
+    max-width: 360px;
+    margin: var(--space-4) auto 0;
   }
 }
 
@@ -262,39 +281,92 @@
   background: radial-gradient(60% 60% at 30% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
 }
 
-.ch-hero__preview-card {
+/* ---------- Hero floating selector (per-slide caption card) ----------
+   A sibling of .ch-hero__photo (not nested inside it), the same pattern
+   the old static preview card used — so it can float partially over the
+   photo's edge without being clipped by the photo box's own
+   overflow:hidden. Remounts on every slide change (React key=
+   activeSlideIndex in LandingPage.jsx), so this element's own mount
+   animation below doubles as the "synchronized with the slide" entrance. */
+.ch-hero-selector {
   position: absolute;
-  right: var(--space-4);
-  bottom: 0;
-  width: 190px;
-  filter: drop-shadow(0 16px 32px rgba(22, 32, 61, 0.22));
+  top: var(--space-5);
+  left: -14px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 240px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  animation: ch-hero-selector-in 520ms var(--ease-out) both;
 }
 
-.ch-hero__preview-card .ch-invite-preview {
-  max-width: none;
-}
-
-.ch-hero__preview-card .ch-invite-preview__card {
-  padding: var(--space-5) var(--space-4);
-}
-
-.ch-hero__preview-card .ch-invite-preview__title {
-  font-size: var(--fs-body);
-}
-
-@media (max-width: 640px) {
-  .ch-hero__preview-card {
-    width: 150px;
-    right: var(--space-2);
+@keyframes ch-hero-selector-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
-  .ch-hero__preview-card .ch-invite-preview__card {
-    padding: var(--space-4) var(--space-3);
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ch-hero-selector__icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+.ch-hero-selector__title {
+  margin: 0;
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+
+.ch-hero-selector__description {
+  margin: 2px 0 0;
+  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Mobile: never float over the photo (risk of covering faces/subject) —
+   becomes its own full-width static card sitting below the image
+   instead, per explicit instruction not to just shrink the desktop
+   version. */
+@media (max-width: 640px) {
+  .ch-hero-selector {
+    position: static;
+    max-width: none;
+    width: 100%;
+    margin-top: var(--space-3);
+    box-shadow: var(--shadow-sm);
   }
 }
 
 /* ---------- Sections ---------- */
 .ch-section {
   padding: var(--space-20) 0;
+  /* Any in-page anchor (e.g. a future /#pricing link) lands with this
+     much clearance above it, so the fixed floating navbar never covers
+     the section heading — see ScrollToTop.jsx for the JS-driven version
+     of the same offset used for programmatic smooth-scrolls. */
+  scroll-margin-top: calc(var(--navbar-height) + var(--navbar-gap) * 2 + var(--space-4));
 }
 
 @media (max-width: 640px) {

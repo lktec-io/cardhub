@@ -9,6 +9,7 @@ import { ordersService } from '../../services/ordersService';
 import { formatCardPrice } from '../../constants/pricingTiers';
 import { ROUTES } from '../../constants/routes';
 import { useLanguage } from '../../hooks/useLanguage';
+import { celebrateSuccess } from '../../utils/celebration';
 
 /**
  * The real public destination sent over SMS/WhatsApp (see
@@ -72,6 +73,11 @@ export function OrderCardPage() {
       const res = await ordersService.submitRsvp(token, rsvpStatus);
       setOrder(res.data.data.order);
       setRsvpMessage(res.data.message);
+      // Still inside the click's own call chain (no intervening await
+      // beyond this request), so the celebration counts as a genuine
+      // user-triggered action for autoplay-audio purposes — and only
+      // for "attending", never for declining.
+      if (rsvpStatus === 'attending') celebrateSuccess();
     } catch {
       // Non-fatal — the guest can simply try again; nothing else on the page is affected.
     } finally {

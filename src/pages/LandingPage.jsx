@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiCheck, FiClock, FiCreditCard, FiSend, FiShield, FiStar } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, InvitationPreview, RotatingHeadline, HeroSlideshow } from '../components/common';
+import { FiArrowRight, FiCheck, FiClock, FiCreditCard, FiFilm, FiHeart, FiSend, FiShield, FiStar, FiUsers } from 'react-icons/fi';
+import { Container, SectionHeader, Seo, RotatingHeadline, HeroSlideshow } from '../components/common';
 import { GlassCard, Badge, Skeleton } from '../components/ui';
 import { TemplateThumb } from '../components/templates';
 import { ROUTES } from '../constants/routes';
@@ -16,6 +16,13 @@ const HERO_MESSAGES = {
   en: ['Your Moment. Your Card.', 'Beautiful Cards. Made Simple.', 'Celebrate. Share. Remember.', 'Create. Send. Celebrate.'],
   sw: ['Wakati Wako. Kadi Yako.', 'Kadi Nzuri. Rahisi Kupata.', 'Sherehekea. Shiriki. Kumbuka.', 'Tengeneza. Tuma. Sherehekea.'],
 };
+
+/** One floating selector per hero slide — index-matched to HeroSlideshow's HERO_SLIDES. */
+const HERO_SLIDE_CONTENT = [
+  { icon: FiHeart, key: 'hero.slide.1' },
+  { icon: FiSend, key: 'hero.slide.2' },
+  { icon: FiUsers, key: 'hero.slide.3' },
+];
 
 const VALUE_PROPS = [
   { icon: FiStar, tone: 'blue', key: 'landing.value.1' },
@@ -37,9 +44,11 @@ export function LandingPage() {
   const reducedMotion = useReducedMotion();
   const [heroVideoFailed, setHeroVideoFailed] = useState(false);
   const [heroPhotoFailed, setHeroPhotoFailed] = useState(false);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [templates, setTemplates] = useState([]);
   const [status, setStatus] = useState('loading');
   const showHeroVideo = !reducedMotion && !heroVideoFailed;
+  const activeSlideContent = HERO_SLIDE_CONTENT[activeSlideIndex] || HERO_SLIDE_CONTENT[0];
 
   useEffect(() => {
     templatesService
@@ -57,20 +66,6 @@ export function LandingPage() {
       <Seo description="CardHub is a premium digital card service by Clix Digital Works. Browse the catalogue, see the price per card, and try the service in minutes." />
 
       <section className="ch-hero">
-        {showHeroVideo && (
-          <video
-            className="ch-hero__video"
-            src={HERO_VIDEO_SRC}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-            onError={() => setHeroVideoFailed(true)}
-          />
-        )}
-        {showHeroVideo && <div className="ch-hero__video-overlay" aria-hidden="true" />}
         <Container>
           <div className="ch-hero__grid">
             <div className="ch-hero__content ch-animate-slide-up">
@@ -87,17 +82,48 @@ export function LandingPage() {
                   {t('landing.tryOurService')}
                 </Link>
               </div>
+
+              {/* A separate, foreground element below the text — never a
+                  background, never sits behind or under the copy above. */}
+              <div className="ch-hero__video-wrap">
+                {showHeroVideo ? (
+                  <video
+                    className="ch-hero__video"
+                    src={HERO_VIDEO_SRC}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    aria-hidden="true"
+                    onError={() => setHeroVideoFailed(true)}
+                  />
+                ) : (
+                  <div className="ch-hero__video-placeholder" role="img" aria-label="CardHub video coming soon">
+                    <FiFilm aria-hidden="true" />
+                  </div>
+                )}
+              </div>
             </div>
             <div className="ch-hero__visual ch-animate-scale-in">
               <div className={`ch-hero__photo ${heroPhotoFailed ? 'ch-hero__photo--fallback' : ''}`}>
                 <HeroSlideshow
                   alt="A couple celebrating their wedding — CardHub turns moments like this into a shareable digital card"
                   onAllFailed={() => setHeroPhotoFailed(true)}
+                  onActiveIndexChange={setActiveSlideIndex}
                 />
               </div>
-              <div className="ch-hero__preview-card">
-                <InvitationPreview compact />
-              </div>
+              {!heroPhotoFailed && (
+                <div className="ch-hero-selector" key={activeSlideIndex}>
+                  <span className="ch-hero-selector__icon">
+                    <activeSlideContent.icon aria-hidden="true" />
+                  </span>
+                  <div className="ch-hero-selector__text">
+                    <p className="ch-hero-selector__title">{t(`${activeSlideContent.key}.title`)}</p>
+                    <p className="ch-hero-selector__description">{t(`${activeSlideContent.key}.description`)}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Container>

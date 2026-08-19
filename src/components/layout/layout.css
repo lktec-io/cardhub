@@ -2,24 +2,53 @@
    CARDHUB LAYOUT PRIMITIVES — Navbar, Footer, Sidebar, Topbar
    ========================================================================== */
 
-/* ---------- Navbar (public) ---------- */
+/* ---------- Navbar (public) ----------
+   A floating glass pill, not a full-width bar — fixed + inset from the
+   viewport edges with its own rounded shape, so it reads as "premium
+   floating navigation" rather than a dashboard header. --navbar-* below
+   are deliberately local to this file (not the shared --topbar-height,
+   which the authenticated dashboard/admin Topbar owns) so this can't
+   ripple into those unrelated layouts. */
+:root {
+  --navbar-gap: 14px;
+  --navbar-height: 60px;
+}
+@media (max-width: 640px) {
+  :root {
+    --navbar-gap: 10px;
+    --navbar-height: 56px;
+  }
+}
+
 .ch-navbar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: var(--navbar-gap);
+  left: var(--navbar-gap);
+  right: var(--navbar-gap);
   z-index: var(--z-sticky);
+  max-width: calc(var(--container-max) + var(--space-6) * 2);
+  margin: 0 auto;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--glass-border);
   background: var(--glass-bg-strong);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--duration-base) var(--ease-standard), background var(--duration-base) var(--ease-standard);
 }
 
 .ch-navbar__inner {
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-6);
+  height: var(--navbar-height);
+  padding: 0 var(--space-3) 0 var(--space-5);
   display: flex;
   align-items: center;
   gap: var(--space-6);
+}
+
+/* Pushes page content below the floating navbar (fixed = out of normal
+   flow, so this offset has to be added back explicitly). */
+.ch-public-main {
+  padding-top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
 }
 
 .ch-navbar__brand {
@@ -164,7 +193,7 @@
    clickable above the panel, never covered by it. */
 .ch-navbar-overlay {
   position: fixed;
-  top: var(--topbar-height);
+  top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
   right: 0;
   bottom: 0;
   left: 0;
@@ -187,7 +216,7 @@
 
 .ch-navbar__sidebar {
   position: fixed;
-  top: var(--topbar-height);
+  top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
   right: 0;
   bottom: 0;
   width: min(320px, 84vw);

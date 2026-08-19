@@ -8,7 +8,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
  * new file at the same path and the slideshow picks it up automatically,
  * no code change needed. See public/hero/README.md.
  */
-const SLIDES = [{ src: '/hero/hero-1.jpg' }, { src: '/hero/hero-2.jpg' }, { src: '/hero/hero-3.jpg' }];
+const HERO_SLIDES = [{ src: '/hero/hero-1.jpg' }, { src: '/hero/hero-2.jpg' }, { src: '/hero/hero-3.jpg' }];
 const SLIDE_DURATION_MS = 5500;
 
 /**
@@ -20,19 +20,30 @@ const SLIDE_DURATION_MS = 5500;
  * transition a pure CSS opacity/transform change — nothing ever
  * reflows the page. Any slide whose file 404s quietly falls back to
  * showing slide 1's photo instead of a broken-image icon; if slide 1
- * itself is missing, every slide hides and the existing gradient
- * fallback (.ch-hero__photo--fallback, applied by the parent) shows
- * through exactly as it did before this component existed.
+ * itself is missing, every slide hides and `onAllFailed` tells the
+ * parent to show its own gradient fallback (unchanged from before this
+ * component existed).
+ *
+ * Reports the active index up via `onActiveIndexChange` rather than
+ * rendering the per-slide caption/selector card itself — that card
+ * needs to float outside this box's clipped edge (same pattern as the
+ * existing .ch-hero__preview-card, a sibling of .ch-hero__photo, not a
+ * child of it), so the parent (LandingPage.jsx) owns rendering it while
+ * this component stays a generic, reusable "cycle these photos" primitive.
  */
-export function HeroSlideshow({ alt, onAllFailed }) {
+export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange }) {
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedIndices, setFailedIndices] = useState(() => new Set());
 
   useEffect(() => {
-    if (reducedMotion || SLIDES.length < 2) return undefined;
+    onActiveIndexChange?.(activeIndex);
+  }, [activeIndex, onActiveIndexChange]);
+
+  useEffect(() => {
+    if (reducedMotion || HERO_SLIDES.length < 2) return undefined;
     const timer = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % SLIDES.length);
+      setActiveIndex((i) => (i + 1) % HERO_SLIDES.length);
     }, SLIDE_DURATION_MS);
     return () => clearInterval(timer);
   }, [reducedMotion]);
@@ -55,9 +66,9 @@ export function HeroSlideshow({ alt, onAllFailed }) {
 
   return (
     <>
-      {SLIDES.map((slide, index) => {
+      {HERO_SLIDES.map((slide, index) => {
         const isActive = index === activeIndex;
-        const src = failedIndices.has(index) ? SLIDES[0].src : slide.src;
+        const src = failedIndices.has(index) ? HERO_SLIDES[0].src : slide.src;
         return (
           <img
             key={slide.src}
@@ -74,9 +85,9 @@ export function HeroSlideshow({ alt, onAllFailed }) {
         );
       })}
 
-      {SLIDES.length > 1 && (
+      {HERO_SLIDES.length > 1 && (
         <div className="ch-hero-slideshow__dots" role="tablist" aria-label="Hero image slides">
-          {SLIDES.map((slide, index) => (
+          {HERO_SLIDES.map((slide, index) => (
             <button
               key={slide.src}
               type="button"

@@ -54,12 +54,15 @@ import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
 
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
+import { ScrollToTop } from './ScrollToTop';
 import { ROUTES } from '../constants/routes';
 
 export function AppRoutes() {
   return (
-    <Routes>
-      <Route element={<PublicLayout />}>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path={ROUTES.TEMPLATES} element={<TemplatesPage />} />
         <Route path={ROUTES.PRICING} element={<PricingPage />} />
@@ -130,5 +133,6 @@ export function AppRoutes() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </>
   );
 }

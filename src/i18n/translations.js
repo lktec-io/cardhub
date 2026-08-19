@@ -846,6 +846,14 @@ export const TRANSLATIONS = {
   'changeTemplate.confirmChange': { en: 'Confirm change', sw: 'Thibitisha mabadiliko' },
   'changeTemplate.tryDifferent': { en: 'Try a different search or category.', sw: 'Jaribu utafutaji au kundi lingine.' },
 
+  // Hero slideshow floating selectors
+  'hero.slide.1.title': { en: 'Your Special Moment', sw: 'Wakati Wako Maalum' },
+  'hero.slide.1.description': { en: 'Beautiful digital invitations made to be remembered', sw: 'Mialiko mizuri ya kidijitali iliyotengenezwa kukumbukwa' },
+  'hero.slide.2.title': { en: 'Invite With Elegance', sw: 'Alika kwa Umaridadi' },
+  'hero.slide.2.description': { en: 'Send beautiful invitations instantly', sw: 'Tuma mialiko mizuri papo hapo' },
+  'hero.slide.3.title': { en: 'Every Guest Matters', sw: 'Kila Mgeni Anahesabika' },
+  'hero.slide.3.description': { en: 'Simple RSVP. Smart guest management.', sw: 'RSVP rahisi. Usimamizi mahiri wa wageni.' },
+
   // Create event wizard
   'wizard.step.eventType': { en: 'Event Type', sw: 'Aina ya Tukio' },
   'wizard.step.template': { en: 'Template', sw: 'Kadi' },
