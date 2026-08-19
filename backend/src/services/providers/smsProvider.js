@@ -58,12 +58,28 @@ export const smsProvider = {
     }
 
     if (!response.ok) {
-      logger.error('Beem SMS send rejected', { statusCode: response.status });
+      // Log Beem's actual response body (never the credentials) — a bare
+      // status code isn't enough to diagnose a 401. Beem returns 401 for
+      // a wrong/rotated api_key+secret_key pair, but also for a correctly
+      // paired key that isn't yet enabled for the SMS product, or an
+      // account still in sandbox/unapproved state — the body text usually
+      // says which.
+      const bodyText = await response.text().catch(() => '');
+      logger.error('Beem SMS send rejected', { statusCode: response.status, body: bodyText.slice(0, 500) });
+      const parsedBody = (() => {
+        try {
+          return JSON.parse(bodyText);
+        } catch {
+          return null;
+        }
+      })();
       return {
         status: 'failed',
         provider: PROVIDER,
         providerMessageId: null,
-        error: `Beem rejected the request (HTTP ${response.status})`,
+        error: parsedBody?.message
+          ? `Beem: ${parsedBody.message} (HTTP ${response.status})`
+          : `Beem rejected the request (HTTP ${response.status})`,
       };
     }
 

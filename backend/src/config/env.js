@@ -18,6 +18,26 @@ const isProd = process.env.NODE_ENV === 'production';
 const DEFAULT_FRONTEND_URL = isProd ? 'https://cardhub.co.tz' : 'http://localhost:5173';
 const DEFAULT_API_URL = isProd ? 'https://cardhub.co.tz/api/v1' : 'http://localhost:4006/api/v1';
 
+/**
+ * Guards against a malformed single-value env var — e.g. a `.env` line
+ * accidentally set to a comma-separated list (`FRONTEND_URL=https://cardhub.co.tz,http://localhost`,
+ * perhaps copied from a CORS-origins-style value elsewhere) or with a
+ * stray trailing character from a shell paste. Takes the first
+ * comma-separated segment and strips whitespace/angle brackets, so a
+ * mis-set value degrades to "first URL, cleaned up" instead of silently
+ * producing a broken link like "https://cardhub.co.tz,http://localhost/card/...".
+ * This does not fix a bad value at its source — clean up the real .env too.
+ */
+function firstCleanUrl(value) {
+  if (!value) return value;
+  return value.split(',')[0].trim().replace(/[<>]/g, '');
+}
+
+/** Credential env vars are trimmed defensively — a trailing newline/space from a copy-paste is a common, silent cause of a provider's 401. */
+function trimmed(value) {
+  return typeof value === 'string' ? value.trim() : value;
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isProd,
@@ -58,27 +78,33 @@ export const env = {
   },
   // Beem (beem.africa) is CardHub's chosen SMS provider — see
   // services/providers/smsProvider.js. `apiKey`/`secretKey` are Beem's
-  // Basic Auth credential pair, kept backend-only; no credentials exist in
-  // this environment and none were invented.
+  // Basic Auth credential pair, kept backend-only. Also reused as-is for
+  // Beem's WhatsApp ("Moja") API below — Beem's docs confirm it's the
+  // same account-level key pair, not a separate WhatsApp credential.
   sms: {
-    apiKey: process.env.BEEM_API_KEY || '',
-    secretKey: process.env.BEEM_SECRET_KEY || '',
-    senderId: process.env.BEEM_SENDER_ID || '',
+    apiKey: trimmed(process.env.BEEM_API_KEY) || '',
+    secretKey: trimmed(process.env.BEEM_SECRET_KEY) || '',
+    senderId: trimmed(process.env.BEEM_SENDER_ID) || '',
   },
   // WhatsApp — services/providers/whatsappProvider.js. `provider` selects
-  // the transport (only 'meta', the official WhatsApp Cloud API, is
-  // implemented as of Phase 2 — see the provider file for why unofficial
-  // WhatsApp Web automation/scraping was never an option). No credentials
-  // exist in this environment and none were invented; leaving these unset
-  // keeps `isConfigured` false and every send honestly "unavailable".
+  // the transport: 'beem' uses Beem's own WhatsApp/Moja API (reuses the
+  // sms.apiKey/secretKey pair above, plus `beemFrom` — the WhatsApp
+  // sender identity registered on the Beem account); 'meta' uses the
+  // official Meta WhatsApp Cloud API directly, kept as a real, working
+  // alternative even though CardHub is standardized on Beem for Phase 2.
+  // Unofficial WhatsApp Web automation/scraping was never an option
+  // either way. No credentials exist in this environment and none were
+  // invented; leaving these unset keeps `isConfigured` false and every
+  // send honestly "unavailable".
   whatsapp: {
-    provider: process.env.WHATSAPP_PROVIDER || '',
-    accessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',
-    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
-    businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || '',
-    apiVersion: process.env.WHATSAPP_API_VERSION || 'v21.0',
+    provider: trimmed(process.env.WHATSAPP_PROVIDER) || '',
+    beemFrom: trimmed(process.env.BEEM_WHATSAPP_FROM) || '',
+    accessToken: trimmed(process.env.WHATSAPP_ACCESS_TOKEN) || '',
+    phoneNumberId: trimmed(process.env.WHATSAPP_PHONE_NUMBER_ID) || '',
+    businessAccountId: trimmed(process.env.WHATSAPP_BUSINESS_ACCOUNT_ID) || '',
+    apiVersion: trimmed(process.env.WHATSAPP_API_VERSION) || 'v21.0',
   },
 
-  frontendUrl: process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL,
-  apiUrl: process.env.API_URL || DEFAULT_API_URL,
+  frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,
+  apiUrl: firstCleanUrl(process.env.API_URL) || DEFAULT_API_URL,
 };
