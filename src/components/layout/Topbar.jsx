@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { notificationsService } from '../../services/notificationsService';
 import { ROUTES } from '../../constants/routes';
+import { LanguageToggle } from './LanguageToggle';
 
 export function Topbar({ onMenuClick }) {
   const { t } = useLanguage();
@@ -33,6 +34,8 @@ export function Topbar({ onMenuClick }) {
       </button>
 
       <div className="ch-topbar__spacer" />
+
+      <LanguageToggle className="ch-topbar__lang" />
 
       <Link to={ROUTES.DASHBOARD_NOTIFICATIONS} className="ch-topbar__bell" aria-label={`${t('topbar.notifications')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`}>
         <FiBell />

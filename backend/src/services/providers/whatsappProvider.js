@@ -148,7 +148,7 @@ function unavailable(provider, reason, to) {
  */
 export const whatsappProvider = {
   isConfigured: isMetaConfigured || isBeemConfigured,
-  providerName: selectedProvider || PROVIDER_BEEM,
+  providerName: selectedProvider || PROVIDER_META,
 
   /** payload: { to, message } — `to` must already be E.164-normalized (see utils/phone.js). */
   async sendCardMessage(payload) {

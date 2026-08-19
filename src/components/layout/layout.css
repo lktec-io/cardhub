@@ -524,6 +524,10 @@
   flex: 1;
 }
 
+.ch-topbar__lang {
+  margin-right: var(--space-3);
+}
+
 .ch-topbar__user {
   background: transparent;
   border: none;

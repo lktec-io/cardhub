@@ -113,17 +113,21 @@ export function buildInvitationSms({ guestName, eventType, eventName, venue, eve
   const dateStr = formatDateSlash(eventDate);
   const timeStr = formatTimeSwahili(eventTime);
 
-  const whenWhere = [];
-  if (eventName) whenWhere.push(`katika ${eventName}`);
-  else whenWhere.push(`katika ${label}`);
-  if (venue) whenWhere.push(`itakayofanyika ${venue}`);
-  if (dateStr) whenWhere.push(`siku ya ${dateStr}`);
-  if (timeStr) whenWhere.push(`kuanzia ${timeStr}`);
+  // Matches the exact required structure — "katika {EVENT} itakayofanyika
+  // {VENUE}, siku ya {DATE} kuanzia {TIME}." — a single comma right after
+  // the venue clause, never one after every clause. Each piece degrades
+  // gracefully (omitted, not "undefined") when the order doesn't have it.
+  let whenWhere = `katika ${eventName || label}`;
+  if (venue) whenWhere += ` itakayofanyika ${venue}`;
+  const dateTimeParts = [];
+  if (dateStr) dateTimeParts.push(`siku ya ${dateStr}`);
+  if (timeStr) dateTimeParts.push(`kuanzia ${timeStr}`);
+  if (dateTimeParts.length) whenWhere += `, ${dateTimeParts.join(' ')}`;
 
   const lines = [
     `Habari ${firstName || guestName || ''}.`,
     '',
-    `Tunapenda kuchukua nafasi hii kukualika ${whenWhere.join(', ')}.`,
+    `Tunapenda kuchukua nafasi hii kukualika ${whenWhere}.`,
     '',
     `Mualiko namba #${invitationNumber}${guestTypeSuffix(guestType)}`,
     '',
