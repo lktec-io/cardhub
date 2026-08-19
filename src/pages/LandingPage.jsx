@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiCheck, FiClock, FiCreditCard, FiSend, FiShield, FiStar } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, InvitationPreview, RotatingHeadline } from '../components/common';
+import { Container, SectionHeader, Seo, InvitationPreview, RotatingHeadline, HeroSlideshow } from '../components/common';
 import { GlassCard, Badge, Skeleton } from '../components/ui';
 import { TemplateThumb } from '../components/templates';
 import { ROUTES } from '../constants/routes';
 import { templatesService } from '../services/templatesService';
 import { formatCardPrice, PRICING_TIER_LIST } from '../constants/pricingTiers';
 import { useLanguage } from '../hooks/useLanguage';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+
+const HERO_VIDEO_SRC = '/videos/cardhub-hero.mp4';
 
 const HERO_MESSAGES = {
   en: ['Your Moment. Your Card.', 'Beautiful Cards. Made Simple.', 'Celebrate. Share. Remember.', 'Create. Send. Celebrate.'],
@@ -31,8 +34,12 @@ const JOURNEY_STEPS = [
 
 export function LandingPage() {
   const { t, language } = useLanguage();
+  const reducedMotion = useReducedMotion();
+  const [heroVideoFailed, setHeroVideoFailed] = useState(false);
+  const [heroPhotoFailed, setHeroPhotoFailed] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [status, setStatus] = useState('loading');
+  const showHeroVideo = !reducedMotion && !heroVideoFailed;
 
   useEffect(() => {
     templatesService
@@ -50,6 +57,20 @@ export function LandingPage() {
       <Seo description="CardHub is a premium digital card service by Clix Digital Works. Browse the catalogue, see the price per card, and try the service in minutes." />
 
       <section className="ch-hero">
+        {showHeroVideo && (
+          <video
+            className="ch-hero__video"
+            src={HERO_VIDEO_SRC}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+            onError={() => setHeroVideoFailed(true)}
+          />
+        )}
+        {showHeroVideo && <div className="ch-hero__video-overlay" aria-hidden="true" />}
         <Container>
           <div className="ch-hero__grid">
             <div className="ch-hero__content ch-animate-slide-up">
@@ -68,17 +89,10 @@ export function LandingPage() {
               </div>
             </div>
             <div className="ch-hero__visual ch-animate-scale-in">
-              <div className="ch-hero__photo">
-                <img
-                  src="/images/hero-couple.jpg"
-                  alt="A couple celebrating their engagement — CardHub turns moments like this into a shareable digital card"
-                  className="ch-hero__photo-img"
-                  loading="eager"
-                  decoding="async"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement.classList.add('ch-hero__photo--fallback');
-                  }}
+              <div className={`ch-hero__photo ${heroPhotoFailed ? 'ch-hero__photo--fallback' : ''}`}>
+                <HeroSlideshow
+                  alt="A couple celebrating their wedding — CardHub turns moments like this into a shareable digital card"
+                  onAllFailed={() => setHeroPhotoFailed(true)}
                 />
               </div>
               <div className="ch-hero__preview-card">

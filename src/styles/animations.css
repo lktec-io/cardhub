@@ -94,3 +94,40 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Success confetti (SuccessConfetti.jsx) ---------- */
+@keyframes ch-confetti-fall {
+  from {
+    transform: translateY(-12px) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(140px) translateX(var(--ch-confetti-drift, 0px)) rotate(var(--ch-confetti-rotate, 180deg));
+    opacity: 0;
+  }
+}
+
+.ch-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ch-confetti__piece {
+  position: absolute;
+  top: -10px;
+  width: 7px;
+  height: 10px;
+  border-radius: 1px;
+  animation-name: ch-confetti-fall;
+  animation-timing-function: var(--ease-out, ease-out);
+  animation-fill-mode: forwards;
+}
+
+.ch-confetti__piece--round {
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+}

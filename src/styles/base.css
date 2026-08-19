@@ -17,6 +17,12 @@ body {
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  /* Kills the default mobile Safari/Chrome blue tap-highlight rectangle.
+     This is deliberately NOT `outline: none` and does not touch
+     :focus-visible below — keyboard focus stays fully intact. Touch
+     devices get their own subtle press feedback instead, immediately
+     below, so tapping doesn't feel dead. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -73,6 +79,19 @@ button {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+/* Touch press feedback — only on devices whose primary input has no
+   hover (i.e. touch), so this never doubles up with the existing mouse
+   :hover states. Replaces the tap-highlight removed above with a
+   deliberate, smooth press dip instead of no feedback at all. */
+@media (hover: none) {
+  a:active,
+  button:not(:disabled):active,
+  [role='button']:not([aria-disabled='true']):active {
+    opacity: 0.72;
+    transition: opacity 100ms var(--ease-standard);
+  }
 }
 
 ::selection {

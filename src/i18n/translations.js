@@ -144,6 +144,7 @@ export const TRANSLATIONS = {
   },
   'try.browseMore': { en: 'Browse more cards', sw: 'Vinjari kadi zaidi' },
   'try.createAccount': { en: 'Create a full account', sw: 'Fungua akaunti kamili' },
+  'try.viewCard': { en: 'View your card', sw: 'Ona kadi yako' },
 
   // Channels
   'channel.whatsapp': { en: 'WhatsApp', sw: 'WhatsApp' },

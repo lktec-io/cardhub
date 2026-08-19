@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
-import { Container, SectionHeader, Seo } from '../../components/common';
+import { Container, SectionHeader, Seo, SuccessConfetti } from '../../components/common';
 import { Button, Input, Select, Radio, Checkbox, EmptyState, Skeleton, GlassCard, Badge } from '../../components/ui';
 import { TemplateThumb } from '../../components/templates';
 import { templatesService } from '../../services/templatesService';
@@ -139,38 +139,41 @@ export function TryPage() {
             <h1 className="ch-h2">
               {t('try.successThanks')}, {name.split(' ')[0]} — {t('try.successHeading')}
             </h1>
-            <p className="ch-body-lg">
+            <p className="ch-body-sm ch-try-page__success-subtext">
               {t('try.savedRequestFree', { card: order.template?.name, tier: order.pricingTier })}
             </p>
-            <p className="ch-try-page__invitation-number">
-              {t('try.invitationNumber')}: <strong>#{order.invitationNumber}</strong>
-            </p>
-            <p className="ch-body-lg">{deliveryMessage}</p>
-            <div className="ch-try-page__success-actions">
-              {order.sms?.status !== 'not_requested' && (
-                <Badge variant={CHANNEL_STATUS_BADGE[order.sms?.status] || 'default'}>
-                  {t('channel.sms')}: {t(`status.${order.sms?.status}`)}
-                </Badge>
-              )}
-              {order.whatsapp?.status !== 'not_requested' && (
-                <Badge variant={CHANNEL_STATUS_BADGE[order.whatsapp?.status] || 'default'}>
-                  {t('channel.whatsapp')}: {t(`status.${order.whatsapp?.status}`)}
-                </Badge>
-              )}
-            </div>
-            <p className="ch-body-sm ch-try-page__success-note">
-              {t('try.deliveryHonestyNote')} {t('try.yourCardLink')}{' '}
+
+            <GlassCard className="ch-try-page__success-card">
+              <SuccessConfetti />
+              <p className="ch-try-page__invitation-number">
+                {t('try.invitationNumber')}: <strong>#{order.invitationNumber}</strong>
+              </p>
+              <p className="ch-try-page__delivery-message">{deliveryMessage}</p>
+              <div className="ch-try-page__success-badges">
+                {order.sms?.status !== 'not_requested' && (
+                  <Badge variant={CHANNEL_STATUS_BADGE[order.sms?.status] || 'default'}>
+                    {t('channel.sms')}: {t(`status.${order.sms?.status}`)}
+                  </Badge>
+                )}
+                {order.whatsapp?.status !== 'not_requested' && (
+                  <Badge variant={CHANNEL_STATUS_BADGE[order.whatsapp?.status] || 'default'}>
+                    {t('channel.whatsapp')}: {t(`status.${order.whatsapp?.status}`)}
+                  </Badge>
+                )}
+              </div>
               {order.publicUrl && (
-                <a href={order.publicUrl} target="_blank" rel="noreferrer">
-                  {order.publicUrl}
+                <a href={order.publicUrl} target="_blank" rel="noreferrer" className="ch-btn ch-btn--outline ch-btn--sm ch-try-page__view-card-btn">
+                  {t('try.viewCard')} <FiArrowRight aria-hidden="true" />
                 </a>
               )}
-            </p>
+              <p className="ch-caption ch-try-page__success-note">{t('try.deliveryHonestyNote')}</p>
+            </GlassCard>
+
             <div className="ch-try-page__success-actions">
-              <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--secondary">
+              <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary ch-btn--full">
                 {t('try.browseMore')}
               </Link>
-              <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--primary">
+              <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--secondary ch-btn--full">
                 {t('try.createAccount')}
               </Link>
             </div>

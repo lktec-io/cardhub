@@ -1,11 +1,37 @@
 /* ---------- Hero ---------- */
 .ch-hero {
+  position: relative;
   padding: var(--space-16) 0 var(--space-20);
   text-align: center;
   overflow: hidden;
 }
 
+/* Optional hero video background (LandingPage.jsx) — absolutely
+   positioned so it never participates in layout (no shift), sits behind
+   everything via z-index, and gracefully disappears (via onError) if
+   /videos/cardhub-hero.mp4 hasn't been supplied yet — the existing
+   --gradient-hero background on <body> shows through exactly as before. */
+.ch-hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ch-hero__video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(254, 250, 243, 0.88) 0%, rgba(254, 250, 243, 0.72) 45%, rgba(254, 250, 243, 0.92) 100%);
+}
+
 .ch-hero__grid {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   align-items: center;
@@ -158,6 +184,74 @@
   }
 }
 
+/* ---------- Hero slideshow (HeroSlideshow.jsx) ----------
+   3 photos stacked in the same box via position:absolute — swapping
+   slides is a pure opacity crossfade, so it can never shift layout. All
+   3 <img> tags are always mounted (not conditionally rendered), which
+   preloads every slide up front instead of only fetching one on demand. */
+.ch-hero-slideshow__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: 0;
+  transition: opacity 1100ms var(--ease-standard);
+  transform: scale(1);
+}
+
+.ch-hero-slideshow__slide--active {
+  opacity: 1;
+  z-index: 1;
+}
+
+/* Subtle, slow zoom-drift on whichever slide is active — restarts every
+   time a slide becomes active again, since the animation is only ever
+   applied to the current --active element. Skipped entirely under
+   prefers-reduced-motion (HeroSlideshow.jsx never adds this class then). */
+@keyframes ch-hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+.ch-hero-slideshow__slide--kenburns {
+  animation: ch-hero-kenburns 6500ms var(--ease-out) forwards;
+}
+
+.ch-hero-slideshow__dots {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-3);
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(5, 11, 20, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.ch-hero-slideshow__dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+}
+.ch-hero-slideshow__dot:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+.ch-hero-slideshow__dot--active {
+  background: var(--color-gold-400);
+  transform: scale(1.25);
+}
+
 /* Shown automatically (via the <img> onError handler) when
    /images/hero-couple.jpg hasn't been supplied yet — a soft celebration
    gradient instead of a broken-image icon. See public/images/README.md. */
@@ -211,9 +305,10 @@
 
 /* ---------- Section variant ---------- */
 .ch-section--alt {
-  background: var(--bg-secondary);
+  background: var(--color-cream-100);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* ---------- Value prop grid ---------- */
@@ -296,6 +391,16 @@
 
 .ch-journey-card {
   text-align: left;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
+}
+.ch-journey-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .ch-journey-card__step {
@@ -1250,28 +1355,107 @@
 }
 
 .ch-try-page__success {
-  max-width: 560px;
+  max-width: 460px;
   margin: 0 auto;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-10) 0;
-}
-.ch-try-page__success-icon {
-  font-size: 3rem;
-  color: var(--accent);
-}
-.ch-try-page__success-note {
-  color: var(--text-muted);
-}
-.ch-try-page__success-actions {
-  display: flex;
   gap: var(--space-3);
+  padding: var(--space-10) 0 var(--space-8);
+}
+@media (max-width: 480px) {
+  .ch-try-page__success {
+    padding: var(--space-6) 0 var(--space-6);
+    gap: var(--space-3);
+  }
+}
+
+.ch-try-page__success-icon {
+  font-size: 2.75rem;
+  color: var(--accent);
+  animation: ch-scale-in var(--duration-slow) var(--ease-out) both;
+}
+
+.ch-try-page__success-subtext {
+  color: var(--text-secondary);
+  max-width: 42ch;
+}
+
+/* The compact "what happened" card — subtle gold-accented top border and
+   soft glow instead of the previous plain stacked-text block. Scoped to
+   this card only (not the shared .ch-glass-card base) so nothing else
+   in the app is affected. */
+.ch-try-page__success-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  border-top: 2px solid var(--color-gold-500);
+  box-shadow: var(--shadow-glow);
+}
+@media (max-width: 480px) {
+  .ch-try-page__success-card {
+    padding: var(--space-5) var(--space-4);
+    gap: var(--space-2);
+  }
+}
+
+.ch-try-page__invitation-number {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.ch-try-page__invitation-number strong {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.ch-try-page__delivery-message {
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+  max-width: 36ch;
+}
+
+.ch-try-page__success-badges {
+  display: flex;
+  gap: var(--space-2);
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: var(--space-4);
+}
+
+.ch-try-page__view-card-btn {
+  margin-top: var(--space-1);
+}
+
+.ch-try-page__success-note {
+  color: var(--text-muted);
+  max-width: 40ch;
+  margin: 0;
+}
+
+.ch-try-page__success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+@media (min-width: 560px) {
+  .ch-try-page__success-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .ch-try-page__success-actions .ch-btn {
+    width: auto;
+    min-width: 200px;
+  }
 }
 
 /* ---------- Orders (dashboard + admin) ---------- */
@@ -1360,6 +1544,8 @@
   align-items: center;
   gap: var(--space-2);
   text-align: center;
+  border-top: 2px solid var(--color-gold-500);
+  box-shadow: var(--shadow-glow);
 }
 
 .ch-order-card-page__thumb {
