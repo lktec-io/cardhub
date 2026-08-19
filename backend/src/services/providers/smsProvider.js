@@ -9,7 +9,14 @@ function toBeemRecipient(e164) {
   return e164.startsWith('+') ? e164.slice(1) : e164;
 }
 
-const isConfigured = Boolean(env.sms.apiKey && env.sms.secretKey && env.sms.senderId);
+// Each of the three credential fields is checked independently so a
+// missing one can be named exactly — "no SMS provider configured" alone
+// previously gave no way to tell "all three are empty" apart from "only
+// BEEM_SENDER_ID is empty", which is exactly what happened here: the key
+// pair was correct but the sender ID was not set, and the generic
+// message didn't say so.
+const missingFields = ['apiKey', 'secretKey', 'senderId'].filter((field) => !env.sms[field]);
+const isConfigured = missingFields.length === 0;
 
 /**
  * Beem (beem.africa) SMS provider — CardHub's chosen SMS gateway. No
@@ -32,11 +39,15 @@ const isConfigured = Boolean(env.sms.apiKey && env.sms.secretKey && env.sms.send
  */
 export const smsProvider = {
   isConfigured,
+  missingFields,
 
   /** payload: { to, message } — `to` must already be E.164-normalized (see utils/phone.js). */
   async send(payload) {
     if (!isConfigured) {
-      logger.warn('SMS delivery unavailable — no SMS provider configured', { to: payload.to });
+      logger.warn('SMS delivery unavailable — Beem is missing required env vars', {
+        to: payload.to,
+        missing: missingFields.map((f) => (f === 'apiKey' ? 'BEEM_API_KEY' : f === 'secretKey' ? 'BEEM_SECRET_KEY' : 'BEEM_SENDER_ID')),
+      });
       return { status: 'unavailable', provider: PROVIDER, providerMessageId: null, error: 'provider not configured' };
     }
 

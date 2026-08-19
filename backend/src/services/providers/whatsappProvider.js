@@ -12,6 +12,24 @@ const isBeemConfigured = Boolean(
   selectedProvider === PROVIDER_BEEM && env.sms.apiKey && env.sms.secretKey && env.whatsapp.beemFrom
 );
 
+/** Names exactly which env vars are missing for whichever provider is selected — see smsProvider.js's missingFields for the same reasoning. */
+function missingFieldsFor() {
+  if (selectedProvider === PROVIDER_BEEM) {
+    const missing = [];
+    if (!env.sms.apiKey) missing.push('BEEM_API_KEY');
+    if (!env.sms.secretKey) missing.push('BEEM_SECRET_KEY');
+    if (!env.whatsapp.beemFrom) missing.push('BEEM_WHATSAPP_FROM');
+    return missing;
+  }
+  if (selectedProvider === PROVIDER_META) {
+    const missing = [];
+    if (!env.whatsapp.accessToken) missing.push('WHATSAPP_ACCESS_TOKEN');
+    if (!env.whatsapp.phoneNumberId) missing.push('WHATSAPP_PHONE_NUMBER_ID');
+    return missing;
+  }
+  return ['WHATSAPP_PROVIDER'];
+}
+
 // ---------------------------------------------------------------------
 // Beem WhatsApp ("Moja" multi-channel messaging API). CardHub's chosen
 // WhatsApp transport for Phase 2. Reverse-engineered from Beem's own
@@ -149,6 +167,7 @@ function unavailable(provider, reason, to) {
 export const whatsappProvider = {
   isConfigured: isMetaConfigured || isBeemConfigured,
   providerName: selectedProvider || PROVIDER_META,
+  missingFields: isMetaConfigured || isBeemConfigured ? [] : missingFieldsFor(),
 
   /** payload: { to, message } — `to` must already be E.164-normalized (see utils/phone.js). */
   async sendCardMessage(payload) {
