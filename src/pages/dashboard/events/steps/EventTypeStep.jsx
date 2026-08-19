@@ -1,13 +1,16 @@
 import { EVENT_TYPES } from '../../../../constants/eventTypes';
+import { useLanguage } from '../../../../hooks/useLanguage';
 
 export function EventTypeStep({ value, onChange }) {
+  const { t } = useLanguage();
+
   return (
     <div>
-      <h2 className="ch-h3">What are you celebrating?</h2>
-      <p className="ch-body-sm ch-wizard__intro">Choose the type of event you're creating an invitation for.</p>
+      <h2 className="ch-h3">{t('wizard.eventType.question')}</h2>
+      <p className="ch-body-sm ch-wizard__intro">{t('wizard.eventType.intro')}</p>
 
       <div className="ch-event-type-grid" role="radiogroup" aria-label="Event type">
-        {EVENT_TYPES.map(({ value: typeValue, label, description, icon: Icon }) => {
+        {EVENT_TYPES.map(({ value: typeValue, icon: Icon }) => {
           const isSelected = value === typeValue;
           return (
             <button
@@ -21,8 +24,8 @@ export function EventTypeStep({ value, onChange }) {
               <span className="ch-event-type-card__icon">
                 <Icon aria-hidden="true" />
               </span>
-              <h3 className="ch-h4">{label}</h3>
-              <p className="ch-caption">{description}</p>
+              <h3 className="ch-h4">{t(`category.${typeValue}`)}</h3>
+              <p className="ch-caption">{t(`category.${typeValue}.description`)}</p>
             </button>
           );
         })}

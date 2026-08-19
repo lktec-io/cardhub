@@ -4,8 +4,10 @@ import { EmptyState, Button, Skeleton } from '../../../../components/ui';
 import { Pagination } from '../../../../components/common';
 import { TemplateCard, TemplateFilters } from '../../../../components/templates';
 import { useTemplateCatalog } from '../../../../hooks/useTemplateCatalog';
+import { useLanguage } from '../../../../hooks/useLanguage';
 
 export function TemplateStep({ eventType, selectedTemplateId, onSelect }) {
+  const { t } = useLanguage();
   const { templates, pagination, status, category, setCategory, search, setSearch, page, setPage, retry } =
     useTemplateCatalog({ pageSize: 8 });
 
@@ -16,8 +18,8 @@ export function TemplateStep({ eventType, selectedTemplateId, onSelect }) {
 
   return (
     <div>
-      <h2 className="ch-h3">Choose a template</h2>
-      <p className="ch-body-sm ch-wizard__intro">Pick the design you'd like your invitation to start from.</p>
+      <h2 className="ch-h3">{t('wizard.template.title')}</h2>
+      <p className="ch-body-sm ch-wizard__intro">{t('wizard.template.intro')}</p>
 
       <TemplateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
 
@@ -32,17 +34,17 @@ export function TemplateStep({ eventType, selectedTemplateId, onSelect }) {
       {status === 'error' && (
         <EmptyState
           icon={<FiAlertCircle />}
-          title="Couldn't load templates"
+          title={t('catalogue.loadFailedTitle')}
           action={
             <Button variant="primary" onClick={retry}>
-              Retry
+              {t('catalogue.retry')}
             </Button>
           }
         />
       )}
 
       {status === 'empty' && (
-        <EmptyState icon={<FiSearch />} title="No templates found" description="Try a different search or category." />
+        <EmptyState icon={<FiSearch />} title={t('catalogue.empty')} description={t('changeTemplate.tryDifferent')} />
       )}
 
       {status === 'success' && (

@@ -63,6 +63,15 @@ export const TRANSLATIONS = {
   'category.party': { en: 'Party', sw: 'Peti' },
   'category.corporate': { en: 'Corporate', sw: 'Kampuni' },
   'category.other': { en: 'Other', sw: 'Nyingine' },
+  'category.wedding.description': { en: 'Ceremonies and receptions', sw: 'Sherehe za ndoa na mapokezi' },
+  'category.birthday.description': { en: 'Milestone birthdays and parties', sw: 'Siku za kuzaliwa muhimu na peti' },
+  'category.graduation.description': { en: 'Celebrate an achievement', sw: 'Sherehekea mafanikio' },
+  'category.anniversary.description': { en: 'Years worth celebrating', sw: 'Miaka inayostahili kusherehekewa' },
+  'category.send_off.description': { en: 'Farewells and bridal send-offs', sw: 'Kuaga na send-off za bibi arusi' },
+  'category.baby_shower.description': { en: 'Welcoming a new arrival', sw: 'Kumkaribisha mtoto mpya' },
+  'category.party.description': { en: 'Any reason to celebrate', sw: 'Sababu yoyote ya kusherehekea' },
+  'category.corporate.description': { en: 'Launches and company events', sw: 'Uzinduzi na matukio ya kampuni' },
+  'category.other.description': { en: 'Something else entirely', sw: 'Kitu kingine kabisa' },
 
   // Try Our Service — steps
   'try.eyebrow': { en: 'Try Our Service', sw: 'Jaribu Huduma Yetu' },
@@ -101,6 +110,16 @@ export const TRANSLATIONS = {
   'try.summary.phone': { en: 'Phone', sw: 'Namba' },
   'try.summary.card': { en: 'Card', sw: 'Kadi' },
   'try.summary.price': { en: 'Price', sw: 'Bei' },
+  'try.free': { en: 'Free', sw: 'Bure' },
+  'try.freeBadge': { en: 'Free sample', sw: 'Sampuli ya bure' },
+  'try.freeNotice': {
+    en: 'This is a free sample — no payment is required.',
+    sw: 'Hii ni sampuli ya bure — hulipi chochote.',
+  },
+  'try.savedRequestFree': {
+    en: "We've saved your request for a {card} card ({tier}) — this is a free sample, no payment required.",
+    sw: 'Tumehifadhi ombi lako la kadi ya {card} ({tier}) — hii ni sampuli ya bure, hulipi chochote.',
+  },
   'try.summary.event': { en: 'Event', sw: 'Tukio' },
   'try.sendVia': { en: 'Send my card via', sw: 'Tuma kadi yangu kupitia' },
   'try.channelError': { en: 'Choose at least one delivery method', sw: 'Chagua njia moja ya utumaji angalau' },
@@ -145,6 +164,12 @@ export const TRANSLATIONS = {
   'status.paid': { en: 'Paid', sw: 'Imelipwa' },
   'status.attending': { en: 'Attending', sw: 'Nitahudhuria' },
   'status.declined': { en: 'Not attending', sw: 'Sitahudhuria' },
+  'status.active': { en: 'Active', sw: 'Hai' },
+  'status.inactive': { en: 'Inactive', sw: 'Haifanyi Kazi' },
+  'status.suspended': { en: 'Suspended', sw: 'Imesimamishwa' },
+  'status.draft': { en: 'Draft', sw: 'Rasimu' },
+  'status.published': { en: 'Published', sw: 'Imechapishwa' },
+  'status.archived': { en: 'Archived', sw: 'Imehifadhiwa' },
 
   // Order-card / RSVP page
   'card.loading': { en: 'Loading your card…', sw: 'Inapakia kadi yako…' },
@@ -203,11 +228,681 @@ export const TRANSLATIONS = {
   'admin.orders.placed': { en: 'Placed', sw: 'Tarehe' },
   'admin.orders.updated': { en: 'Order updated', sw: 'Oda imesasishwa' },
   'admin.orders.updateFailed': { en: 'Could not update this order', sw: 'Imeshindikana kusasisha oda hii' },
+
+  // Landing page
+  'landing.badge': { en: 'Now serving Tanzania', sw: 'Sasa tunahudumia Tanzania' },
+  'landing.heroDescription': {
+    en: 'CardHub helps you create and send beautiful digital invitations and cards — browse a real catalogue, see the price per card, and share with your guests in minutes.',
+    sw: 'CardHub inakusaidia kutengeneza na kutuma kadi na mialiko mizuri ya kidijitali — vinjari orodha halisi ya kadi, ona bei ya kila kadi, na tuma kwa wageni wako kwa dakika chache.',
+  },
+  'landing.createYourCard': { en: 'Create Your Card', sw: 'Tengeneza Kadi Yako' },
+  'landing.tryOurService': { en: 'Try Our Service', sw: 'Jaribu Huduma Yetu' },
+  'landing.catalogueTitle': { en: 'A card for every celebration', sw: 'Kadi kwa kila sherehe' },
+  'landing.catalogueDescription': {
+    en: "Real designs from CardHub's catalogue, priced per card.",
+    sw: 'Miundo halisi kutoka kwenye orodha ya CardHub, bei kwa kila kadi.',
+  },
+  'landing.browseFullCatalogue': { en: 'Browse the full catalogue', sw: 'Vinjari orodha kamili' },
+  'landing.howItWorksEyebrow': { en: 'How CardHub works', sw: 'Jinsi CardHub inavyofanya kazi' },
+  'landing.howItWorksTitle': { en: 'From browsing to your card, in four steps', sw: 'Kutoka kuvinjari hadi kadi yako, kwa hatua nne' },
+  'landing.journey.1.title': { en: 'Browse the catalogue', sw: 'Vinjari orodha ya kadi' },
+  'landing.journey.1.description': {
+    en: 'Explore CardHub’s card catalogue by category — wedding, send-off, birthday, and more.',
+    sw: 'Vinjari orodha ya kadi za CardHub kwa kundi — harusi, kuaga, siku ya kuzaliwa, na zaidi.',
+  },
+  'landing.journey.2.title': { en: 'Choose your card', sw: 'Chagua kadi yako' },
+  'landing.journey.2.description': {
+    en: 'Pick the design that fits your celebration and see its price per card upfront.',
+    sw: 'Chagua muundo unaofaa sherehe yako na uone bei ya kadi mapema.',
+  },
+  'landing.journey.3.title': { en: 'Try Our Service', sw: 'Jaribu Huduma Yetu' },
+  'landing.journey.3.description': {
+    en: 'Tell us your name and phone number — no account required to get started.',
+    sw: 'Tuambie jina lako na namba ya simu — hauitaji akaunti kuanza.',
+  },
+  'landing.journey.4.title': { en: 'Receive your card', sw: 'Pokea kadi yako' },
+  'landing.journey.4.description': {
+    en: 'Your request is saved instantly, and our team follows up to bring your card to life.',
+    sw: 'Ombi lako linahifadhiwa papo hapo, na timu yetu inafuatilia kukamilisha kadi yako.',
+  },
+  'landing.whyEyebrow': { en: 'Why CardHub', sw: 'Kwa Nini CardHub' },
+  'landing.whyTitle': { en: 'Everything you need, priced per card', sw: 'Kila unachohitaji, bei kwa kila kadi' },
+  'landing.whyDescription': {
+    en: 'A single, elegant service to browse, choose, and send your digital card.',
+    sw: 'Huduma moja rahisi ya kuvinjari, kuchagua, na kutuma kadi yako ya kidijitali.',
+  },
+  'landing.value.1.title': { en: 'Beautiful by design', sw: 'Nzuri kwa muundo' },
+  'landing.value.1.description': {
+    en: 'Every card follows CardHub’s premium visual language, so it looks intentional from the first glance.',
+    sw: 'Kila kadi inafuata mtindo bora wa CardHub, hivyo inaonekana ya kitaalamu mara ya kwanza.',
+  },
+  'landing.value.2.title': { en: 'Simple, per-card pricing', sw: 'Bei rahisi, kwa kila kadi' },
+  'landing.value.2.description': {
+    en: 'No subscriptions, no packages you don’t need — pay only for the cards you actually send.',
+    sw: 'Hakuna malipo ya kila mwezi, hakuna vifurushi visivyohitajika — lipa kadi unazotuma tu.',
+  },
+  'landing.value.3.title': { en: 'Easy to share', sw: 'Rahisi kutuma' },
+  'landing.value.3.description': {
+    en: 'Every card is fast, mobile-friendly, and effortless for your guests to open — no app required.',
+    sw: 'Kila kadi ni ya haraka, inafanya kazi vizuri kwenye simu, na rahisi kwa wageni wako kufungua — hauitaji app.',
+  },
+  'landing.value.4.title': { en: 'Fast to try', sw: 'Haraka kujaribu' },
+  'landing.value.4.description': {
+    en: 'Try Our Service in a few quick steps — pick a card, tell us who it’s for, done.',
+    sw: 'Jaribu Huduma Yetu kwa hatua chache — chagua kadi, tuambie ni ya nani, imekamilika.',
+  },
+  'landing.value.5.title': { en: 'Built by Clix Digital Works', sw: 'Imetengenezwa na Clix Digital Works' },
+  'landing.value.5.description': {
+    en: 'A Tanzanian team building CardHub for real celebrations, from send-offs to weddings to birthdays.',
+    sw: 'Timu ya Kitanzania inayotengeneza CardHub kwa ajili ya sherehe halisi, kutoka kuaga hadi harusi na siku za kuzaliwa.',
+  },
+  'landing.pricingEyebrow': { en: 'Pricing', sw: 'Bei' },
+  'landing.pricingTitle': { en: 'Simple pricing, per card', sw: 'Bei rahisi, kwa kila kadi' },
+  'landing.pricingDescription': { en: 'No subscriptions. Choose the tier that fits your card.', sw: 'Hakuna malipo ya kila mwezi. Chagua kiwango kinachofaa kadi yako.' },
+  'landing.seeFullPricing': { en: 'See full pricing details', sw: 'Ona bei zote kwa undani' },
+  'landing.ctaTryTitle': { en: 'Not ready to commit? Try it first.', sw: 'Bado hujaamua? Jaribu kwanza.' },
+  'landing.ctaTryDescription': {
+    en: 'Tell us your name, your phone number, and the card you like — no account required.',
+    sw: 'Tuambie jina lako, namba yako ya simu, na kadi unayopenda — hauitaji akaunti.',
+  },
+  'landing.ctaCreateTitle': { en: 'Ready to create your card?', sw: 'Uko tayari kutengeneza kadi yako?' },
+  'landing.ctaCreateDescription': {
+    en: "Browse CardHub's catalogue and see the price per card upfront.",
+    sw: 'Vinjari orodha ya CardHub na uone bei ya kadi mapema.',
+  },
+
+  // Footer
+  'footer.tagline': { en: 'Create. Invite. Celebrate.', sw: 'Tengeneza. Alika. Sherehekea.' },
+  'footer.colCardHub': { en: 'CardHub', sw: 'CardHub' },
+  'footer.colSupport': { en: 'Support', sw: 'Msaada' },
+  'footer.copyright': { en: '© 2026 CardHub. A Clix Digital Works product.', sw: '© 2026 CardHub. Bidhaa ya Clix Digital Works.' },
+  'footer.about': { en: 'About', sw: 'Kuhusu' },
+  'footer.contact': { en: 'Contact', sw: 'Wasiliana Nasi' },
+  'footer.privacy': { en: 'Privacy', sw: 'Faragha' },
+  'footer.terms': { en: 'Terms', sw: 'Vigezo' },
+
+  // About page
+  'about.eyebrow': { en: 'About CardHub', sw: 'Kuhusu CardHub' },
+  'about.title': { en: 'Modernizing the way people invite, connect, and celebrate', sw: 'Kuboresha jinsi watu wanavyoalika, kuungana, na kusherehekea' },
+  'about.description': { en: 'CardHub is a product of Clix Digital Works, built in Tanzania for hosts everywhere.', sw: 'CardHub ni bidhaa ya Clix Digital Works, iliyotengenezwa Tanzania kwa waandaji kila mahali.' },
+  'about.purpose.title': { en: 'Our purpose', sw: 'Lengo letu' },
+  'about.purpose.description': {
+    en: 'Invitations should feel as special as the event they announce. CardHub exists to make beautiful, digital-first invitations accessible to every host — from an intimate gathering to a full celebration.',
+    sw: 'Mialiko inapaswa kuhisi maalum kama tukio linaloitangaza. CardHub ipo ili kufanya mialiko mizuri ya kidijitali ipatikane kwa kila mwandaji — kuanzia mkusanyiko mdogo hadi sherehe kubwa.',
+  },
+  'about.origin.title': { en: "Where we're from", sw: 'Tunatoka wapi' },
+  'about.origin.description': {
+    en: 'CardHub is built by Clix Digital Works in Tanzania, designed with the way people here share and celebrate in mind — mobile-first, fast, and easy to pass along.',
+    sw: 'CardHub imetengenezwa na Clix Digital Works Tanzania, ikizingatia jinsi watu hapa wanavyoshiriki na kusherehekea — inafanya kazi vizuri kwenye simu, ya haraka, na rahisi kutuma.',
+  },
+  'about.building.title': { en: "What we're building", sw: 'Tunachojenga' },
+  'about.building.description': {
+    en: "CardHub is under active development. We're building it in the open, phase by phase — starting with a premium foundation and growing toward a complete event platform.",
+    sw: 'CardHub inaendelea kutengenezwa. Tunaijenga kwa uwazi, hatua kwa hatua — tukianzia na msingi bora na kukua hadi kuwa jukwaa kamili la matukio.',
+  },
+
+  // How it works page
+  'howItWorks.eyebrow': { en: 'How CardHub works', sw: 'Jinsi CardHub inavyofanya kazi' },
+  'howItWorks.title': { en: 'Your event, from invitation to celebration', sw: 'Tukio lako, kutoka mualiko hadi sherehe' },
+  'howItWorks.description': {
+    en: 'Here’s the CardHub journey, from picking a template to bringing your guests together.',
+    sw: 'Huu ndio mwendo wa CardHub, kutoka kuchagua kadi hadi kukusanya wageni wako.',
+  },
+  'howItWorks.step.1.title': { en: 'Choose your style', sw: 'Chagua mtindo wako' },
+  'howItWorks.step.1.description': {
+    en: 'Browse CardHub’s growing catalog of templates — wedding, send-off, birthday, graduation, and more — and pick the one that fits your event.',
+    sw: 'Vinjari orodha inayokua ya kadi za CardHub — harusi, kuaga, siku ya kuzaliwa, mahafali, na zaidi — na uchague inayofaa tukio lako.',
+  },
+  'howItWorks.step.2.title': { en: 'Create your invitation', sw: 'Tengeneza mualiko wako' },
+  'howItWorks.step.2.description': {
+    en: 'Personalize your invitation with your event details. CardHub’s guided invitation builder is on its way to make this effortless.',
+    sw: 'Binafsisha mualiko wako na taarifa za tukio lako. Kifaa cha kutengeneza mialiko cha CardHub kinakuja kufanya hili kuwa rahisi.',
+  },
+  'howItWorks.step.3.title': { en: 'Share with guests', sw: 'Shiriki na wageni' },
+  'howItWorks.step.3.description': {
+    en: 'Share a single CardHub link with your guests — no app download required for them to view it.',
+    sw: 'Shiriki kiungo kimoja cha CardHub na wageni wako — hawahitaji kupakua app kuona.',
+  },
+  'howItWorks.step.4.title': { en: 'Manage your guest list', sw: 'Simamia orodha ya wageni wako' },
+  'howItWorks.step.4.description': {
+    en: 'As CardHub’s guest and RSVP tools launch, you’ll be able to track responses in one organized place.',
+    sw: 'Vifaa vya wageni na RSVP vya CardHub vitakapoanza, utaweza kufuatilia majibu mahali pamoja pangalilo.',
+  },
+  'howItWorks.step.5.title': { en: 'Celebrate', sw: 'Sherehekea' },
+  'howItWorks.step.5.description': {
+    en: 'Bring your event together, with CardHub supporting you from the first invitation to the last guest.',
+    sw: 'Kusanya tukio lako, CardHub ikikuunga mkono kutoka mualiko wa kwanza hadi mgeni wa mwisho.',
+  },
+  'howItWorks.startCta': { en: 'Start creating your invitation', sw: 'Anza kutengeneza mualiko wako' },
+
+  // Pricing page
+  'pricing.title': { en: 'Simple pricing, per card', sw: 'Bei rahisi, kwa kila kadi' },
+  'pricing.description': {
+    en: 'CardHub is priced per card, not per event. No subscriptions, no hidden fees — see the price before you choose a design.',
+    sw: 'CardHub inatoza bei kwa kadi, si kwa tukio. Hakuna malipo ya kila mwezi, hakuna gharama za siri — ona bei kabla ya kuchagua muundo.',
+  },
+  'pricing.mostPopular': { en: 'Most popular', sw: 'Inayopendwa Zaidi' },
+  'pricing.browseCards': { en: 'Browse {tier} cards', sw: 'Vinjari kadi za {tier}' },
+  'pricing.note': {
+    en: 'Prices are shown in Tanzanian Shillings, per card, and are subject to change. Payment processing is not yet available —',
+    sw: 'Bei zinaonyeshwa kwa Shilingi za Tanzania, kwa kila kadi, na zinaweza kubadilika. Mfumo wa malipo bado haujapatikana —',
+  },
+  'pricing.noteLink': {
+    en: "try our service to save your request while it's connected",
+    sw: 'jaribu huduma yetu kuhifadhi ombi lako wakati unaunganishwa',
+  },
+  'pricing.tier.starter.tagline': { en: 'For a simple, beautiful card', sw: 'Kwa kadi rahisi na nzuri' },
+  'pricing.tier.starter.feature.1': { en: 'Standard catalogue designs', sw: 'Miundo ya kawaida ya orodha' },
+  'pricing.tier.starter.feature.2': { en: 'Shareable card link', sw: 'Kiungo cha kadi kinachoshirikishwa' },
+  'pricing.tier.starter.feature.3': { en: 'Try Our Service — no account required', sw: 'Jaribu Huduma Yetu — hauitaji akaunti' },
+  'pricing.tier.premium.tagline': { en: 'For cards that deserve more polish', sw: 'Kwa kadi zinazostahili umaridadi zaidi' },
+  'pricing.tier.premium.feature.1': { en: 'Premium catalogue designs', sw: 'Miundo bora ya orodha' },
+  'pricing.tier.premium.feature.2': { en: 'Custom card details', sw: 'Taarifa maalum za kadi' },
+  'pricing.tier.premium.feature.3': { en: 'Priority follow-up on your request', sw: 'Ufuatiliaji wa haraka wa ombi lako' },
+  'pricing.tier.classic.tagline': { en: 'For hosts who want it all handled', sw: 'Kwa waandaji wanaotaka kila kitu kishughulikiwe' },
+  'pricing.tier.classic.feature.1': { en: 'Classic, most detailed designs', sw: 'Miundo ya kawaida, yenye undani zaidi' },
+  'pricing.tier.classic.feature.2': { en: 'Custom card details', sw: 'Taarifa maalum za kadi' },
+  'pricing.tier.classic.feature.3': { en: 'Priority follow-up on your request', sw: 'Ufuatiliaji wa haraka wa ombi lako' },
+
+  // Contact page
+  'contact.title': { en: "We'd love to hear from you", sw: 'Tungependa kusikia kutoka kwako' },
+  'contact.nameError': { en: 'Please enter your name', sw: 'Tafadhali weka jina lako' },
+  'contact.emailError': { en: 'Please enter a valid email', sw: 'Tafadhali weka barua pepe sahihi' },
+  'contact.messageError': { en: 'Please share a few more details (at least 10 characters)', sw: 'Tafadhali ongeza maelezo zaidi (angalau herufi 10)' },
+  'contact.genericError': { en: 'Something went wrong. Please try again.', sw: 'Hitilafu imetokea. Tafadhali jaribu tena.' },
+  'contact.fullName': { en: 'Full name', sw: 'Jina kamili' },
+  'contact.emailAddress': { en: 'Email address', sw: 'Barua pepe' },
+  'contact.subjectOptional': { en: 'Subject (optional)', sw: 'Kichwa cha habari (si lazima)' },
+  'contact.message': { en: 'Message', sw: 'Ujumbe' },
+  'contact.sendMessage': { en: 'Send message', sw: 'Tuma Ujumbe' },
+  'contact.email': { en: 'Email', sw: 'Barua Pepe' },
+  'contact.phone': { en: 'Phone', sw: 'Simu' },
+  'contact.basedIn': { en: 'Based in', sw: 'Tupo' },
+
+  // FAQ page
+  'faq.title': { en: 'Frequently asked questions', sw: 'Maswali Yanayoulizwa Mara kwa Mara' },
+  'faq.1.question': { en: 'What is CardHub?', sw: 'CardHub ni nini?' },
+  'faq.1.answer': {
+    en: 'CardHub is a digital invitation and event platform by Clix Digital Works, built to help you create beautiful invitations, share them with your guests, and manage your event in one place.',
+    sw: 'CardHub ni jukwaa la mialiko na matukio ya kidijitali la Clix Digital Works, lililotengenezwa kukusaidia kutengeneza mialiko mizuri, kuishiriki na wageni wako, na kusimamia tukio lako mahali pamoja.',
+  },
+  'faq.2.question': { en: 'What type of events can I create?', sw: 'Ninaweza kutengeneza matukio ya aina gani?' },
+  'faq.2.answer': {
+    en: 'CardHub is designed for weddings, send-offs, birthdays, graduations, anniversaries, baby showers, parties, and corporate events — with more event types planned.',
+    sw: 'CardHub imeundwa kwa harusi, kuaga, siku za kuzaliwa, mahafali, maadhimisho, baby shower, peti, na matukio ya kampuni — na aina zaidi zinakuja.',
+  },
+  'faq.3.question': { en: 'Can I share my invitation on WhatsApp?', sw: 'Naweza kushiriki mualiko wangu kwenye WhatsApp?' },
+  'faq.3.answer': {
+    en: 'Yes — CardHub can send your card directly via WhatsApp and SMS when you use Try Our Service, and every card has its own shareable link too.',
+    sw: 'Ndiyo — CardHub inaweza kutuma kadi yako moja kwa moja kupitia WhatsApp na SMS unapotumia Jaribu Huduma Yetu, na kila kadi ina kiungo chake cha kushiriki.',
+  },
+  'faq.4.question': { en: 'Can guests RSVP?', sw: 'Wageni wanaweza kujibu mwaliko (RSVP)?' },
+  'faq.4.answer': {
+    en: 'Yes — guests can confirm or decline attendance directly from their card page, and a QR code is available for check-in at the event.',
+    sw: 'Ndiyo — wageni wanaweza kuthibitisha au kukataa kuhudhuria moja kwa moja kwenye ukurasa wa kadi yao, na QR Code inapatikana kwa ajili ya kuingia tukioni.',
+  },
+  'faq.5.question': { en: 'Can I customize my invitation?', sw: 'Naweza kubinafsisha mualiko wangu?' },
+  'faq.5.answer': {
+    en: 'Yes — CardHub is being built around a template system so you can start from a designed template and make it your own. The full invitation builder is coming soon.',
+    sw: 'Ndiyo — CardHub imejengwa kwa mfumo wa kadi tayari zilizoundwa ili uanze na muundo uliopo na kuufanya wako. Kifaa kamili cha kutengeneza mialiko kinakuja hivi karibuni.',
+  },
+  'faq.6.question': { en: 'Is CardHub mobile friendly?', sw: 'CardHub inafanya kazi vizuri kwenye simu?' },
+  'faq.6.answer': {
+    en: 'Yes. CardHub is designed mobile-first, so creating and viewing invitations works smoothly on any device.',
+    sw: 'Ndiyo. CardHub imeundwa ikilenga simu kwanza, hivyo kutengeneza na kuona mialiko kunafanya kazi vizuri kwenye kifaa chochote.',
+  },
+  'faq.7.question': { en: 'How does pricing work?', sw: 'Bei inafanya kazije?' },
+  'faq.7.answer': {
+    en: 'CardHub offers simple, per-card pricing — Starter, Premium, and Classic — so you only pay for the cards you actually send. See the Pricing page for details.',
+    sw: 'CardHub inatoza bei rahisi kwa kila kadi — Starter, Premium, na Classic — hivyo unalipa kadi unazotuma tu. Angalia ukurasa wa Bei kwa maelezo zaidi.',
+  },
+  'faq.8.question': { en: 'Can I edit my invitation?', sw: 'Naweza kuhariri mualiko wangu?' },
+  'faq.8.answer': {
+    en: 'Once the invitation builder launches, you’ll be able to edit your invitation details at any time before and after sharing it.',
+    sw: 'Kifaa cha kutengeneza mialiko kitakapoanza, utaweza kuhariri taarifa za mualiko wako wakati wowote kabla na baada ya kuushiriki.',
+  },
+  'faq.9.question': { en: 'Can I contact support?', sw: 'Naweza kuwasiliana na msaada?' },
+  'faq.9.answer': {
+    en: 'Absolutely — reach out any time through the Contact page and the CardHub team will get back to you.',
+    sw: 'Bila shaka — wasiliana nasi wakati wowote kupitia ukurasa wa Wasiliana Nasi na timu ya CardHub itakujibu.',
+  },
+
+  // Legal pages
+  'legal.eyebrow': { en: 'Legal', sw: 'Kisheria' },
+  'legal.lastUpdated': { en: 'Last updated 17 August 2026', sw: 'Ilisasishwa mara ya mwisho tarehe 17 Agosti 2026' },
+  'terms.title': { en: 'Terms of Service', sw: 'Vigezo vya Huduma' },
+  'terms.intro': {
+    en: "CardHub is currently in active development by Clix Digital Works. These terms will govern your use of CardHub once the platform is generally available; they are published here ahead of launch as part of CardHub's foundation.",
+    sw: 'CardHub inaendelea kutengenezwa na Clix Digital Works. Vigezo hivi vitatawala matumizi yako ya CardHub mara jukwaa litakapopatikana rasmi; vimechapishwa hapa kabla ya uzinduzi kama sehemu ya msingi wa CardHub.',
+  },
+  'terms.section1.title': { en: '1. Using CardHub', sw: '1. Kutumia CardHub' },
+  'terms.section1.body': {
+    en: 'You agree to use CardHub only for lawful purposes and to provide accurate information when creating an account.',
+    sw: 'Unakubali kutumia CardHub kwa madhumuni halali tu na kutoa taarifa sahihi unapofungua akaunti.',
+  },
+  'terms.section2.title': { en: '2. Accounts', sw: '2. Akaunti' },
+  'terms.section2.body': {
+    en: 'You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account.',
+    sw: 'Wewe una jukumu la kutunza siri za akaunti yako na shughuli zote zinazofanyika kwenye akaunti yako.',
+  },
+  'terms.section3.title': { en: '3. Content', sw: '3. Maudhui' },
+  'terms.section3.body': {
+    en: 'You retain ownership of the invitation content you create. By using CardHub, you grant us the rights necessary to host and display that content back to you and your invited guests.',
+    sw: 'Unabaki na umiliki wa maudhui ya mualiko unayotengeneza. Kwa kutumia CardHub, unatupa haki muhimu za kuhifadhi na kuonyesha maudhui hayo kwako na wageni uliowaalika.',
+  },
+  'terms.section4.title': { en: '4. Changes', sw: '4. Mabadiliko' },
+  'terms.section4.body': {
+    en: 'As CardHub grows through its development phases, these terms may be updated. Material changes will be communicated before they take effect.',
+    sw: 'CardHub inapoendelea kukua kupitia hatua zake za maendeleo, vigezo hivi vinaweza kusasishwa. Mabadiliko makubwa yatatangazwa kabla hayajaanza kutumika.',
+  },
+  'terms.section5.title': { en: '5. Contact', sw: '5. Wasiliana Nasi' },
+  'terms.section5.body': { en: 'Questions about these terms can be sent to hello@cardhub.co.tz.', sw: 'Maswali kuhusu vigezo hivi yanaweza kutumwa kwa hello@cardhub.co.tz.' },
+
+  'privacy.title': { en: 'Privacy Policy', sw: 'Sera ya Faragha' },
+  'privacy.intro': {
+    en: 'This Privacy Policy explains how Clix Digital Works collects and uses information through CardHub. CardHub is under active development; this policy will expand as new features (guest data, payments, communications) are introduced.',
+    sw: 'Sera hii ya Faragha inaeleza jinsi Clix Digital Works inavyokusanya na kutumia taarifa kupitia CardHub. CardHub inaendelea kutengenezwa; sera hii itaongezeka vipengele vipya (taarifa za wageni, malipo, mawasiliano) vinapoongezwa.',
+  },
+  'privacy.section1.title': { en: '1. Information we collect', sw: '1. Taarifa tunazokusanya' },
+  'privacy.section1.body': {
+    en: 'When you create a CardHub account, we collect your name, email address, phone number, and a securely hashed password. We never store your password in plain text.',
+    sw: 'Unapofungua akaunti ya CardHub, tunakusanya jina lako, barua pepe, namba ya simu, na nywila iliyofichwa kwa usalama. Hatuhifadhi nywila yako kwa maandishi ya wazi kamwe.',
+  },
+  'privacy.section2.title': { en: '2. How we use your information', sw: '2. Jinsi tunavyotumia taarifa zako' },
+  'privacy.section2.body': {
+    en: 'We use your information to operate your CardHub account, secure your session, and communicate with you about your account and events.',
+    sw: 'Tunatumia taarifa zako kuendesha akaunti yako ya CardHub, kulinda kipindi chako, na kuwasiliana nawe kuhusu akaunti na matukio yako.',
+  },
+  'privacy.section3.title': { en: '3. Data security', sw: '3. Usalama wa taarifa' },
+  'privacy.section3.body': {
+    en: 'Passwords are hashed with bcrypt, sessions use short-lived access tokens with securely stored refresh tokens, and all account actions are recorded in an internal audit log.',
+    sw: 'Nywila zinafichwa kwa bcrypt, vipindi vinatumia token za muda mfupi zenye token za kuboresha zilizohifadhiwa kwa usalama, na shughuli zote za akaunti zinarekodiwa kwenye kumbukumbu za ndani.',
+  },
+  'privacy.section4.title': { en: '4. Your choices', sw: '4. Chaguo zako' },
+  'privacy.section4.body': {
+    en: 'You can update your profile information and notification preferences from your account settings at any time.',
+    sw: 'Unaweza kusasisha taarifa za wasifu wako na mapendeleo ya arifa kutoka kwenye mipangilio ya akaunti yako wakati wowote.',
+  },
+  'privacy.section5.title': { en: '5. Contact', sw: '5. Wasiliana Nasi' },
+  'privacy.section5.body': { en: 'Questions about this policy can be sent to hello@cardhub.co.tz.', sw: 'Maswali kuhusu sera hii yanaweza kutumwa kwa hello@cardhub.co.tz.' },
+
+  // Auth — shared
+  'auth.emailLabel': { en: 'Email', sw: 'Barua Pepe' },
+  'auth.emailError': { en: 'Please enter a valid email', sw: 'Tafadhali weka barua pepe sahihi' },
+  'auth.passwordLabel': { en: 'Password', sw: 'Nywila' },
+  'auth.passwordRequiredError': { en: 'Please enter your password', sw: 'Tafadhali weka nywila yako' },
+  'auth.passwordMinError': { en: 'Password must be at least 8 characters', sw: 'Nywila lazima iwe na herufi 8 au zaidi' },
+  'auth.confirmPasswordLabel': { en: 'Confirm password', sw: 'Thibitisha nywila' },
+  'auth.confirmPasswordError': { en: 'Passwords do not match', sw: 'Nywila hazifanani' },
+  'auth.rateLimited': { en: 'Too many attempts. Please wait a few minutes before trying again.', sw: 'Majaribio mengi sana. Tafadhali subiri dakika chache kabla ya kujaribu tena.' },
+
+  // Login
+  'login.welcomeBack': { en: 'Welcome back', sw: 'Karibu tena' },
+  'login.subtitle': { en: 'Log in to manage your CardHub invitations.', sw: 'Ingia kusimamia mialiko yako ya CardHub.' },
+  'login.invalidCredentials': { en: 'Invalid email or password', sw: 'Barua pepe au nywila si sahihi' },
+  'login.forgotPassword': { en: 'Forgot password?', sw: 'Umesahau nywila?' },
+  'login.submit': { en: 'Log in', sw: 'Ingia' },
+  'login.noAccount': { en: "Don't have an account?", sw: 'Huna akaunti?' },
+  'login.createOne': { en: 'Create one', sw: 'Fungua moja' },
+
+  // Register
+  'register.welcome': { en: 'Welcome to CardHub', sw: 'Karibu CardHub' },
+  'register.subtitle': { en: 'Create beautiful invitations and bring your event together.', sw: 'Tengeneza mialiko mizuri na kusanya tukio lako pamoja.' },
+  'register.nameError': { en: 'Please enter your full name', sw: 'Tafadhali weka jina lako kamili' },
+  'register.phoneError': { en: 'Please enter a valid phone number', sw: 'Tafadhali weka namba sahihi ya simu' },
+  'register.genericError': { en: "We couldn't create your account. Please try again.", sw: 'Tumeshindwa kufungua akaunti yako. Tafadhali jaribu tena.' },
+  'register.fullName': { en: 'Full name', sw: 'Jina kamili' },
+  'register.phoneOptional': { en: 'Phone (optional)', sw: 'Simu (si lazima)' },
+  'register.submit': { en: 'Create my account', sw: 'Fungua akaunti yangu' },
+  'register.haveAccount': { en: 'Already have an account?', sw: 'Una akaunti tayari?' },
+
+  // Forgot password
+  'forgotPassword.title': { en: 'Reset your password', sw: 'Weka upya nywila yako' },
+  'forgotPassword.subtitle': { en: "Enter the email on your account and we'll send you a reset link.", sw: 'Weka barua pepe ya akaunti yako na tutakutumia kiungo cha kuweka upya nywila.' },
+  'forgotPassword.checkEmail': { en: 'Check your email', sw: 'Angalia barua pepe yako' },
+  'forgotPassword.devNote': {
+    en: "Development mode — no email provider is configured yet, so here's your reset link:",
+    sw: 'Hali ya majaribio — hakuna huduma ya barua pepe iliyowekwa bado, hivyo hapa kuna kiungo chako:',
+  },
+  'forgotPassword.resetLinkText': { en: 'Reset your password', sw: 'Weka upya nywila yako' },
+  'forgotPassword.sendLink': { en: 'Send reset link', sw: 'Tuma kiungo' },
+  'forgotPassword.remembered': { en: 'Remembered your password?', sw: 'Umekumbuka nywila yako?' },
+
+  // Reset password
+  'resetPassword.title': { en: 'Choose a new password', sw: 'Chagua nywila mpya' },
+  'resetPassword.subtitle': { en: 'Enter and confirm your new password below.', sw: 'Weka na uthibitishe nywila yako mpya hapa chini.' },
+  'resetPassword.expiredError': { en: 'This reset link is invalid or has expired.', sw: 'Kiungo hiki cha kuweka upya nywila si sahihi au kimeisha muda.' },
+  'resetPassword.newPassword': { en: 'New password', sw: 'Nywila mpya' },
+  'resetPassword.confirmNewPassword': { en: 'Confirm new password', sw: 'Thibitisha nywila mpya' },
+  'resetPassword.submit': { en: 'Reset password', sw: 'Weka upya nywila' },
+  'resetPassword.successTitle': { en: 'Password reset successfully', sw: 'Nywila imewekwa upya kwa mafanikio' },
+  'resetPassword.successBody': { en: 'You can now log in with your new password.', sw: 'Sasa unaweza kuingia kwa nywila yako mpya.' },
+  'resetPassword.goToLogin': { en: 'Go to login', sw: 'Nenda kuingia' },
+  'resetPassword.backToLogin': { en: 'Back to login', sw: 'Rudi kuingia' },
+
+  // Dashboard sidebar
+  'sidebar.dashboard': { en: 'Dashboard', sw: 'Dashibodi' },
+  'sidebar.myCards': { en: 'My Cards', sw: 'Kadi Zangu' },
+  'sidebar.orders': { en: 'Orders', sw: 'Oda' },
+  'sidebar.guests': { en: 'Guests', sw: 'Wageni' },
+  'sidebar.messages': { en: 'Messages', sw: 'Ujumbe' },
+  'sidebar.analytics': { en: 'Analytics', sw: 'Takwimu' },
+  'sidebar.billing': { en: 'Billing', sw: 'Malipo' },
+  'sidebar.settings': { en: 'Settings', sw: 'Mipangilio' },
+  'sidebar.soon': { en: 'Soon', sw: 'Hivi Karibuni' },
+  'sidebar.admin.customers': { en: 'Customers', sw: 'Wateja' },
+  'sidebar.admin.templates': { en: 'Cards / Templates', sw: 'Kadi / Miundo' },
+  'sidebar.admin.events': { en: 'Events', sw: 'Matukio' },
+  'sidebar.admin.auditLogs': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
+  'sidebar.admin.backToCardHub': { en: 'Back to CardHub', sw: 'Rudi CardHub' },
+
+  // Topbar
+  'topbar.openMenu': { en: 'Open navigation menu', sw: 'Fungua menyu' },
+  'topbar.notifications': { en: 'Notifications', sw: 'Arifa' },
+  'topbar.accountMenu': { en: 'Account menu', sw: 'Menyu ya Akaunti' },
+  'topbar.logout': { en: 'Log out', sw: 'Toka' },
+
+  // Dashboard home
+  'dashboardHome.eyebrow': { en: 'Dashboard', sw: 'Dashibodi' },
+  'dashboardHome.welcomeBack': { en: 'Welcome back, {name}', sw: 'Karibu tena, {name}' },
+  'dashboardHome.welcomeBackNoName': { en: 'Welcome back', sw: 'Karibu tena' },
+  'dashboardHome.eventCount': { en: 'You have {count} event(s) in CardHub.', sw: 'Una matukio {count} kwenye CardHub.' },
+  'dashboardHome.getStarted': { en: 'Create your first invitation to get started with CardHub.', sw: 'Tengeneza mualiko wako wa kwanza kuanza na CardHub.' },
+  'dashboardHome.createInvitation': { en: 'Create Invitation', sw: 'Tengeneza Mualiko' },
+  'dashboardHome.loadFailed': { en: "Couldn't load your events", sw: 'Imeshindikana kupakia matukio yako' },
+  'dashboardHome.loadFailedDescription': { en: 'Something went wrong. Please try again.', sw: 'Hitilafu imetokea. Tafadhali jaribu tena.' },
+  'dashboardHome.retry': { en: 'Retry', sw: 'Jaribu Tena' },
+  'dashboardHome.emptyTitle': { en: 'Your events will appear here', sw: 'Matukio yako yataonekana hapa' },
+  'dashboardHome.emptyDescription': {
+    en: 'Ready to create something beautiful? Your CardHub invitations and events will show up on this page.',
+    sw: 'Uko tayari kutengeneza kitu kizuri? Mialiko na matukio yako ya CardHub yataonekana kwenye ukurasa huu.',
+  },
+  'dashboardHome.createYourInvitation': { en: 'Create your invitation', sw: 'Tengeneza mualiko wako' },
+  'dashboardHome.viewAll': { en: 'View all events', sw: 'Ona matukio yote' },
+  'dashboardHome.eventDuplicated': { en: 'Event duplicated', sw: 'Tukio limenakiliwa' },
+  'dashboardHome.duplicateFailed': { en: 'Could not duplicate this event', sw: 'Imeshindikana kunakili tukio hili' },
+  'dashboardHome.eventDeleted': { en: 'Event deleted', sw: 'Tukio limefutwa' },
+  'dashboardHome.deleteFailed': { en: 'Could not delete this event', sw: 'Imeshindikana kufuta tukio hili' },
+
+  // Settings — shared layout
+  'settings.eyebrow': { en: 'Account', sw: 'Akaunti' },
+  'settings.title': { en: 'Settings', sw: 'Mipangilio' },
+  'settings.description': { en: 'Manage your profile, security, and preferences.', sw: 'Simamia wasifu wako, usalama, na mapendeleo yako.' },
+  'settings.tab.profile': { en: 'Profile', sw: 'Wasifu' },
+  'settings.tab.security': { en: 'Security', sw: 'Usalama' },
+  'settings.tab.notifications': { en: 'Notifications', sw: 'Arifa' },
+  'settings.tab.language': { en: 'Language', sw: 'Lugha' },
+
+  // Settings — profile
+  'settings.profile.title': { en: 'Profile', sw: 'Wasifu' },
+  'settings.profile.description': { en: 'Update your name and phone number.', sw: 'Sasisha jina lako na namba ya simu.' },
+  'settings.profile.nameMinError': { en: 'Name must be at least 2 characters', sw: 'Jina lazima liwe na herufi 2 au zaidi' },
+  'settings.profile.emailHint': { en: "Email changes aren't supported yet.", sw: 'Kubadilisha barua pepe hakupatikani bado.' },
+  'settings.profile.fullName': { en: 'Full name', sw: 'Jina kamili' },
+  'settings.profile.phone': { en: 'Phone', sw: 'Simu' },
+  'settings.profile.saveChanges': { en: 'Save changes', sw: 'Hifadhi Mabadiliko' },
+  'settings.profile.updated': { en: 'Profile updated successfully', sw: 'Wasifu umesasishwa kwa mafanikio' },
+  'settings.profile.updateFailed': { en: 'Could not update your profile', sw: 'Imeshindikana kusasisha wasifu wako' },
+
+  // Settings — security
+  'settings.security.title': { en: 'Security', sw: 'Usalama' },
+  'settings.security.description': {
+    en: 'Change your password. This will sign you out of your other active sessions.',
+    sw: 'Badilisha nywila yako. Hii itakutoa kwenye vipindi vyako vingine vinavyoendelea.',
+  },
+  'settings.security.currentPasswordError': { en: 'Enter your current password', sw: 'Weka nywila yako ya sasa' },
+  'settings.security.newPasswordMinError': { en: 'New password must be at least 8 characters', sw: 'Nywila mpya lazima iwe na herufi 8 au zaidi' },
+  'settings.security.currentPassword': { en: 'Current password', sw: 'Nywila ya sasa' },
+  'settings.security.newPassword': { en: 'New password', sw: 'Nywila mpya' },
+  'settings.security.confirmNewPassword': { en: 'Confirm new password', sw: 'Thibitisha nywila mpya' },
+  'settings.security.changePassword': { en: 'Change password', sw: 'Badilisha Nywila' },
+  'settings.security.changed': {
+    en: "Password changed. You've been signed out of your other sessions.",
+    sw: 'Nywila imebadilishwa. Umetolewa kwenye vipindi vyako vingine.',
+  },
+  'settings.security.changeFailed': { en: 'Could not change your password', sw: 'Imeshindikana kubadilisha nywila yako' },
+
+  // Settings — notifications
+  'settings.notifications.title': { en: 'Notifications', sw: 'Arifa' },
+  'settings.notifications.description': { en: 'Choose what CardHub keeps you updated about.', sw: 'Chagua CardHub inakujulisha kuhusu nini.' },
+  'settings.notifications.loading': { en: 'Loading preferences', sw: 'Inapakia mapendeleo' },
+  'settings.notifications.loadFailed': { en: 'Could not load your preferences', sw: 'Imeshindikana kupakia mapendeleo yako' },
+  'settings.notifications.saveFailed': { en: 'Could not save your preference', sw: 'Imeshindikana kuhifadhi mapendeleo yako' },
+  'settings.notifications.email.label': { en: 'Email notifications', sw: 'Arifa za barua pepe' },
+  'settings.notifications.email.description': { en: 'Account and activity updates by email.', sw: 'Taarifa za akaunti na shughuli kwa barua pepe.' },
+  'settings.notifications.sms.label': { en: 'SMS notifications', sw: 'Arifa za SMS' },
+  'settings.notifications.sms.description': { en: 'Important updates by text message.', sw: 'Taarifa muhimu kwa ujumbe wa maandishi.' },
+  'settings.notifications.marketing.label': { en: 'Marketing communications', sw: 'Mawasiliano ya matangazo' },
+  'settings.notifications.marketing.description': { en: 'Product news and occasional offers.', sw: 'Habari za bidhaa na ofa mara kwa mara.' },
+  'settings.notifications.security.label': { en: 'Security notifications', sw: 'Arifa za usalama' },
+  'settings.notifications.security.description': { en: 'Alerts about sign-ins and account changes.', sw: 'Arifa kuhusu kuingia na mabadiliko ya akaunti.' },
+
+  // Settings — language
+  'settings.language.title': { en: 'Language', sw: 'Lugha' },
+  'settings.language.description': {
+    en: 'Choose your preferred language. This changes CardHub’s interface everywhere — the catalogue, Try Our Service, your cards, and more.',
+    sw: 'Chagua lugha unayopendelea. Hii inabadilisha lugha ya CardHub kila mahali — orodha ya kadi, Jaribu Huduma Yetu, kadi zako, na zaidi.',
+  },
+  'settings.language.saved': { en: 'Language preference saved', sw: 'Mapendeleo ya lugha yamehifadhiwa' },
+  'settings.language.saveFailed': { en: 'Could not save your language preference', sw: 'Imeshindikana kuhifadhi mapendeleo ya lugha yako' },
+
+  // Events list page
+  'events.eyebrow': { en: 'Events', sw: 'Matukio' },
+  'events.title': { en: 'My Events', sw: 'Matukio Yangu' },
+  'events.description': { en: 'Manage your CardHub invitations.', sw: 'Simamia mialiko yako ya CardHub.' },
+  'events.searchPlaceholder': { en: 'Search your events...', sw: 'Tafuta matukio yako...' },
+  'events.loadFailed': { en: "Couldn't load your events", sw: 'Imeshindikana kupakia matukio yako' },
+  'events.emptyTitle': { en: 'Your events will appear here', sw: 'Matukio yako yataonekana hapa' },
+  'events.emptyDescription': { en: 'Ready to create something beautiful? Start your first CardHub invitation.', sw: 'Uko tayari kutengeneza kitu kizuri? Anza mualiko wako wa kwanza wa CardHub.' },
+  'events.noSearchResults': { en: 'No events match your search', sw: 'Hakuna matukio yanayolingana na utafutaji wako' },
+  'events.tryDifferentSearch': { en: 'Try a different search term.', sw: 'Jaribu neno lingine la utafutaji.' },
+
+  // Dashboard orders page (customer-facing)
+  'dashOrders.title': { en: 'Orders', sw: 'Oda' },
+  'dashOrders.description': { en: "Card orders you've placed through CardHub.", sw: 'Oda za kadi ulizoweka kupitia CardHub.' },
+  'dashOrders.loadFailed': { en: "Couldn't load your orders", sw: 'Imeshindikana kupakia oda zako' },
+  'dashOrders.emptyTitle': { en: 'No orders yet', sw: 'Hakuna oda bado' },
+  'dashOrders.emptyDescription': { en: 'Browse the card catalogue to place your first order.', sw: 'Vinjari orodha ya kadi kuweka oda yako ya kwanza.' },
+  'dashOrders.browseCards': { en: 'Browse cards', sw: 'Vinjari kadi' },
+
+  // Notifications page
+  'notifications.timeJustNow': { en: 'just now', sw: 'sasa hivi' },
+  'notifications.timeMinutes': { en: '{n}m ago', sw: 'dakika {n} zilizopita' },
+  'notifications.timeHours': { en: '{n}h ago', sw: 'saa {n} zilizopita' },
+  'notifications.timeDays': { en: '{n}d ago', sw: 'siku {n} zilizopita' },
+  'notifications.title': { en: 'Notifications', sw: 'Arifa' },
+  'notifications.description': { en: 'Updates about your events and guest responses.', sw: 'Taarifa kuhusu matukio yako na majibu ya wageni.' },
+  'notifications.markAllRead': { en: 'Mark all as read', sw: 'Weka zote kama zimesomwa' },
+  'notifications.loadFailed': { en: "Couldn't load notifications", sw: 'Imeshindikana kupakia arifa' },
+  'notifications.emptyTitle': { en: 'No notifications yet', sw: 'Hakuna arifa bado' },
+  'notifications.emptyDescription': { en: "You'll see updates here when guests respond to your invitations.", sw: 'Utaona taarifa hapa wageni wanapojibu mialiko yako.' },
+  'notifications.new': { en: 'New', sw: 'Mpya' },
+  'notifications.markReadFailed': { en: 'Could not update this notification', sw: 'Imeshindikana kusasisha arifa hii' },
+  'notifications.markAllReadSuccess': { en: 'All notifications marked as read', sw: 'Arifa zote zimewekwa kama zimesomwa' },
+  'notifications.markAllReadFailed': { en: 'Could not mark notifications as read', sw: 'Imeshindikana kuweka arifa kama zimesomwa' },
+
+  // Billing page
+  'billing.title': { en: 'Billing', sw: 'Malipo' },
+  'billing.description': { en: 'Your plan, usage, and payment history.', sw: 'Mpango wako, matumizi, na historia ya malipo.' },
+  'billing.loadFailed': { en: "Couldn't load billing information", sw: 'Imeshindikana kupakia taarifa za malipo' },
+  'billing.upgradeStarted': { en: 'Upgrade started', sw: 'Kuboresha kumeanza' },
+  'billing.upgradeUnavailable': { en: "Payment processing isn't connected yet. Please check back soon.", sw: 'Mfumo wa malipo bado haujaunganishwa. Tafadhali angalia hivi karibuni.' },
+  'billing.currentPlan': { en: 'Current plan', sw: 'Mpango wa sasa' },
+  'billing.free': { en: 'Free', sw: 'Bure' },
+  'billing.events': { en: 'Events', sw: 'Matukio' },
+  'billing.publishedInvitations': { en: 'Published invitations', sw: 'Mialiko iliyochapishwa' },
+  'billing.availablePlans': { en: 'Available plans', sw: 'Mipango Inayopatikana' },
+  'billing.perEvent': { en: '/event', sw: '/tukio' },
+  'billing.maxEventsSuffix': { en: 'events', sw: 'matukio' },
+  'billing.maxPublishedSuffix': { en: 'published invitations', sw: 'mialiko iliyochapishwa' },
+  'billing.maxGuestsSuffix': { en: 'guests per event', sw: 'wageni kwa kila tukio' },
+  'billing.upgradeTo': { en: 'Upgrade to {plan}', sw: 'Boresha kwenda {plan}' },
+  'billing.notConnectedNote': {
+    en: "Payment processing isn't connected yet — upgrades aren't available for purchase in this environment. Pricing and limits shown here are configurable, not final.",
+    sw: 'Mfumo wa malipo bado haujaunganishwa — kuboresha hakupatikani kununuliwa kwa sasa. Bei na mipaka inayoonyeshwa hapa inaweza kubadilika, si ya mwisho.',
+  },
+  'billing.paymentHistory': { en: 'Payment history', sw: 'Historia ya Malipo' },
+  'billing.noPayments': { en: 'No payments yet', sw: 'Hakuna malipo bado' },
+  'billing.noPaymentsDescription': { en: 'Your payment history will appear here once billing is connected.', sw: 'Historia ya malipo yako itaonekana hapa mfumo wa malipo utakapounganishwa.' },
+  'billing.date': { en: 'Date', sw: 'Tarehe' },
+  'billing.amount': { en: 'Amount', sw: 'Kiasi' },
+
+  // Admin — shared
+  'admin.eyebrow': { en: 'CardHub Admin', sw: 'Msimamizi wa CardHub' },
+  'admin.name': { en: 'Name', sw: 'Jina' },
+  'admin.phone': { en: 'Phone', sw: 'Simu' },
+  'admin.email': { en: 'Email', sw: 'Barua Pepe' },
+  'admin.joined': { en: 'Joined', sw: 'Alijiunga' },
+  'admin.created': { en: 'Created', sw: 'Iliundwa' },
+
+  // Admin dashboard
+  'admin.dashboard.title': { en: 'Platform overview', sw: 'Muhtasari wa Jukwaa' },
+  'admin.dashboard.description': { en: 'Real, live figures from the database — never estimated.', sw: 'Takwimu halisi kutoka kwenye hifadhidata — kamwe si makadirio.' },
+  'admin.dashboard.loadFailed': { en: "Couldn't load platform statistics", sw: 'Imeshindikana kupakia takwimu za jukwaa' },
+  'admin.dashboard.totalCustomers': { en: 'Total Customers', sw: 'Jumla ya Wateja' },
+  'admin.dashboard.totalOrders': { en: 'Total Orders', sw: 'Jumla ya Oda' },
+  'admin.dashboard.pendingOrders': { en: 'Pending Orders', sw: 'Oda Zinazosubiri' },
+  'admin.dashboard.cardsSold': { en: 'Cards Sold', sw: 'Kadi Zilizouzwa' },
+  'admin.dashboard.revenue': { en: 'Revenue (TZS)', sw: 'Mapato (TZS)' },
+  'admin.dashboard.noPaidOrders': { en: '0 (no paid orders yet)', sw: '0 (hakuna oda zilizolipwa bado)' },
+
+  // Admin customers
+  'admin.customers.title': { en: 'Customers', sw: 'Wateja' },
+  'admin.customers.description': { en: 'Everyone who has registered a CardHub account.', sw: 'Kila mtu aliyefungua akaunti ya CardHub.' },
+  'admin.customers.searchPlaceholder': { en: 'Search by name, email, or phone...', sw: 'Tafuta kwa jina, barua pepe, au simu...' },
+  'admin.customers.loadFailed': { en: "Couldn't load customers", sw: 'Imeshindikana kupakia wateja' },
+  'admin.customers.empty': { en: 'No customers found', sw: 'Hakuna wateja waliopatikana' },
+  'admin.customers.orders': { en: 'Orders', sw: 'Oda' },
+  'admin.customers.status': { en: 'Status', sw: 'Hali' },
+  'admin.customers.suspended': { en: 'Customer suspended', sw: 'Mteja amesimamishwa' },
+  'admin.customers.reactivated': { en: 'Customer reactivated', sw: 'Mteja amerejeshwa' },
+  'admin.customers.updateFailed': { en: 'Could not update this customer', sw: 'Imeshindikana kusasisha mteja huyu' },
+  'admin.customers.reactivate': { en: 'Reactivate', sw: 'Rejesha' },
+  'admin.customers.suspend': { en: 'Suspend', sw: 'Simamisha' },
+
+  // Admin customer detail
+  'admin.customerDetail.back': { en: 'Back to Customers', sw: 'Rudi kwa Wateja' },
+  'admin.customerDetail.loadFailed': { en: "Couldn't load this customer", sw: 'Imeshindikana kupakia mteja huyu' },
+  'admin.customerDetail.ordersTitle': { en: 'Orders', sw: 'Oda' },
+  'admin.customerDetail.noOrders': { en: 'No orders yet', sw: 'Hakuna oda bado' },
+  'admin.customerDetail.noOrdersDescription': { en: 'Orders this customer places will appear here.', sw: 'Oda za mteja huyu zitaonekana hapa.' },
+
+  // Admin templates
+  'admin.templates.title': { en: 'Cards / Templates', sw: 'Kadi / Miundo' },
+  'admin.templates.description': {
+    en: 'Deactivating a card removes it from the public catalogue — existing events keep working. Creating a brand-new card design and editing name/description/config are deferred to Phase 2; the pricing tier is editable here today.',
+    sw: 'Kuzima kadi inaiondoa kwenye orodha ya umma — matukio yaliyopo yanaendelea kufanya kazi. Kutengeneza muundo mpya wa kadi na kuhariri jina/maelezo ni ya awamu ijayo; kiwango cha bei kinaweza kuhaririwa hapa leo.',
+  },
+  'admin.templates.loadFailed': { en: "Couldn't load templates", sw: 'Imeshindikana kupakia kadi' },
+  'admin.templates.empty': { en: 'No templates found', sw: 'Hakuna kadi zilizopatikana' },
+  'admin.templates.category': { en: 'Category', sw: 'Kundi' },
+  'admin.templates.priceTier': { en: 'Price tier', sw: 'Kiwango cha bei' },
+  'admin.templates.status': { en: 'Status', sw: 'Hali' },
+  'admin.templates.activated': { en: 'Template activated', sw: 'Kadi imewashwa' },
+  'admin.templates.deactivated': { en: 'Template deactivated', sw: 'Kadi imezimwa' },
+  'admin.templates.updateFailed': { en: 'Could not update this template', sw: 'Imeshindikana kusasisha kadi hii' },
+  'admin.templates.tierUpdated': { en: 'Pricing tier updated', sw: 'Kiwango cha bei kimesasishwa' },
+  'admin.templates.tierUpdateFailed': { en: 'Could not update the pricing tier', sw: 'Imeshindikana kusasisha kiwango cha bei' },
+  'admin.templates.activate': { en: 'Activate', sw: 'Washa' },
+  'admin.templates.deactivate': { en: 'Deactivate', sw: 'Zima' },
+  'admin.templates.active': { en: 'Active', sw: 'Hai' },
+  'admin.templates.inactive': { en: 'Inactive', sw: 'Haifanyi Kazi' },
+
+  // Admin events
+  'admin.events.title': { en: 'Events', sw: 'Matukio' },
+  'admin.events.description': { en: 'Read-only — event management stays with the event owner.', sw: 'Kusoma tu — usimamizi wa tukio unabaki na mmiliki wa tukio.' },
+  'admin.events.searchPlaceholder': { en: 'Search by title or owner email...', sw: 'Tafuta kwa kichwa au barua pepe ya mmiliki...' },
+  'admin.events.loadFailed': { en: "Couldn't load events", sw: 'Imeshindikana kupakia matukio' },
+  'admin.events.empty': { en: 'No events found', sw: 'Hakuna matukio yaliyopatikana' },
+  'admin.events.title.col': { en: 'Title', sw: 'Kichwa' },
+  'admin.events.type': { en: 'Type', sw: 'Aina' },
+  'admin.events.owner': { en: 'Owner', sw: 'Mmiliki' },
+
+  // Admin audit logs
+  'admin.auditLogs.title': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
+  'admin.auditLogs.description': { en: 'Read-only history of account and platform actions.', sw: 'Historia ya kusoma tu ya vitendo vya akaunti na jukwaa.' },
+  'admin.auditLogs.loadFailed': { en: "Couldn't load audit logs", sw: 'Imeshindikana kupakia kumbukumbu za ukaguzi' },
+  'admin.auditLogs.empty': { en: 'No audit log entries yet', sw: 'Hakuna kumbukumbu za ukaguzi bado' },
+  'admin.auditLogs.action': { en: 'Action', sw: 'Kitendo' },
+  'admin.auditLogs.entity': { en: 'Entity', sw: 'Kipengele' },
+  'admin.auditLogs.userId': { en: 'User ID', sw: 'Namba ya Mtumiaji' },
+  'admin.auditLogs.when': { en: 'When', sw: 'Lini' },
+
+  // Event card / delete / change-template shared components
+  'eventCard.dateNotSet': { en: 'Date not set', sw: 'Tarehe haijawekwa' },
+  'eventCard.open': { en: 'Open', sw: 'Fungua' },
+  'eventCard.duplicate': { en: 'Duplicate', sw: 'Nakili' },
+  'eventCard.delete': { en: 'Delete', sw: 'Futa' },
+  'deleteEvent.title': { en: 'Delete this event?', sw: 'Futa tukio hili?' },
+  'deleteEvent.cancel': { en: 'Cancel', sw: 'Ghairi' },
+  'deleteEvent.confirm': { en: 'Delete event', sw: 'Futa Tukio' },
+  'deleteEvent.willBeRemoved': { en: 'will be removed from My Events. This action cannot be undone.', sw: 'litaondolewa kwenye Matukio Yangu. Kitendo hiki hakiwezi kutenduliwa.' },
+  'deleteEvent.cannotUndo': { en: 'This action cannot be undone.', sw: 'Kitendo hiki hakiwezi kutenduliwa.' },
+  'changeTemplate.title': { en: 'Change template', sw: 'Badilisha kadi' },
+  'changeTemplate.switchTo': { en: 'Switch to "{name}"?', sw: 'Badilisha kwenda "{name}"?' },
+  'changeTemplate.warning': { en: "Your event details won't change, only the template used for your invitation design.", sw: 'Taarifa za tukio lako hazitabadilika, ni muundo wa mualiko wako tu utakaobadilika.' },
+  'changeTemplate.back': { en: 'Back', sw: 'Rudi' },
+  'changeTemplate.confirmChange': { en: 'Confirm change', sw: 'Thibitisha mabadiliko' },
+  'changeTemplate.tryDifferent': { en: 'Try a different search or category.', sw: 'Jaribu utafutaji au kundi lingine.' },
+
+  // Create event wizard
+  'wizard.step.eventType': { en: 'Event Type', sw: 'Aina ya Tukio' },
+  'wizard.step.template': { en: 'Template', sw: 'Kadi' },
+  'wizard.step.details': { en: 'Details', sw: 'Taarifa' },
+  'wizard.step.review': { en: 'Review', sw: 'Kagua' },
+  'wizard.eventNameRequired': { en: 'Event name is required', sw: 'Jina la tukio linahitajika' },
+  'wizard.chooseTimezone': { en: 'Please choose a timezone', sw: 'Tafadhali chagua saa za eneo' },
+  'wizard.chooseEventType': { en: 'Please choose an event type', sw: 'Tafadhali chagua aina ya tukio' },
+  'wizard.chooseTemplate': { en: 'Please choose a template', sw: 'Tafadhali chagua kadi' },
+  'wizard.createFailed': { en: "We couldn't create your invitation. Please try again.", sw: 'Tumeshindwa kutengeneza mualiko wako. Tafadhali jaribu tena.' },
+  'wizard.readyTitle': { en: 'Your invitation draft is ready', sw: 'Rasimu ya mualiko wako iko tayari' },
+  'wizard.readyDescription': { en: 'was created as a draft. Continue designing it, or head back to My Events.', sw: 'imetengenezwa kama rasimu. Endelea kuiboresha, au rudi kwenye Matukio Yangu.' },
+  'wizard.openEvent': { en: 'Open event', sw: 'Fungua Tukio' },
+  'wizard.viewMyEvents': { en: 'View my events', sw: 'Ona matukio yangu' },
+  'wizard.back': { en: 'Back', sw: 'Rudi' },
+  'wizard.continue': { en: 'Continue', sw: 'Endelea' },
+  'wizard.createDraft': { en: 'Create draft', sw: 'Tengeneza Rasimu' },
+  'wizard.eventType.question': { en: 'What are you celebrating?', sw: 'Unasherehekea nini?' },
+  'wizard.eventType.intro': { en: "Choose the type of event you're creating an invitation for.", sw: 'Chagua aina ya tukio unalotengenezea mualiko.' },
+  'wizard.template.title': { en: 'Choose a template', sw: 'Chagua kadi' },
+  'wizard.template.intro': { en: "Pick the design you'd like your invitation to start from.", sw: 'Chagua muundo unaotaka mualiko wako uanze nao.' },
+  'wizard.details.title': { en: 'Event details', sw: 'Taarifa za tukio' },
+  'wizard.details.intro': { en: 'Tell us the basics — you can always edit these later.', sw: 'Tuambie taarifa za msingi — unaweza kuhariri baadaye.' },
+  'wizard.review.title': { en: 'Review your invitation', sw: 'Kagua mualiko wako' },
+  'wizard.review.intro': { en: 'Confirm everything looks right before creating your draft.', sw: 'Thibitisha kila kitu kiko sahihi kabla ya kutengeneza rasimu yako.' },
+  'wizard.review.notSet': { en: 'Not set', sw: 'Haijawekwa' },
+  'wizard.review.edit': { en: 'Edit', sw: 'Hariri' },
+  'wizard.review.eventType': { en: 'Event type', sw: 'Aina ya tukio' },
+  'wizard.review.template': { en: 'Template', sw: 'Kadi' },
+  'wizard.review.eventName': { en: 'Event name', sw: 'Jina la tukio' },
+  'wizard.review.host': { en: 'Host', sw: 'Mwenyeji' },
+  'wizard.review.date': { en: 'Date', sw: 'Tarehe' },
+  'wizard.review.time': { en: 'Time', sw: 'Muda' },
+  'wizard.review.timezone': { en: 'Timezone', sw: 'Saa za Eneo' },
+  'wizard.review.venue': { en: 'Venue', sw: 'Mahali' },
+  'wizard.review.address': { en: 'Address', sw: 'Anwani' },
+  'wizard.review.description': { en: 'Description', sw: 'Maelezo' },
+
+  // Event details form
+  'eventForm.eventName': { en: 'Event name', sw: 'Jina la tukio' },
+  'eventForm.hostName': { en: 'Host name', sw: 'Jina la mwenyeji' },
+  'eventForm.eventDate': { en: 'Event date', sw: 'Tarehe ya tukio' },
+  'eventForm.eventTime': { en: 'Event time', sw: 'Muda wa tukio' },
+  'eventForm.timezone': { en: 'Timezone', sw: 'Saa za Eneo' },
+  'eventForm.venueName': { en: 'Venue name', sw: 'Jina la mahali' },
+  'eventForm.venueAddress': { en: 'Venue address', sw: 'Anwani ya mahali' },
+  'eventForm.descriptionOptional': { en: 'Description (optional)', sw: 'Maelezo (si lazima)' },
 };
 
-/** Falls back to English, then to the raw key, so a missing translation is never blank. */
-export function translate(key, language) {
+/**
+ * Falls back to English, then to the raw key, so a missing translation is
+ * never blank. `vars` does simple `{name}`-style interpolation, e.g.
+ * translate('greeting', 'sw', { name: 'Amina' }) with entry.sw ===
+ * "Habari {name}" -> "Habari Amina".
+ */
+export function translate(key, language, vars) {
   const entry = TRANSLATIONS[key];
-  if (!entry) return key;
-  return entry[language] || entry.en || key;
+  const raw = entry ? entry[language] || entry.en || key : key;
+  if (!vars) return raw;
+  return raw.replace(/\{(\w+)\}/g, (match, name) => (name in vars ? vars[name] : match));
 }

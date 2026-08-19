@@ -6,6 +6,7 @@ import { EmptyState, Button, Skeleton } from '../../components/ui';
 import { EventCard, DeleteEventModal } from '../../components/events';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { useLanguage } from '../../hooks/useLanguage';
 import { eventsService } from '../../services/eventsService';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 import { ROUTES } from '../../constants/routes';
@@ -13,6 +14,7 @@ import { ROUTES } from '../../constants/routes';
 const RECENT_LIMIT = 3;
 
 export function DashboardHomePage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -50,10 +52,10 @@ export function DashboardHomePage() {
     setDuplicatingId(event.id);
     try {
       const res = await eventsService.duplicate(event.id);
-      toast.success('Event duplicated');
+      toast.success(t('dashboardHome.eventDuplicated'));
       navigate(ROUTES.eventDetail(res.data.data.event.id));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not duplicate this event'));
+      toast.error(getErrorMessage(error, t('dashboardHome.duplicateFailed')));
     } finally {
       setDuplicatingId(null);
     }
@@ -63,11 +65,11 @@ export function DashboardHomePage() {
     setIsDeleting(true);
     try {
       await eventsService.remove(deleteTarget.id);
-      toast.success('Event deleted');
+      toast.success(t('dashboardHome.eventDeleted'));
       setDeleteTarget(null);
       load();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not delete this event'));
+      toast.error(getErrorMessage(error, t('dashboardHome.deleteFailed')));
     } finally {
       setIsDeleting(false);
     }
@@ -77,16 +79,16 @@ export function DashboardHomePage() {
     <div className="ch-dashboard-home">
       <Seo title="Dashboard" />
       <PageHeader
-        eyebrow="Dashboard"
-        title={firstName ? `Welcome back, ${firstName}` : 'Welcome back'}
+        eyebrow={t('dashboardHome.eyebrow')}
+        title={firstName ? t('dashboardHome.welcomeBack', { name: firstName }) : t('dashboardHome.welcomeBackNoName')}
         description={
           status === 'success'
-            ? `You have ${total} event${total === 1 ? '' : 's'} in CardHub.`
-            : 'Create your first invitation to get started with CardHub.'
+            ? t('dashboardHome.eventCount', { count: total })
+            : t('dashboardHome.getStarted')
         }
         actions={
           <Button variant="primary" onClick={() => navigate(ROUTES.DASHBOARD_CREATE_EVENT)}>
-            <FiPlus aria-hidden="true" /> Create Invitation
+            <FiPlus aria-hidden="true" /> {t('dashboardHome.createInvitation')}
           </Button>
         }
       />
@@ -105,11 +107,11 @@ export function DashboardHomePage() {
 
       {status === 'error' && (
         <EmptyState
-          title="Couldn't load your events"
-          description="Something went wrong. Please try again."
+          title={t('dashboardHome.loadFailed')}
+          description={t('dashboardHome.loadFailedDescription')}
           action={
             <Button variant="primary" onClick={load}>
-              Retry
+              {t('dashboardHome.retry')}
             </Button>
           }
         />
@@ -118,11 +120,11 @@ export function DashboardHomePage() {
       {status === 'empty' && (
         <EmptyState
           icon={<FiPlus />}
-          title="Your events will appear here"
-          description="Ready to create something beautiful? Your CardHub invitations and events will show up on this page."
+          title={t('dashboardHome.emptyTitle')}
+          description={t('dashboardHome.emptyDescription')}
           action={
             <Button variant="primary" onClick={() => navigate(ROUTES.DASHBOARD_CREATE_EVENT)}>
-              Create your invitation
+              {t('dashboardHome.createYourInvitation')}
             </Button>
           }
         />
@@ -144,7 +146,7 @@ export function DashboardHomePage() {
           {total > RECENT_LIMIT && (
             <div className="ch-dashboard-home__view-all">
               <Button variant="ghost" onClick={() => navigate(ROUTES.DASHBOARD_EVENTS)}>
-                View all events
+                {t('dashboardHome.viewAll')}
               </Button>
             </div>
           )}

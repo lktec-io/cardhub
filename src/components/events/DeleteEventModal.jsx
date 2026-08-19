@@ -1,19 +1,22 @@
 import { Modal, Button } from '../ui';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function DeleteEventModal({ event, isOpen, onClose, onConfirm, isDeleting = false }) {
+  const { t } = useLanguage();
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Delete this event?"
+      title={t('deleteEvent.title')}
       size="sm"
       footer={
         <>
           <Button variant="ghost" onClick={onClose} disabled={isDeleting}>
-            Cancel
+            {t('deleteEvent.cancel')}
           </Button>
           <Button variant="danger" onClick={onConfirm} isLoading={isDeleting}>
-            Delete event
+            {t('deleteEvent.confirm')}
           </Button>
         </>
       }
@@ -21,10 +24,10 @@ export function DeleteEventModal({ event, isOpen, onClose, onConfirm, isDeleting
       <p className="ch-body-sm">
         {event ? (
           <>
-            <strong>{event.title}</strong> will be removed from My Events. This action cannot be undone.
+            <strong>{event.title}</strong> {t('deleteEvent.willBeRemoved')}
           </>
         ) : (
-          'This action cannot be undone.'
+          t('deleteEvent.cannotUndo')
         )}
       </p>
     </Modal>

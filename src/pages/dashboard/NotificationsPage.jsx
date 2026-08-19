@@ -4,22 +4,24 @@ import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, EmptyState, Skeleton, Badge } from '../../components/ui';
 import { notificationsService } from '../../services/notificationsService';
 import { useToast } from '../../hooks/useToast';
+import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 
 const PAGE_SIZE = 20;
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, t) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t('notifications.timeJustNow');
+  if (minutes < 60) return t('notifications.timeMinutes', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('notifications.timeHours', { n: hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t('notifications.timeDays', { n: days });
 }
 
 export function NotificationsPage() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [notifications, setNotifications] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -62,7 +64,7 @@ export function NotificationsPage() {
       await notificationsService.markRead(notification.id);
       setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not update this notification'));
+      toast.error(getErrorMessage(error, t('notifications.markReadFailed')));
     }
   }
 
@@ -71,9 +73,9 @@ export function NotificationsPage() {
     try {
       await notificationsService.markAllRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      toast.success('All notifications marked as read');
+      toast.success(t('notifications.markAllReadSuccess'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not mark notifications as read'));
+      toast.error(getErrorMessage(error, t('notifications.markAllReadFailed')));
     } finally {
       setIsMarkingAll(false);
     }
@@ -85,13 +87,13 @@ export function NotificationsPage() {
     <div className="ch-notifications-page">
       <Seo title="Notifications" />
       <PageHeader
-        eyebrow="Dashboard"
-        title="Notifications"
-        description="Updates about your events and guest responses."
+        eyebrow={t('sidebar.dashboard')}
+        title={t('notifications.title')}
+        description={t('notifications.description')}
         actions={
           hasUnread ? (
             <Button variant="secondary" isLoading={isMarkingAll} onClick={handleMarkAllRead}>
-              <FiCheck aria-hidden="true" /> Mark all as read
+              <FiCheck aria-hidden="true" /> {t('notifications.markAllRead')}
             </Button>
           ) : undefined
         }
@@ -108,17 +110,17 @@ export function NotificationsPage() {
       {status === 'error' && (
         <EmptyState
           icon={<FiAlertCircle />}
-          title="Couldn't load notifications"
+          title={t('notifications.loadFailed')}
           action={
             <Button variant="primary" onClick={load}>
-              Retry
+              {t('dashboardHome.retry')}
             </Button>
           }
         />
       )}
 
       {status === 'empty' && (
-        <EmptyState icon={<FiBell />} title="No notifications yet" description="You'll see updates here when guests respond to your invitations." />
+        <EmptyState icon={<FiBell />} title={t('notifications.emptyTitle')} description={t('notifications.emptyDescription')} />
       )}
 
       {status === 'success' && (
@@ -135,9 +137,9 @@ export function NotificationsPage() {
                 <div className="ch-notification-row__body">
                   <p className="ch-notification-row__title">{notification.title}</p>
                   {notification.message && <p className="ch-notification-row__message">{notification.message}</p>}
-                  <p className="ch-notification-row__time">{timeAgo(notification.createdAt)}</p>
+                  <p className="ch-notification-row__time">{timeAgo(notification.createdAt, t)}</p>
                 </div>
-                {!notification.isRead && <Badge variant="accent">New</Badge>}
+                {!notification.isRead && <Badge variant="accent">{t('notifications.new')}</Badge>}
               </button>
             ))}
           </div>

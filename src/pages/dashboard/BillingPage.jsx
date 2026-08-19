@@ -4,6 +4,7 @@ import { PageHeader, Seo } from '../../components/common';
 import { Button, Badge, EmptyState, Skeleton, Alert } from '../../components/ui';
 import { billingService } from '../../services/billingService';
 import { useToast } from '../../hooks/useToast';
+import { useLanguage } from '../../hooks/useLanguage';
 import { formatLimit } from '../../constants/plans';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 
@@ -33,6 +34,7 @@ function UsageBar({ label, used, limit }) {
 }
 
 export function BillingPage() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [summary, setSummary] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -59,9 +61,9 @@ export function BillingPage() {
     setUpgradingPlan(planId);
     try {
       await billingService.startUpgrade(planId);
-      toast.success('Upgrade started');
+      toast.success(t('billing.upgradeStarted'));
     } catch (error) {
-      toast.error(getErrorMessage(error, "Payment processing isn't connected yet. Please check back soon."));
+      toast.error(getErrorMessage(error, t('billing.upgradeUnavailable')));
     } finally {
       setUpgradingPlan(null);
     }
@@ -70,7 +72,7 @@ export function BillingPage() {
   return (
     <div className="ch-billing-page">
       <Seo title="Billing" />
-      <PageHeader eyebrow="Dashboard" title="Billing" description="Your plan, usage, and payment history." />
+      <PageHeader eyebrow={t('sidebar.dashboard')} title={t('billing.title')} description={t('billing.description')} />
 
       {status === 'loading' && (
         <div className="ch-billing-page__loading">
@@ -82,10 +84,10 @@ export function BillingPage() {
       {status === 'error' && (
         <EmptyState
           icon={<FiAlertCircle />}
-          title="Couldn't load billing information"
+          title={t('billing.loadFailed')}
           action={
             <Button variant="primary" onClick={load}>
-              Retry
+              {t('dashboardHome.retry')}
             </Button>
           }
         />
@@ -95,44 +97,44 @@ export function BillingPage() {
         <>
           <div className="ch-billing-current">
             <div>
-              <p className="ch-label">Current plan</p>
+              <p className="ch-label">{t('billing.currentPlan')}</p>
               <h2 className="ch-h3">{summary.plan.name}</h2>
               <p className="ch-body-sm">
-                {summary.plan.priceTzs === 0 ? 'Free' : `TZS ${formatTzs(summary.plan.priceTzs)} / event`}
+                {summary.plan.priceTzs === 0 ? t('billing.free') : `TZS ${formatTzs(summary.plan.priceTzs)} ${t('billing.perEvent')}`}
               </p>
             </div>
             <div className="ch-billing-current__usage">
-              <UsageBar label="Events" used={summary.usage.events} limit={summary.plan.limits.maxEvents} />
-              <UsageBar label="Published invitations" used={summary.usage.publishedInvitations} limit={summary.plan.limits.maxPublishedInvitations} />
+              <UsageBar label={t('billing.events')} used={summary.usage.events} limit={summary.plan.limits.maxEvents} />
+              <UsageBar label={t('billing.publishedInvitations')} used={summary.usage.publishedInvitations} limit={summary.plan.limits.maxPublishedInvitations} />
             </div>
           </div>
 
-          <h3 className="ch-h4 ch-billing-page__section-title">Available plans</h3>
+          <h3 className="ch-h4 ch-billing-page__section-title">{t('billing.availablePlans')}</h3>
           <div className="ch-billing-plans">
             {summary.availablePlans.map((plan) => {
               const isCurrent = plan.id === summary.plan.id;
               return (
                 <div key={plan.id} className={`ch-card ch-billing-plan ${isCurrent ? 'ch-billing-plan--current' : ''}`}>
-                  {isCurrent && <Badge variant="accent">Current plan</Badge>}
+                  {isCurrent && <Badge variant="accent">{t('billing.currentPlan')}</Badge>}
                   <h4 className="ch-h4">{plan.name}</h4>
                   <p className="ch-billing-plan__price">
-                    {plan.priceTzs === 0 ? 'Free' : `TZS ${formatTzs(plan.priceTzs)}`}
-                    {plan.priceTzs > 0 && <span>/event</span>}
+                    {plan.priceTzs === 0 ? t('billing.free') : `TZS ${formatTzs(plan.priceTzs)}`}
+                    {plan.priceTzs > 0 && <span>{t('billing.perEvent')}</span>}
                   </p>
                   <ul className="ch-billing-plan__limits">
                     <li>
-                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxEvents)} events
+                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxEvents)} {t('billing.maxEventsSuffix')}
                     </li>
                     <li>
-                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxPublishedInvitations)} published invitations
+                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxPublishedInvitations)} {t('billing.maxPublishedSuffix')}
                     </li>
                     <li>
-                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxGuestsPerEvent)} guests per event
+                      <FiCheck aria-hidden="true" /> {formatLimit(plan.limits.maxGuestsPerEvent)} {t('billing.maxGuestsSuffix')}
                     </li>
                   </ul>
                   {!isCurrent && (
                     <Button variant="secondary" fullWidth isLoading={upgradingPlan === plan.id} onClick={() => handleUpgrade(plan.id)}>
-                      Upgrade to {plan.name}
+                      {t('billing.upgradeTo', { plan: plan.name })}
                     </Button>
                   )}
                 </div>
@@ -141,21 +143,20 @@ export function BillingPage() {
           </div>
 
           <Alert variant="info" className="ch-billing-page__note">
-            Payment processing isn&rsquo;t connected yet — upgrades aren&rsquo;t available for purchase in this
-            environment. Pricing and limits shown here are configurable, not final.
+            {t('billing.notConnectedNote')}
           </Alert>
 
-          <h3 className="ch-h4 ch-billing-page__section-title">Payment history</h3>
+          <h3 className="ch-h4 ch-billing-page__section-title">{t('billing.paymentHistory')}</h3>
           {summary.paymentHistory.length === 0 ? (
-            <EmptyState title="No payments yet" description="Your payment history will appear here once billing is connected." />
+            <EmptyState title={t('billing.noPayments')} description={t('billing.noPaymentsDescription')} />
           ) : (
             <div className="ch-table-wrap">
               <table className="ch-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
+                    <th>{t('billing.date')}</th>
+                    <th>{t('billing.amount')}</th>
+                    <th>{t('admin.orders.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,7 +166,7 @@ export function BillingPage() {
                       <td>
                         {payment.currency} {formatTzs(payment.amount)}
                       </td>
-                      <td>{payment.status}</td>
+                      <td>{t(`status.${payment.status}`)}</td>
                     </tr>
                   ))}
                 </tbody>

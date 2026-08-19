@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Switch, Spinner } from '../../../components/ui';
 import { useToast } from '../../../hooks/useToast';
+import { useLanguage } from '../../../hooks/useLanguage';
 import { usersService } from '../../../services/usersService';
 import { getErrorMessage } from '../../../utils/mapValidationErrors';
 
 const FIELDS = [
-  { key: 'emailNotifications', label: 'Email notifications', description: 'Account and activity updates by email.' },
-  { key: 'smsNotifications', label: 'SMS notifications', description: 'Important updates by text message.' },
-  { key: 'marketingNotifications', label: 'Marketing communications', description: 'Product news and occasional offers.' },
-  { key: 'securityNotifications', label: 'Security notifications', description: 'Alerts about sign-ins and account changes.' },
+  { key: 'emailNotifications', i18nKey: 'settings.notifications.email' },
+  { key: 'smsNotifications', i18nKey: 'settings.notifications.sms' },
+  { key: 'marketingNotifications', i18nKey: 'settings.notifications.marketing' },
+  { key: 'securityNotifications', i18nKey: 'settings.notifications.security' },
 ];
 
 export function NotificationsSettingsPage() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [preferences, setPreferences] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +26,7 @@ export function NotificationsSettingsPage() {
       .then((res) => {
         if (isMounted) setPreferences(res.data.data);
       })
-      .catch((error) => toast.error(getErrorMessage(error, 'Could not load your preferences')))
+      .catch((error) => toast.error(getErrorMessage(error, t('settings.notifications.loadFailed'))))
       .finally(() => {
         if (isMounted) setIsLoading(false);
       });
@@ -42,7 +44,7 @@ export function NotificationsSettingsPage() {
       await usersService.updatePreferences({ [key]: value });
     } catch (error) {
       setPreferences(previous);
-      toast.error(getErrorMessage(error, 'Could not save your preference'));
+      toast.error(getErrorMessage(error, t('settings.notifications.saveFailed')));
     } finally {
       setSavingKey(null);
     }
@@ -51,22 +53,22 @@ export function NotificationsSettingsPage() {
   if (isLoading) {
     return (
       <div className="ch-settings-form__loading">
-        <Spinner label="Loading preferences" />
+        <Spinner label={t('settings.notifications.loading')} />
       </div>
     );
   }
 
   return (
     <div className="ch-settings-form">
-      <h2 className="ch-h4">Notifications</h2>
-      <p className="ch-body-sm">Choose what CardHub keeps you updated about.</p>
+      <h2 className="ch-h4">{t('settings.notifications.title')}</h2>
+      <p className="ch-body-sm">{t('settings.notifications.description')}</p>
 
       <div className="ch-settings-form__switches">
         {FIELDS.map((field) => (
           <Switch
             key={field.key}
-            label={field.label}
-            description={field.description}
+            label={t(`${field.i18nKey}.label`)}
+            description={t(`${field.i18nKey}.description`)}
             checked={Boolean(preferences?.[field.key])}
             disabled={savingKey === field.key}
             onChange={(value) => handleToggle(field.key, value)}

@@ -6,12 +6,14 @@ import { Button, EmptyState, Skeleton, Input } from '../../../components/ui';
 import { EventCard, DeleteEventModal } from '../../../components/events';
 import { eventsService } from '../../../services/eventsService';
 import { useToast } from '../../../hooks/useToast';
+import { useLanguage } from '../../../hooks/useLanguage';
 import { getErrorMessage } from '../../../utils/mapValidationErrors';
 import { ROUTES } from '../../../constants/routes';
 
 const PAGE_SIZE = 9;
 
 export function EventsListPage() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -46,10 +48,10 @@ export function EventsListPage() {
     setDuplicatingId(event.id);
     try {
       const res = await eventsService.duplicate(event.id);
-      toast.success('Event duplicated');
+      toast.success(t('dashboardHome.eventDuplicated'));
       navigate(ROUTES.eventDetail(res.data.data.event.id));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not duplicate this event'));
+      toast.error(getErrorMessage(error, t('dashboardHome.duplicateFailed')));
     } finally {
       setDuplicatingId(null);
     }
@@ -59,11 +61,11 @@ export function EventsListPage() {
     setIsDeleting(true);
     try {
       await eventsService.remove(deleteTarget.id);
-      toast.success('Event deleted');
+      toast.success(t('dashboardHome.eventDeleted'));
       setDeleteTarget(null);
       load();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not delete this event'));
+      toast.error(getErrorMessage(error, t('dashboardHome.deleteFailed')));
     } finally {
       setIsDeleting(false);
     }
@@ -73,12 +75,12 @@ export function EventsListPage() {
     <div className="ch-events-page">
       <Seo title="My Events" />
       <PageHeader
-        eyebrow="Events"
-        title="My Events"
-        description="Manage your CardHub invitations."
+        eyebrow={t('events.eyebrow')}
+        title={t('events.title')}
+        description={t('events.description')}
         actions={
           <Button variant="primary" onClick={() => navigate(ROUTES.DASHBOARD_CREATE_EVENT)}>
-            <FiPlus aria-hidden="true" /> Create Invitation
+            <FiPlus aria-hidden="true" /> {t('dashboardHome.createInvitation')}
           </Button>
         }
       />
@@ -86,13 +88,13 @@ export function EventsListPage() {
       {status !== 'empty' || search ? (
         <Input
           icon={<FiSearch aria-hidden="true" />}
-          placeholder="Search your events..."
+          placeholder={t('events.searchPlaceholder')}
           value={search}
           onChange={(e) => {
             setPage(1);
             setSearch(e.target.value);
           }}
-          aria-label="Search events"
+          aria-label={t('events.searchPlaceholder')}
           className="ch-events-page__search"
         />
       ) : null}
@@ -112,11 +114,11 @@ export function EventsListPage() {
       {status === 'error' && (
         <EmptyState
           icon={<FiAlertCircle />}
-          title="Couldn't load your events"
-          description="Something went wrong. Please try again."
+          title={t('events.loadFailed')}
+          description={t('dashboardHome.loadFailedDescription')}
           action={
             <Button variant="primary" onClick={load}>
-              Retry
+              {t('dashboardHome.retry')}
             </Button>
           }
         />
@@ -125,18 +127,18 @@ export function EventsListPage() {
       {status === 'empty' && !search && (
         <EmptyState
           icon={<FiPlus />}
-          title="Your events will appear here"
-          description="Ready to create something beautiful? Start your first CardHub invitation."
+          title={t('events.emptyTitle')}
+          description={t('events.emptyDescription')}
           action={
             <Button variant="primary" onClick={() => navigate(ROUTES.DASHBOARD_CREATE_EVENT)}>
-              Create your invitation
+              {t('dashboardHome.createYourInvitation')}
             </Button>
           }
         />
       )}
 
       {status === 'empty' && search && (
-        <EmptyState icon={<FiSearch />} title="No events match your search" description="Try a different search term." />
+        <EmptyState icon={<FiSearch />} title={t('events.noSearchResults')} description={t('events.tryDifferentSearch')} />
       )}
 
       {status === 'success' && (

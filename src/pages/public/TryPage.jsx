@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, InvitationPreview } from '../../components/common';
+import { Container, SectionHeader, Seo } from '../../components/common';
 import { Button, Input, Select, Radio, Checkbox, EmptyState, Skeleton, GlassCard, Badge } from '../../components/ui';
 import { TemplateThumb } from '../../components/templates';
 import { templatesService } from '../../services/templatesService';
 import { ordersService } from '../../services/ordersService';
 import { getErrorMessage, mapValidationErrors } from '../../utils/mapValidationErrors';
-import { formatCardPrice } from '../../constants/pricingTiers';
 import { EVENT_TYPES } from '../../constants/eventTypes';
 import { DELIVERY_CHANNELS, CHANNEL_STATUS_BADGE, GUEST_TYPE_OPTIONS } from '../../constants/orderStatus';
 import { ROUTES } from '../../constants/routes';
@@ -141,8 +140,7 @@ export function TryPage() {
               {t('try.successThanks')}, {name.split(' ')[0]} — {t('try.successHeading')}
             </h1>
             <p className="ch-body-lg">
-              We've saved your request for a <strong>{order.template?.name}</strong> card ({order.pricingTier}) at{' '}
-              {formatCardPrice(order.unitPriceTzs)}.
+              {t('try.savedRequestFree', { card: order.template?.name, tier: order.pricingTier })}
             </p>
             <p className="ch-try-page__invitation-number">
               {t('try.invitationNumber')}: <strong>#{order.invitationNumber}</strong>
@@ -255,7 +253,7 @@ export function TryPage() {
                         <TemplateThumb template={template} className="ch-try-page__template-swatch" />
                         <span className="ch-try-page__template-name">{template.name}</span>
                         <span className="ch-caption">{t(`category.${template.category}`)}</span>
-                        <span className="ch-try-page__template-price">{formatCardPrice(template.priceTzs)}</span>
+                        <span className="ch-try-page__template-price">{t('try.freeBadge')}</span>
                       </button>
                     );
                   })}
@@ -317,13 +315,9 @@ export function TryPage() {
           {step === 4 && selectedTemplate && (
             <div className="ch-try-page__panel">
               <h2 className="ch-h4">{t('try.previewTitle')}</h2>
-              {selectedTemplate.previewImage && (
-                <TemplateThumb template={selectedTemplate} className="ch-try-page__preview-swatch" />
-              )}
-              <InvitationPreview compact title={eventName || name || 'Your Name Here'} venue={venue || selectedTemplate.name} colors={selectedTemplate.config?.colors} />
+              <TemplateThumb template={selectedTemplate} className="ch-try-page__preview-swatch" />
               <p className="ch-body-sm">
-                {selectedTemplate.name} &middot; {t(`category.${selectedTemplate.category}`)} &middot;{' '}
-                {formatCardPrice(selectedTemplate.priceTzs)}
+                {selectedTemplate.name} &middot; {t(`category.${selectedTemplate.category}`)}
               </p>
             </div>
           )}
@@ -352,9 +346,10 @@ export function TryPage() {
                 </div>
                 <div>
                   <dt>{t('try.summary.price')}</dt>
-                  <dd>{formatCardPrice(selectedTemplate.priceTzs)}</dd>
+                  <dd>{t('try.free')}</dd>
                 </div>
               </dl>
+              <p className="ch-caption">{t('try.freeNotice')}</p>
 
               <div>
                 <p className="ch-field__label" style={{ marginBottom: 'var(--space-2)' }}>

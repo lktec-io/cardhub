@@ -5,8 +5,10 @@ import { Seo } from '../../components/common';
 import { ROUTES } from '../../constants/routes';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function ForgotPasswordPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -17,7 +19,7 @@ export function ForgotPasswordPage() {
     setError(null);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email');
+      setError(t('auth.emailError'));
       return;
     }
 
@@ -36,8 +38,8 @@ export function ForgotPasswordPage() {
     <>
       <Seo title="Forgot password" description="Reset your CardHub account password." />
       <div className="ch-auth-form">
-        <h1 className="ch-h3">Reset your password</h1>
-        <p className="ch-body-sm">Enter the email on your account and we&rsquo;ll send you a reset link.</p>
+        <h1 className="ch-h3">{t('forgotPassword.title')}</h1>
+        <p className="ch-body-sm">{t('forgotPassword.subtitle')}</p>
 
         {error && (
           <Alert variant="danger" className="ch-auth-form__alert">
@@ -46,12 +48,12 @@ export function ForgotPasswordPage() {
         )}
 
         {result ? (
-          <Alert variant="success" title="Check your email">
+          <Alert variant="success" title={t('forgotPassword.checkEmail')}>
             {result.message}
             {result.data?.resetUrl && (
               <p className="ch-auth-form__dev-note">
-                Development mode &mdash; no email provider is configured yet, so here&rsquo;s your reset link:{' '}
-                <Link to={result.data.resetUrl.replace(window.location.origin, '')}>Reset your password</Link>
+                {t('forgotPassword.devNote')}{' '}
+                <Link to={result.data.resetUrl.replace(window.location.origin, '')}>{t('forgotPassword.resetLinkText')}</Link>
               </p>
             )}
           </Alert>
@@ -59,13 +61,13 @@ export function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} noValidate>
             <Input
               type="email"
-              label="Email"
+              label={t('auth.emailLabel')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
             />
             <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-              Send reset link
+              {t('forgotPassword.sendLink')}
             </Button>
           </form>
         )}
@@ -73,7 +75,7 @@ export function ForgotPasswordPage() {
         <Divider />
 
         <p className="ch-auth-form__footer">
-          Remembered your password? <Link to={ROUTES.LOGIN}>Log in</Link>
+          {t('forgotPassword.remembered')} <Link to={ROUTES.LOGIN}>{t('login.submit')}</Link>
         </p>
       </div>
     </>

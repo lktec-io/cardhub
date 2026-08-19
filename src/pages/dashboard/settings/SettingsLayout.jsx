@@ -1,19 +1,22 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { PageHeader, Seo } from '../../../components/common';
 import { ROUTES } from '../../../constants/routes';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 const TABS = [
-  { label: 'Profile', to: ROUTES.DASHBOARD_SETTINGS_PROFILE },
-  { label: 'Security', to: ROUTES.DASHBOARD_SETTINGS_SECURITY },
-  { label: 'Notifications', to: ROUTES.DASHBOARD_SETTINGS_NOTIFICATIONS },
-  { label: 'Language', to: ROUTES.DASHBOARD_SETTINGS_LANGUAGE },
+  { key: 'settings.tab.profile', to: ROUTES.DASHBOARD_SETTINGS_PROFILE },
+  { key: 'settings.tab.security', to: ROUTES.DASHBOARD_SETTINGS_SECURITY },
+  { key: 'settings.tab.notifications', to: ROUTES.DASHBOARD_SETTINGS_NOTIFICATIONS },
+  { key: 'settings.tab.language', to: ROUTES.DASHBOARD_SETTINGS_LANGUAGE },
 ];
 
 export function SettingsLayout() {
+  const { t } = useLanguage();
+
   return (
     <div className="ch-settings-page">
       <Seo title="Account settings" />
-      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, security, and preferences." />
+      <PageHeader eyebrow={t('settings.eyebrow')} title={t('settings.title')} description={t('settings.description')} />
 
       <div className="ch-settings-page__layout">
         <nav className="ch-settings-page__tabs" aria-label="Settings sections">
@@ -23,7 +26,7 @@ export function SettingsLayout() {
               to={tab.to}
               className={({ isActive }) => `ch-settings-page__tab ${isActive ? 'ch-settings-page__tab--active' : ''}`}
             >
-              {tab.label}
+              {t(tab.key)}
             </NavLink>
           ))}
         </nav>

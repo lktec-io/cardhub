@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Radio } from '../../../components/ui';
 import { useAuth } from '../../../hooks/useAuth';
 import { useToast } from '../../../hooks/useToast';
+import { useLanguage } from '../../../hooks/useLanguage';
 import { usersService } from '../../../services/usersService';
 import { getErrorMessage } from '../../../utils/mapValidationErrors';
 
@@ -10,10 +11,19 @@ const LANGUAGES = [
   { value: 'sw', label: 'Kiswahili' },
 ];
 
+/**
+ * Two things named "language preference" used to exist and disagree: the
+ * real UI toggle (LanguageContext, localStorage-backed, drives every
+ * translated string via t()) and this page (only wrote user.preferredLanguage
+ * to the backend, which nothing actually read). Picking a language here
+ * now does both — applies it immediately via setLanguage (so it's the
+ * same single source of truth as the navbar toggle) and persists it to
+ * the account for cross-device sync.
+ */
 export function LanguageSettingsPage() {
   const { user, refreshUser } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const toast = useToast();
-  const [language, setLanguage] = useState(user?.preferredLanguage || 'en');
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleChange(value) {
@@ -22,9 +32,9 @@ export function LanguageSettingsPage() {
     try {
       await usersService.updatePreferences({ preferredLanguage: value });
       await refreshUser();
-      toast.success('Language preference saved');
+      toast.success(t('settings.language.saved'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not save your language preference'));
+      toast.error(getErrorMessage(error, t('settings.language.saveFailed')));
     } finally {
       setIsSaving(false);
     }
@@ -32,11 +42,8 @@ export function LanguageSettingsPage() {
 
   return (
     <div className="ch-settings-form">
-      <h2 className="ch-h4">Language</h2>
-      <p className="ch-body-sm">
-        Choose your preferred language. CardHub currently displays in English — full Kiswahili
-        translation is on the roadmap.
-      </p>
+      <h2 className="ch-h4">{t('settings.language.title')}</h2>
+      <p className="ch-body-sm">{t('settings.language.description')}</p>
 
       <div className="ch-settings-form__radios">
         {LANGUAGES.map((option) => (
@@ -45,7 +52,7 @@ export function LanguageSettingsPage() {
             name="language"
             label={option.label}
             value={option.value}
-            checked={language === option.value}
+            checked={(user?.preferredLanguage || language) === option.value}
             disabled={isSaving}
             onChange={() => handleChange(option.value)}
           />

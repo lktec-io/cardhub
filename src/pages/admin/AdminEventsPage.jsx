@@ -4,11 +4,12 @@ import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Input, EmptyState, Skeleton } from '../../components/ui';
 import { EventStatusBadge } from '../../components/events';
 import { adminService } from '../../services/adminService';
-import { getEventTypeLabel } from '../../constants/eventTypes';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const PAGE_SIZE = 20;
 
 export function AdminEventsPage() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -42,11 +43,11 @@ export function AdminEventsPage() {
   return (
     <div className="ch-admin-page">
       <Seo title="Admin — Events" />
-      <PageHeader eyebrow="CardHub Admin" title="Events" description="Read-only — event management stays with the event owner." />
+      <PageHeader eyebrow={t('admin.eyebrow')} title={t('admin.events.title')} description={t('admin.events.description')} />
 
       <Input
         icon={<FiSearch aria-hidden="true" />}
-        placeholder="Search by title or owner email..."
+        placeholder={t('admin.events.searchPlaceholder')}
         value={search}
         onChange={(e) => {
           setPage(1);
@@ -58,10 +59,10 @@ export function AdminEventsPage() {
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load events" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState icon={<FiAlertCircle />} title={t('admin.events.loadFailed')} action={<Button variant="primary" onClick={load}>{t('dashboardHome.retry')}</Button>} />
       )}
 
-      {status === 'empty' && <EmptyState title="No events found" />}
+      {status === 'empty' && <EmptyState title={t('admin.events.empty')} />}
 
       {status === 'success' && (
         <>
@@ -69,18 +70,18 @@ export function AdminEventsPage() {
             <table className="ch-table">
               <thead>
                 <tr>
-                  <th>Title</th>
-                  <th>Type</th>
-                  <th>Owner</th>
-                  <th>Status</th>
-                  <th>Created</th>
+                  <th>{t('admin.events.title.col')}</th>
+                  <th>{t('admin.events.type')}</th>
+                  <th>{t('admin.events.owner')}</th>
+                  <th>{t('admin.customers.status')}</th>
+                  <th>{t('admin.created')}</th>
                 </tr>
               </thead>
               <tbody>
                 {events.map((event) => (
                   <tr key={event.id}>
                     <td className="ch-table__name">{event.title}</td>
-                    <td>{getEventTypeLabel(event.eventType)}</td>
+                    <td>{t(`category.${event.eventType}`)}</td>
                     <td>
                       {event.ownerName}
                       <br />

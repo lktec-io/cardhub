@@ -35,7 +35,7 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
-  const t = useCallback((key) => translate(key, language), [language]);
+  const t = useCallback((key, vars) => translate(key, language, vars), [language]);
 
   const value = useMemo(() => ({ language, setLanguage, languages: LANGUAGES, t }), [language, setLanguage, t]);
 

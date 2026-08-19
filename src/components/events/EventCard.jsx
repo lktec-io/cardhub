@@ -2,21 +2,22 @@ import { Link } from 'react-router-dom';
 import { FiCopy, FiTrash2 } from 'react-icons/fi';
 import { GlassCard, Button } from '../ui';
 import { EventStatusBadge } from './EventStatusBadge';
-import { getEventTypeLabel } from '../../constants/eventTypes';
 import { ROUTES } from '../../constants/routes';
-
-function formatDate(dateStr) {
-  if (!dateStr) return 'Date not set';
-  return new Date(`${dateStr}T00:00:00`).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function EventCard({ event, onDuplicate, onDelete, isDuplicating = false }) {
+  const { t } = useLanguage();
   const colors = event.template?.config?.colors;
   const swatchStyle = colors ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : undefined;
+
+  function formatDate(dateStr) {
+    if (!dateStr) return t('eventCard.dateNotSet');
+    return new Date(`${dateStr}T00:00:00`).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
 
   return (
     <GlassCard hoverable className="ch-event-card">
@@ -32,20 +33,20 @@ export function EventCard({ event, onDuplicate, onDelete, isDuplicating = false 
       </div>
 
       <div className="ch-event-card__meta">
-        <span>{getEventTypeLabel(event.eventType)}</span>
+        <span>{t(`category.${event.eventType}`)}</span>
         <span>&middot;</span>
         <span>{formatDate(event.eventDate)}</span>
       </div>
 
       <div className="ch-event-card__actions">
         <Link to={ROUTES.eventDetail(event.id)} className="ch-btn ch-btn--secondary ch-btn--sm">
-          Open
+          {t('eventCard.open')}
         </Link>
         <Button variant="ghost" size="sm" isLoading={isDuplicating} onClick={() => onDuplicate(event)}>
-          <FiCopy aria-hidden="true" /> Duplicate
+          <FiCopy aria-hidden="true" /> {t('eventCard.duplicate')}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => onDelete(event)}>
-          <FiTrash2 aria-hidden="true" /> Delete
+          <FiTrash2 aria-hidden="true" /> {t('eventCard.delete')}
         </Button>
       </div>
     </GlassCard>

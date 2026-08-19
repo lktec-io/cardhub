@@ -6,6 +6,7 @@ import { Button, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { ORDER_STATUS_BADGE, PAYMENT_STATUS_BADGE } from '../../constants/orderStatus';
 import { ROUTES } from '../../constants/routes';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const STATUS_BADGE = { active: 'success', inactive: 'default', suspended: 'danger' };
 
@@ -14,6 +15,7 @@ function formatTzs(amount) {
 }
 
 export function AdminCustomerDetailPage() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const [customer, setCustomer] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -45,57 +47,57 @@ export function AdminCustomerDetailPage() {
     <div className="ch-admin-page">
       <Seo title="Admin — Customer" />
       <Link to={ROUTES.ADMIN_CUSTOMERS} className="ch-admin-page__back-link">
-        <FiArrowLeft aria-hidden="true" /> Back to Customers
+        <FiArrowLeft aria-hidden="true" /> {t('admin.customerDetail.back')}
       </Link>
 
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load this customer" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState icon={<FiAlertCircle />} title={t('admin.customerDetail.loadFailed')} action={<Button variant="primary" onClick={load}>{t('dashboardHome.retry')}</Button>} />
       )}
 
       {status === 'success' && customer && (
         <>
           <PageHeader
-            eyebrow="CardHub Admin"
+            eyebrow={t('admin.eyebrow')}
             title={customer.name}
             description={customer.email}
           />
 
           <div className="ch-admin-customer__summary">
             <div>
-              <p className="ch-label">Phone</p>
+              <p className="ch-label">{t('admin.phone')}</p>
               <p className="ch-body">{customer.phone || '—'}</p>
             </div>
             <div>
-              <p className="ch-label">Status</p>
-              <Badge variant={STATUS_BADGE[customer.status] || 'default'}>{customer.status}</Badge>
+              <p className="ch-label">{t('admin.customers.status')}</p>
+              <Badge variant={STATUS_BADGE[customer.status] || 'default'}>{t(`status.${customer.status}`)}</Badge>
             </div>
             <div>
-              <p className="ch-label">Joined</p>
+              <p className="ch-label">{t('admin.joined')}</p>
               <p className="ch-body">{new Date(customer.createdAt).toLocaleDateString()}</p>
             </div>
             <div>
-              <p className="ch-label">Orders</p>
+              <p className="ch-label">{t('admin.customers.orders')}</p>
               <p className="ch-body">{customer.orders?.length ?? 0}</p>
             </div>
           </div>
 
-          <h3 className="ch-h4 ch-admin-page__section-title">Orders</h3>
+          <h3 className="ch-h4 ch-admin-page__section-title">{t('admin.customerDetail.ordersTitle')}</h3>
           {!customer.orders?.length ? (
-            <EmptyState title="No orders yet" description="Orders this customer places will appear here." />
+            <EmptyState title={t('admin.customerDetail.noOrders')} description={t('admin.customerDetail.noOrdersDescription')} />
           ) : (
             <div className="ch-table-wrap">
               <table className="ch-table">
                 <thead>
                   <tr>
-                    <th>Card</th>
-                    <th>Tier</th>
-                    <th>Qty</th>
-                    <th>Subtotal</th>
-                    <th>Status</th>
-                    <th>Payment</th>
-                    <th>Placed</th>
+                    <th>{t('admin.orders.card')}</th>
+                    <th>{t('admin.orders.tier')}</th>
+                    <th>{t('admin.orders.qty')}</th>
+                    <th>{t('admin.orders.subtotal')}</th>
+                    <th>{t('admin.orders.status')}</th>
+                    <th>{t('admin.orders.payment')}</th>
+                    <th>{t('admin.orders.placed')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,10 +108,10 @@ export function AdminCustomerDetailPage() {
                       <td>{order.quantity}</td>
                       <td>TSh {formatTzs(order.subtotalTzs)}</td>
                       <td>
-                        <Badge variant={ORDER_STATUS_BADGE[order.status] || 'default'}>{order.status}</Badge>
+                        <Badge variant={ORDER_STATUS_BADGE[order.status] || 'default'}>{t(`status.${order.status}`)}</Badge>
                       </td>
                       <td>
-                        <Badge variant={PAYMENT_STATUS_BADGE[order.paymentStatus] || 'default'}>{order.paymentStatus}</Badge>
+                        <Badge variant={PAYMENT_STATUS_BADGE[order.paymentStatus] || 'default'}>{t(`status.${order.paymentStatus}`)}</Badge>
                       </td>
                       <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                     </tr>

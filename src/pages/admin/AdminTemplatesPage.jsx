@@ -4,7 +4,7 @@ import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Badge, Select, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
-import { getCategoryLabel } from '../../constants/templateCategories';
+import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 import { PRICING_TIER_LIST } from '../../constants/pricingTiers';
 
@@ -13,6 +13,7 @@ const TIER_OPTIONS = PRICING_TIER_LIST.map((tier) => ({ value: tier.id, label: t
 const PAGE_SIZE = 20;
 
 export function AdminTemplatesPage() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [templates, setTemplates] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -51,9 +52,9 @@ export function AdminTemplatesPage() {
     try {
       await adminService.updateTemplateStatus(template.id, nextStatus);
       setTemplates((prev) => prev.map((t) => (t.id === template.id ? { ...t, status: nextStatus } : t)));
-      toast.success(nextStatus === 'active' ? 'Template activated' : 'Template deactivated');
+      toast.success(nextStatus === 'active' ? t('admin.templates.activated') : t('admin.templates.deactivated'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not update this template'));
+      toast.error(getErrorMessage(error, t('admin.templates.updateFailed')));
     } finally {
       setUpdatingId(null);
     }
@@ -65,9 +66,9 @@ export function AdminTemplatesPage() {
       const res = await adminService.updateTemplatePricingTier(template.id, pricingTier);
       const updated = res.data.data.template;
       setTemplates((prev) => prev.map((t) => (t.id === template.id ? updated : t)));
-      toast.success('Pricing tier updated');
+      toast.success(t('admin.templates.tierUpdated'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not update the pricing tier'));
+      toast.error(getErrorMessage(error, t('admin.templates.tierUpdateFailed')));
     } finally {
       setUpdatingId(null);
     }
@@ -77,18 +78,18 @@ export function AdminTemplatesPage() {
     <div className="ch-admin-page">
       <Seo title="Admin — Templates" />
       <PageHeader
-        eyebrow="CardHub Admin"
-        title="Cards / Templates"
-        description="Deactivating a card removes it from the public catalogue — existing events keep working. Creating a brand-new card design and editing name/description/config are deferred to Phase 2; the pricing tier is editable here today."
+        eyebrow={t('admin.eyebrow')}
+        title={t('admin.templates.title')}
+        description={t('admin.templates.description')}
       />
 
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load templates" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState icon={<FiAlertCircle />} title={t('admin.templates.loadFailed')} action={<Button variant="primary" onClick={load}>{t('dashboardHome.retry')}</Button>} />
       )}
 
-      {status === 'empty' && <EmptyState title="No templates found" />}
+      {status === 'empty' && <EmptyState title={t('admin.templates.empty')} />}
 
       {status === 'success' && (
         <>
@@ -96,11 +97,11 @@ export function AdminTemplatesPage() {
             <table className="ch-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Price tier</th>
-                  <th>Created</th>
-                  <th>Status</th>
+                  <th>{t('admin.name')}</th>
+                  <th>{t('admin.templates.category')}</th>
+                  <th>{t('admin.templates.priceTier')}</th>
+                  <th>{t('admin.created')}</th>
+                  <th>{t('admin.templates.status')}</th>
                   <th aria-label="Actions" />
                 </tr>
               </thead>
@@ -108,7 +109,7 @@ export function AdminTemplatesPage() {
                 {templates.map((template) => (
                   <tr key={template.id}>
                     <td className="ch-table__name">{template.name}</td>
-                    <td>{getCategoryLabel(template.category)}</td>
+                    <td>{t(`category.${template.category}`)}</td>
                     <td>
                       <Select
                         value={template.pricingTier}
@@ -120,11 +121,13 @@ export function AdminTemplatesPage() {
                     </td>
                     <td>{new Date(template.createdAt).toLocaleDateString()}</td>
                     <td>
-                      <Badge variant={template.status === 'active' ? 'success' : 'default'}>{template.status}</Badge>
+                      <Badge variant={template.status === 'active' ? 'success' : 'default'}>
+                        {template.status === 'active' ? t('admin.templates.active') : t('admin.templates.inactive')}
+                      </Badge>
                     </td>
                     <td>
                       <Button variant="ghost" size="sm" isLoading={updatingId === template.id} onClick={() => toggleStatus(template)}>
-                        {template.status === 'active' ? 'Deactivate' : 'Activate'}
+                        {template.status === 'active' ? t('admin.templates.deactivate') : t('admin.templates.activate')}
                       </Button>
                     </td>
                   </tr>

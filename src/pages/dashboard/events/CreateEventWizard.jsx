@@ -12,8 +12,7 @@ import { eventsService } from '../../../services/eventsService';
 import { getDetectedTimezone } from '../../../utils/timezones';
 import { mapValidationErrors, getErrorMessage } from '../../../utils/mapValidationErrors';
 import { ROUTES } from '../../../constants/routes';
-
-const STEPS = ['Event Type', 'Template', 'Details', 'Review'];
+import { useLanguage } from '../../../hooks/useLanguage';
 
 const INITIAL_FORM = {
   eventType: '',
@@ -27,14 +26,16 @@ const INITIAL_FORM = {
   description: '',
 };
 
-function validateDetails(form) {
+function validateDetails(form, t) {
   const errors = {};
-  if (!form.title || form.title.trim().length < 2) errors.title = 'Event name is required';
-  if (!form.timezone) errors.timezone = 'Please choose a timezone';
+  if (!form.title || form.title.trim().length < 2) errors.title = t('wizard.eventNameRequired');
+  if (!form.timezone) errors.timezone = t('wizard.chooseTimezone');
   return errors;
 }
 
 export function CreateEventWizard() {
+  const { t } = useLanguage();
+  const STEPS = [t('wizard.step.eventType'), t('wizard.step.template'), t('wizard.step.details'), t('wizard.step.review')];
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(INITIAL_FORM);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -49,15 +50,15 @@ export function CreateEventWizard() {
 
   function goNext() {
     if (step === 1 && !form.eventType) {
-      setErrors({ eventType: 'Please choose an event type' });
+      setErrors({ eventType: t('wizard.chooseEventType') });
       return;
     }
     if (step === 2 && !selectedTemplate) {
-      setErrors({ template: 'Please choose a template' });
+      setErrors({ template: t('wizard.chooseTemplate') });
       return;
     }
     if (step === 3) {
-      const detailErrors = validateDetails(form);
+      const detailErrors = validateDetails(form, t);
       if (Object.keys(detailErrors).length > 0) {
         setErrors(detailErrors);
         return;
@@ -90,7 +91,7 @@ export function CreateEventWizard() {
       setCreatedEvent(res.data.data.event);
     } catch (error) {
       setErrors(mapValidationErrors(error));
-      setSubmitError(getErrorMessage(error, 'We couldn’t create your invitation. Please try again.'));
+      setSubmitError(getErrorMessage(error, t('wizard.createFailed')));
     } finally {
       setIsSubmitting(false);
     }
@@ -102,17 +103,16 @@ export function CreateEventWizard() {
         <Seo title="Invitation created" />
         <div className="ch-wizard__success ch-animate-scale-in">
           <FiCheckCircle size={48} color="var(--accent)" aria-hidden="true" />
-          <h2 className="ch-h2">Your invitation draft is ready</h2>
+          <h2 className="ch-h2">{t('wizard.readyTitle')}</h2>
           <p className="ch-body">
-            <strong>{createdEvent.title}</strong> was created as a draft. Continue designing it, or head back to
-            My Events.
+            <strong>{createdEvent.title}</strong> {t('wizard.readyDescription')}
           </p>
           <div className="ch-wizard__success-actions">
             <Link to={ROUTES.eventDetail(createdEvent.id)} className="ch-btn ch-btn--primary">
-              Open event
+              {t('wizard.openEvent')}
             </Link>
             <Link to={ROUTES.DASHBOARD_EVENTS} className="ch-btn ch-btn--secondary">
-              View my events
+              {t('wizard.viewMyEvents')}
             </Link>
           </div>
         </div>
@@ -157,16 +157,16 @@ export function CreateEventWizard() {
 
         <div className="ch-wizard__actions">
           <Button variant="ghost" onClick={goBack} disabled={step === 1}>
-            <FiArrowLeft aria-hidden="true" /> Back
+            <FiArrowLeft aria-hidden="true" /> {t('wizard.back')}
           </Button>
           {step < 4 ? (
             <Button variant="primary" onClick={goNext}>
-              Continue
+              {t('wizard.continue')}
               <FiArrowRight aria-hidden="true" />
             </Button>
           ) : (
             <Button variant="primary" isLoading={isSubmitting} onClick={handleCreate}>
-              Create draft
+              {t('wizard.createDraft')}
             </Button>
           )}
         </div>

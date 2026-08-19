@@ -1,28 +1,30 @@
-import { getEventTypeLabel } from '../../../../constants/eventTypes';
-
-function formatDate(value) {
-  if (!value) return 'Not set';
-  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-}
+import { useLanguage } from '../../../../hooks/useLanguage';
 
 export function ReviewStep({ formData, template, onEditStep }) {
+  const { t } = useLanguage();
+
+  function formatDate(value) {
+    if (!value) return t('wizard.review.notSet');
+    return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
   const rows = [
-    { label: 'Event type', value: getEventTypeLabel(formData.eventType), step: 1 },
-    { label: 'Template', value: template?.name || '—', step: 2 },
-    { label: 'Event name', value: formData.title || '—', step: 3 },
-    { label: 'Host', value: formData.hostName || '—', step: 3 },
-    { label: 'Date', value: formatDate(formData.eventDate), step: 3 },
-    { label: 'Time', value: formData.eventTime || 'Not set', step: 3 },
-    { label: 'Timezone', value: formData.timezone, step: 3 },
-    { label: 'Venue', value: formData.venueName || 'Not set', step: 3 },
-    { label: 'Address', value: formData.venueAddress || 'Not set', step: 3 },
-    { label: 'Description', value: formData.description || 'Not set', step: 3 },
+    { label: t('wizard.review.eventType'), value: formData.eventType ? t(`category.${formData.eventType}`) : '—', step: 1 },
+    { label: t('wizard.review.template'), value: template?.name || '—', step: 2 },
+    { label: t('wizard.review.eventName'), value: formData.title || '—', step: 3 },
+    { label: t('wizard.review.host'), value: formData.hostName || '—', step: 3 },
+    { label: t('wizard.review.date'), value: formatDate(formData.eventDate), step: 3 },
+    { label: t('wizard.review.time'), value: formData.eventTime || t('wizard.review.notSet'), step: 3 },
+    { label: t('wizard.review.timezone'), value: formData.timezone, step: 3 },
+    { label: t('wizard.review.venue'), value: formData.venueName || t('wizard.review.notSet'), step: 3 },
+    { label: t('wizard.review.address'), value: formData.venueAddress || t('wizard.review.notSet'), step: 3 },
+    { label: t('wizard.review.description'), value: formData.description || t('wizard.review.notSet'), step: 3 },
   ];
 
   return (
     <div>
-      <h2 className="ch-h3">Review your invitation</h2>
-      <p className="ch-body-sm ch-wizard__intro">Confirm everything looks right before creating your draft.</p>
+      <h2 className="ch-h3">{t('wizard.review.title')}</h2>
+      <p className="ch-body-sm ch-wizard__intro">{t('wizard.review.intro')}</p>
 
       <dl className="ch-review-summary">
         {rows.map((row) => (
@@ -31,7 +33,7 @@ export function ReviewStep({ formData, template, onEditStep }) {
             <dd>
               {row.value}{' '}
               <button type="button" className="ch-auth-form__link" onClick={() => onEditStep(row.step)}>
-                Edit
+                {t('wizard.review.edit')}
               </button>
             </dd>
           </div>

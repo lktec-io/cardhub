@@ -3,6 +3,7 @@ import { FiAlertCircle, FiClock, FiCreditCard, FiDollarSign, FiShoppingBag, FiUs
 import { PageHeader, Seo } from '../../components/common';
 import { Button, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
+import { useLanguage } from '../../hooks/useLanguage';
 
 function StatTile({ icon: Icon, label, value }) {
   return (
@@ -15,6 +16,7 @@ function StatTile({ icon: Icon, label, value }) {
 }
 
 export function AdminDashboardPage() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [status, setStatus] = useState('loading');
 
@@ -40,7 +42,7 @@ export function AdminDashboardPage() {
   return (
     <div className="ch-admin-dashboard">
       <Seo title="Admin Dashboard" />
-      <PageHeader eyebrow="CardHub Admin" title="Platform overview" description="Real, live figures from the database — never estimated." />
+      <PageHeader eyebrow={t('admin.eyebrow')} title={t('admin.dashboard.title')} description={t('admin.dashboard.description')} />
 
       {status === 'loading' && (
         <div className="ch-admin-stats-grid">
@@ -53,10 +55,10 @@ export function AdminDashboardPage() {
       {status === 'error' && (
         <EmptyState
           icon={<FiAlertCircle />}
-          title="Couldn't load platform statistics"
+          title={t('admin.dashboard.loadFailed')}
           action={
             <Button variant="primary" onClick={load}>
-              Retry
+              {t('dashboardHome.retry')}
             </Button>
           }
         />
@@ -64,14 +66,14 @@ export function AdminDashboardPage() {
 
       {status === 'success' && stats && (
         <div className="ch-admin-stats-grid">
-          <StatTile icon={FiUsers} label="Total Customers" value={stats.totalCustomers} />
-          <StatTile icon={FiShoppingBag} label="Total Orders" value={stats.totalOrders} />
-          <StatTile icon={FiClock} label="Pending Orders" value={stats.pendingOrders} />
-          <StatTile icon={FiCreditCard} label="Cards Sold" value={stats.cardsSold} />
+          <StatTile icon={FiUsers} label={t('admin.dashboard.totalCustomers')} value={stats.totalCustomers} />
+          <StatTile icon={FiShoppingBag} label={t('admin.dashboard.totalOrders')} value={stats.totalOrders} />
+          <StatTile icon={FiClock} label={t('admin.dashboard.pendingOrders')} value={stats.pendingOrders} />
+          <StatTile icon={FiCreditCard} label={t('admin.dashboard.cardsSold')} value={stats.cardsSold} />
           <StatTile
             icon={FiDollarSign}
-            label="Revenue (TZS)"
-            value={stats.revenueTzs === 0 ? '0 (no paid orders yet)' : new Intl.NumberFormat('en-TZ').format(stats.revenueTzs)}
+            label={t('admin.dashboard.revenue')}
+            value={stats.revenueTzs === 0 ? t('admin.dashboard.noPaidOrders') : new Intl.NumberFormat('en-TZ').format(stats.revenueTzs)}
           />
         </div>
       )}

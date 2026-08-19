@@ -3,8 +3,10 @@ import { FiAlertCircle } from 'react-icons/fi';
 import { Modal, Button, EmptyState, Skeleton, Alert } from '../ui';
 import { TemplateCard, TemplateFilters } from '../templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function ChangeTemplateModal({ isOpen, onClose, currentTemplateId, onConfirm, isSaving = false }) {
+  const { t } = useLanguage();
   const { templates, status, category, setCategory, search, setSearch, retry } = useTemplateCatalog({ pageSize: 8 });
   const [pendingTemplate, setPendingTemplate] = useState(null);
 
@@ -14,18 +16,18 @@ export function ChangeTemplateModal({ isOpen, onClose, currentTemplateId, onConf
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Change template" size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('changeTemplate.title')} size="lg">
       {pendingTemplate ? (
         <div className="ch-change-template__confirm">
-          <Alert variant="warning" title={`Switch to "${pendingTemplate.name}"?`}>
-            Your event details won&rsquo;t change, only the template used for your invitation design.
+          <Alert variant="warning" title={t('changeTemplate.switchTo', { name: pendingTemplate.name })}>
+            {t('changeTemplate.warning')}
           </Alert>
           <div className="ch-change-template__confirm-actions">
             <Button variant="ghost" onClick={() => setPendingTemplate(null)} disabled={isSaving}>
-              Back
+              {t('changeTemplate.back')}
             </Button>
             <Button variant="primary" isLoading={isSaving} onClick={() => onConfirm(pendingTemplate)}>
-              Confirm change
+              {t('changeTemplate.confirmChange')}
             </Button>
           </div>
         </div>
@@ -44,16 +46,16 @@ export function ChangeTemplateModal({ isOpen, onClose, currentTemplateId, onConf
           {status === 'error' && (
             <EmptyState
               icon={<FiAlertCircle />}
-              title="Couldn't load templates"
+              title={t('catalogue.loadFailedTitle')}
               action={
                 <Button variant="primary" onClick={retry}>
-                  Retry
+                  {t('catalogue.retry')}
                 </Button>
               }
             />
           )}
 
-          {status === 'empty' && <EmptyState title="No templates found" description="Try a different search or category." />}
+          {status === 'empty' && <EmptyState title={t('catalogue.empty')} description={t('changeTemplate.tryDifferent')} />}
 
           {status === 'success' && (
             <div className="ch-change-template__grid">

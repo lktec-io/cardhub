@@ -5,8 +5,10 @@ import { Seo } from '../../components/common';
 import { ROUTES } from '../../constants/routes';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function ResetPasswordPage() {
+  const { t } = useLanguage();
   const { token } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState({ password: '', confirmPassword: '' });
@@ -21,8 +23,8 @@ export function ResetPasswordPage() {
 
   function validate() {
     const nextErrors = {};
-    if (!form.password || form.password.length < 8) nextErrors.password = 'Password must be at least 8 characters';
-    if (form.confirmPassword !== form.password) nextErrors.confirmPassword = 'Passwords do not match';
+    if (!form.password || form.password.length < 8) nextErrors.password = t('auth.passwordMinError');
+    if (form.confirmPassword !== form.password) nextErrors.confirmPassword = t('auth.confirmPasswordError');
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
@@ -37,7 +39,7 @@ export function ResetPasswordPage() {
       await authService.resetPassword({ token, password: form.password });
       setIsDone(true);
     } catch (error) {
-      setFormError(getErrorMessage(error, 'This reset link is invalid or has expired.'));
+      setFormError(getErrorMessage(error, t('resetPassword.expiredError')));
     } finally {
       setIsSubmitting(false);
     }
@@ -48,11 +50,11 @@ export function ResetPasswordPage() {
       <>
         <Seo title="Password reset" />
         <div className="ch-auth-form">
-          <Alert variant="success" title="Password reset successfully">
-            You can now log in with your new password.
+          <Alert variant="success" title={t('resetPassword.successTitle')}>
+            {t('resetPassword.successBody')}
           </Alert>
           <Button variant="primary" fullWidth onClick={() => navigate(ROUTES.LOGIN, { replace: true })}>
-            Go to login
+            {t('resetPassword.goToLogin')}
           </Button>
         </div>
       </>
@@ -63,8 +65,8 @@ export function ResetPasswordPage() {
     <>
       <Seo title="Reset password" description="Choose a new password for your CardHub account." />
       <div className="ch-auth-form">
-        <h1 className="ch-h3">Choose a new password</h1>
-        <p className="ch-body-sm">Enter and confirm your new password below.</p>
+        <h1 className="ch-h3">{t('resetPassword.title')}</h1>
+        <p className="ch-body-sm">{t('resetPassword.subtitle')}</p>
 
         {formError && (
           <Alert variant="danger" className="ch-auth-form__alert">
@@ -74,26 +76,26 @@ export function ResetPasswordPage() {
 
         <form onSubmit={handleSubmit} noValidate>
           <PasswordField
-            label="New password"
+            label={t('resetPassword.newPassword')}
             value={form.password}
             onChange={handleChange('password')}
             error={errors.password}
             autoComplete="new-password"
           />
           <PasswordField
-            label="Confirm new password"
+            label={t('resetPassword.confirmNewPassword')}
             value={form.confirmPassword}
             onChange={handleChange('confirmPassword')}
             error={errors.confirmPassword}
             autoComplete="new-password"
           />
           <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-            Reset password
+            {t('resetPassword.submit')}
           </Button>
         </form>
 
         <p className="ch-auth-form__footer">
-          <Link to={ROUTES.LOGIN}>Back to login</Link>
+          <Link to={ROUTES.LOGIN}>{t('resetPassword.backToLogin')}</Link>
         </p>
       </div>
     </>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiAlertCircle, FiSearch } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, InvitationPreview, Pagination } from '../../components/common';
+import { Container, SectionHeader, Seo, Pagination } from '../../components/common';
 import { Modal, Button, EmptyState, Skeleton, Alert } from '../../components/ui';
-import { TemplateCard, TemplateFilters } from '../../components/templates';
+import { TemplateCard, TemplateFilters, TemplateThumb } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -109,7 +109,7 @@ export function TemplatesPage() {
       >
         {previewTemplate && (
           <div className="ch-templates-page__preview">
-            <InvitationPreview compact title="Your Names Here" venue={previewTemplate.name} colors={previewTemplate.config?.colors} />
+            <TemplateThumb template={previewTemplate} className="ch-templates-page__preview-thumb" />
             <p className="ch-body-sm">{previewTemplate.description}</p>
             {typeof previewTemplate.priceTzs === 'number' && (
               <p className="ch-templates-page__preview-price">{formatCardPrice(previewTemplate.priceTzs)}</p>

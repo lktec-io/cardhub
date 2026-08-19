@@ -3,10 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Input, PasswordField, Button, Alert, Divider } from '../../components/ui';
 import { Seo } from '../../components/common';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../hooks/useLanguage';
 import { ROUTES } from '../../constants/routes';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 
 export function LoginPage() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
@@ -23,8 +25,8 @@ export function LoginPage() {
 
   function validate() {
     const nextErrors = {};
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Please enter a valid email';
-    if (!form.password) nextErrors.password = 'Please enter your password';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = t('auth.emailError');
+    if (!form.password) nextErrors.password = t('auth.passwordRequiredError');
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
@@ -40,9 +42,9 @@ export function LoginPage() {
       navigate(redirectTo, { replace: true });
     } catch (error) {
       if (error.response?.status === 429) {
-        setFormError('Too many attempts. Please wait a few minutes before trying again.');
+        setFormError(t('auth.rateLimited'));
       } else {
-        setFormError(getErrorMessage(error, 'Invalid email or password'));
+        setFormError(getErrorMessage(error, t('login.invalidCredentials')));
       }
     } finally {
       setIsSubmitting(false);
@@ -53,8 +55,8 @@ export function LoginPage() {
     <>
       <Seo title="Log in" description="Log in to your CardHub account." />
       <div className="ch-auth-form">
-        <h1 className="ch-h3">Welcome back</h1>
-        <p className="ch-body-sm">Log in to manage your CardHub invitations.</p>
+        <h1 className="ch-h3">{t('login.welcomeBack')}</h1>
+        <p className="ch-body-sm">{t('login.subtitle')}</p>
 
         {formError && (
           <Alert variant="danger" className="ch-auth-form__alert">
@@ -65,14 +67,14 @@ export function LoginPage() {
         <form onSubmit={handleSubmit} noValidate>
           <Input
             type="email"
-            label="Email"
+            label={t('auth.emailLabel')}
             value={form.email}
             onChange={handleChange('email')}
             error={errors.email}
             autoComplete="email"
           />
           <PasswordField
-            label="Password"
+            label={t('auth.passwordLabel')}
             value={form.password}
             onChange={handleChange('password')}
             error={errors.password}
@@ -80,19 +82,19 @@ export function LoginPage() {
           />
           <div className="ch-auth-form__row">
             <Link to={ROUTES.FORGOT_PASSWORD} className="ch-auth-form__link">
-              Forgot password?
+              {t('login.forgotPassword')}
             </Link>
           </div>
 
           <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-            Log in
+            {t('login.submit')}
           </Button>
         </form>
 
         <Divider />
 
         <p className="ch-auth-form__footer">
-          Don&rsquo;t have an account? <Link to={ROUTES.REGISTER}>Create one</Link>
+          {t('login.noAccount')} <Link to={ROUTES.REGISTER}>{t('login.createOne')}</Link>
         </p>
       </div>
     </>

@@ -6,6 +6,7 @@ import { Button, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { ordersService } from '../../services/ordersService';
 import { ORDER_STATUS_BADGE, PAYMENT_STATUS_BADGE, DELIVERY_STATUS_BADGE } from '../../constants/orderStatus';
 import { ROUTES } from '../../constants/routes';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const PAGE_SIZE = 12;
 
@@ -14,6 +15,7 @@ function formatTzs(amount) {
 }
 
 export function OrdersPage() {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -47,22 +49,22 @@ export function OrdersPage() {
   return (
     <div className="ch-orders-page">
       <Seo title="My Orders" />
-      <PageHeader eyebrow="Dashboard" title="Orders" description="Card orders you've placed through CardHub." />
+      <PageHeader eyebrow={t('sidebar.dashboard')} title={t('dashOrders.title')} description={t('dashOrders.description')} />
 
       {status === 'loading' && <Skeleton height="280px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load your orders" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState icon={<FiAlertCircle />} title={t('dashOrders.loadFailed')} action={<Button variant="primary" onClick={load}>{t('dashboardHome.retry')}</Button>} />
       )}
 
       {status === 'empty' && (
         <EmptyState
           icon={<FiShoppingBag />}
-          title="No orders yet"
-          description="Browse the card catalogue to place your first order."
+          title={t('dashOrders.emptyTitle')}
+          description={t('dashOrders.emptyDescription')}
           action={
             <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary">
-              Browse cards
+              {t('dashOrders.browseCards')}
             </Link>
           }
         />
@@ -74,14 +76,14 @@ export function OrdersPage() {
             <table className="ch-table">
               <thead>
                 <tr>
-                  <th>Card</th>
-                  <th>Tier</th>
-                  <th>Qty</th>
-                  <th>Subtotal</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                  <th>Delivery</th>
-                  <th>Placed</th>
+                  <th>{t('admin.orders.card')}</th>
+                  <th>{t('admin.orders.tier')}</th>
+                  <th>{t('admin.orders.qty')}</th>
+                  <th>{t('admin.orders.subtotal')}</th>
+                  <th>{t('admin.orders.status')}</th>
+                  <th>{t('admin.orders.payment')}</th>
+                  <th>{t('admin.orders.delivery')}</th>
+                  <th>{t('admin.orders.placed')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -92,13 +94,13 @@ export function OrdersPage() {
                     <td>{order.quantity}</td>
                     <td>TSh {formatTzs(order.subtotalTzs)}</td>
                     <td>
-                      <Badge variant={ORDER_STATUS_BADGE[order.status] || 'default'}>{order.status}</Badge>
+                      <Badge variant={ORDER_STATUS_BADGE[order.status] || 'default'}>{t(`status.${order.status}`)}</Badge>
                     </td>
                     <td>
-                      <Badge variant={PAYMENT_STATUS_BADGE[order.paymentStatus] || 'default'}>{order.paymentStatus}</Badge>
+                      <Badge variant={PAYMENT_STATUS_BADGE[order.paymentStatus] || 'default'}>{t(`status.${order.paymentStatus}`)}</Badge>
                     </td>
                     <td>
-                      <Badge variant={DELIVERY_STATUS_BADGE[order.deliveryStatus] || 'default'}>{order.deliveryStatus}</Badge>
+                      <Badge variant={DELIVERY_STATUS_BADGE[order.deliveryStatus] || 'default'}>{t(`status.${order.deliveryStatus}`)}</Badge>
                     </td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                   </tr>

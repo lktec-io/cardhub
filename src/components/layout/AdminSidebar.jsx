@@ -11,20 +11,23 @@ import {
   FiUsers,
 } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', to: ROUTES.ADMIN, icon: FiGrid, enabled: true, end: true },
-  { label: 'Customers', to: ROUTES.ADMIN_CUSTOMERS, icon: FiUsers, enabled: true },
-  { label: 'Cards / Templates', to: ROUTES.ADMIN_TEMPLATES, icon: FiLayers, enabled: true },
-  { label: 'Orders', to: ROUTES.ADMIN_ORDERS, icon: FiShoppingBag, enabled: true },
-  { label: 'Events', to: ROUTES.ADMIN_EVENTS, icon: FiImage, enabled: true },
-  { label: 'Messages', icon: FiMessageSquare, enabled: false },
-  { label: 'Analytics', icon: FiBarChart2, enabled: false },
-  { label: 'Audit Logs', to: ROUTES.ADMIN_AUDIT_LOGS, icon: FiFileText, enabled: true },
-  { label: 'Settings', icon: FiSettings, enabled: false },
+  { key: 'sidebar.dashboard', to: ROUTES.ADMIN, icon: FiGrid, enabled: true, end: true },
+  { key: 'sidebar.admin.customers', to: ROUTES.ADMIN_CUSTOMERS, icon: FiUsers, enabled: true },
+  { key: 'sidebar.admin.templates', to: ROUTES.ADMIN_TEMPLATES, icon: FiLayers, enabled: true },
+  { key: 'sidebar.orders', to: ROUTES.ADMIN_ORDERS, icon: FiShoppingBag, enabled: true },
+  { key: 'sidebar.admin.events', to: ROUTES.ADMIN_EVENTS, icon: FiImage, enabled: true },
+  { key: 'sidebar.messages', icon: FiMessageSquare, enabled: false },
+  { key: 'sidebar.analytics', icon: FiBarChart2, enabled: false },
+  { key: 'sidebar.admin.auditLogs', to: ROUTES.ADMIN_AUDIT_LOGS, icon: FiFileText, enabled: true },
+  { key: 'sidebar.settings', icon: FiSettings, enabled: false },
 ];
 
 export function AdminSidebar({ isMobileOpen = false, onClose }) {
+  const { t } = useLanguage();
+
   return (
     <>
       {isMobileOpen && <div className="ch-sidebar-overlay" onClick={onClose} aria-hidden="true" />}
@@ -33,29 +36,29 @@ export function AdminSidebar({ isMobileOpen = false, onClose }) {
           CardHub <span className="ch-sidebar__admin-tag">Admin</span>
         </div>
         <nav className="ch-sidebar__nav" aria-label="Admin">
-          {NAV_ITEMS.map(({ label, to, icon: Icon, enabled, end }) =>
+          {NAV_ITEMS.map(({ key, to, icon: Icon, enabled, end }) =>
             enabled ? (
               <NavLink
-                key={label}
+                key={key}
                 to={to}
                 end={end}
                 onClick={onClose}
                 className={({ isActive }) => `ch-sidebar__link ${isActive ? 'ch-sidebar__link--active' : ''}`}
               >
                 <Icon className="ch-sidebar__icon" aria-hidden="true" />
-                <span>{label}</span>
+                <span>{t(key)}</span>
               </NavLink>
             ) : (
-              <span key={label} className="ch-sidebar__link ch-sidebar__link--disabled" aria-disabled="true">
+              <span key={key} className="ch-sidebar__link ch-sidebar__link--disabled" aria-disabled="true">
                 <Icon className="ch-sidebar__icon" aria-hidden="true" />
-                <span>{label}</span>
-                <span className="ch-sidebar__soon">Soon</span>
+                <span>{t(key)}</span>
+                <span className="ch-sidebar__soon">{t('sidebar.soon')}</span>
               </span>
             )
           )}
         </nav>
         <NavLink to={ROUTES.DASHBOARD} className="ch-sidebar__link ch-sidebar__back-link">
-          &larr; Back to CardHub
+          &larr; {t('sidebar.admin.backToCardHub')}
         </NavLink>
       </aside>
     </>

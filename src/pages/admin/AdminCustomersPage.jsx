@@ -5,6 +5,7 @@ import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Input, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
+import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 import { ROUTES } from '../../constants/routes';
 
@@ -13,6 +14,7 @@ const PAGE_SIZE = 20;
 const STATUS_BADGE = { active: 'success', inactive: 'default', suspended: 'danger' };
 
 export function AdminCustomersPage() {
+  const { t } = useLanguage();
   const toast = useToast();
   const [customers, setCustomers] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -51,9 +53,9 @@ export function AdminCustomersPage() {
     try {
       await adminService.updateUserStatus(customer.id, nextStatus);
       setCustomers((prev) => prev.map((c) => (c.id === customer.id ? { ...c, status: nextStatus } : c)));
-      toast.success(nextStatus === 'suspended' ? 'Customer suspended' : 'Customer reactivated');
+      toast.success(nextStatus === 'suspended' ? t('admin.customers.suspended') : t('admin.customers.reactivated'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not update this customer'));
+      toast.error(getErrorMessage(error, t('admin.customers.updateFailed')));
     } finally {
       setUpdatingId(null);
     }
@@ -62,11 +64,11 @@ export function AdminCustomersPage() {
   return (
     <div className="ch-admin-page">
       <Seo title="Admin — Customers" />
-      <PageHeader eyebrow="CardHub Admin" title="Customers" description="Everyone who has registered a CardHub account." />
+      <PageHeader eyebrow={t('admin.eyebrow')} title={t('admin.customers.title')} description={t('admin.customers.description')} />
 
       <Input
         icon={<FiSearch aria-hidden="true" />}
-        placeholder="Search by name, email, or phone..."
+        placeholder={t('admin.customers.searchPlaceholder')}
         value={search}
         onChange={(e) => {
           setPage(1);
@@ -78,10 +80,10 @@ export function AdminCustomersPage() {
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load customers" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState icon={<FiAlertCircle />} title={t('admin.customers.loadFailed')} action={<Button variant="primary" onClick={load}>{t('dashboardHome.retry')}</Button>} />
       )}
 
-      {status === 'empty' && <EmptyState title="No customers found" />}
+      {status === 'empty' && <EmptyState title={t('admin.customers.empty')} />}
 
       {status === 'success' && (
         <>
@@ -89,12 +91,12 @@ export function AdminCustomersPage() {
             <table className="ch-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Orders</th>
-                  <th>Status</th>
-                  <th>Joined</th>
+                  <th>{t('admin.name')}</th>
+                  <th>{t('admin.phone')}</th>
+                  <th>{t('admin.email')}</th>
+                  <th>{t('admin.customers.orders')}</th>
+                  <th>{t('admin.customers.status')}</th>
+                  <th>{t('admin.joined')}</th>
                   <th aria-label="Actions" />
                 </tr>
               </thead>
@@ -108,7 +110,7 @@ export function AdminCustomersPage() {
                     <td>{customer.email}</td>
                     <td>{customer.orderCount ?? 0}</td>
                     <td>
-                      <Badge variant={STATUS_BADGE[customer.status] || 'default'}>{customer.status}</Badge>
+                      <Badge variant={STATUS_BADGE[customer.status] || 'default'}>{t(`status.${customer.status}`)}</Badge>
                     </td>
                     <td>{new Date(customer.createdAt).toLocaleDateString()}</td>
                     <td>
@@ -119,7 +121,7 @@ export function AdminCustomersPage() {
                           isLoading={updatingId === customer.id}
                           onClick={() => toggleStatus(customer)}
                         >
-                          {customer.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                          {customer.status === 'suspended' ? t('admin.customers.reactivate') : t('admin.customers.suspend')}
                         </Button>
                       )}
                     </td>

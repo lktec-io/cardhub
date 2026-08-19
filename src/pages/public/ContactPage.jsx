@@ -3,10 +3,12 @@ import { FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 import { Container, SectionHeader, Seo } from '../../components/common';
 import { Input, Textarea, Button, Alert } from '../../components/ui';
 import { contactService } from '../../services/contactService';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const INITIAL_FORM = { name: '', email: '', subject: '', message: '' };
 
 export function ContactPage() {
+  const { t } = useLanguage();
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,10 +20,10 @@ export function ContactPage() {
 
   function validate() {
     const nextErrors = {};
-    if (!form.name.trim() || form.name.trim().length < 2) nextErrors.name = 'Please enter your name';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Please enter a valid email';
+    if (!form.name.trim() || form.name.trim().length < 2) nextErrors.name = t('contact.nameError');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = t('contact.emailError');
     if (!form.message.trim() || form.message.trim().length < 10) {
-      nextErrors.message = 'Please share a few more details (at least 10 characters)';
+      nextErrors.message = t('contact.messageError');
     }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -40,7 +42,7 @@ export function ContactPage() {
     } catch (error) {
       setStatus({
         variant: 'danger',
-        message: error.response?.data?.message || 'Something went wrong. Please try again.',
+        message: error.response?.data?.message || t('contact.genericError'),
       });
     } finally {
       setIsSubmitting(false);
@@ -51,7 +53,7 @@ export function ContactPage() {
     <div className="ch-contact-page">
       <Seo title="Contact" description="Get in touch with the CardHub team." />
       <Container>
-        <SectionHeader eyebrow="Contact" title="We'd love to hear from you" align="center" />
+        <SectionHeader eyebrow={t('footer.contact')} title={t('contact.title')} align="center" />
 
         <div className="ch-contact-page__grid">
           <form className="ch-glass-card ch-contact-page__form" onSubmit={handleSubmit}>
@@ -60,25 +62,25 @@ export function ContactPage() {
                 {status.message}
               </Alert>
             )}
-            <Input label="Full name" value={form.name} onChange={handleChange('name')} error={errors.name} required />
+            <Input label={t('contact.fullName')} value={form.name} onChange={handleChange('name')} error={errors.name} required />
             <Input
               type="email"
-              label="Email address"
+              label={t('contact.emailAddress')}
               value={form.email}
               onChange={handleChange('email')}
               error={errors.email}
               required
             />
-            <Input label="Subject (optional)" value={form.subject} onChange={handleChange('subject')} />
+            <Input label={t('contact.subjectOptional')} value={form.subject} onChange={handleChange('subject')} />
             <Textarea
-              label="Message"
+              label={t('contact.message')}
               value={form.message}
               onChange={handleChange('message')}
               error={errors.message}
               required
             />
             <Button type="submit" variant="primary" isLoading={isSubmitting} fullWidth>
-              Send message
+              {t('contact.sendMessage')}
             </Button>
           </form>
 
@@ -86,21 +88,21 @@ export function ContactPage() {
             <div className="ch-contact-page__info-item">
               <FiMail aria-hidden="true" />
               <div>
-                <p className="ch-label">Email</p>
+                <p className="ch-label">{t('contact.email')}</p>
                 <p className="ch-body-sm">hello@cardhub.co.tz</p>
               </div>
             </div>
             <div className="ch-contact-page__info-item">
               <FiPhone aria-hidden="true" />
               <div>
-                <p className="ch-label">Phone</p>
+                <p className="ch-label">{t('contact.phone')}</p>
                 <p className="ch-body-sm">+255 000 000 000</p>
               </div>
             </div>
             <div className="ch-contact-page__info-item">
               <FiMapPin aria-hidden="true" />
               <div>
-                <p className="ch-label">Based in</p>
+                <p className="ch-label">{t('contact.basedIn')}</p>
                 <p className="ch-body-sm">Dar es Salaam, Tanzania</p>
               </div>
             </div>
