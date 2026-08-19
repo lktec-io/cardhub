@@ -38,3 +38,15 @@ export const DELIVERY_CHANNELS = [
 export const ORDER_STATUS_VALUES = ['pending', 'processing', 'completed', 'cancelled'];
 export const PAYMENT_STATUS_VALUES = ['unpaid', 'pending', 'paid', 'failed'];
 export const DELIVERY_STATUS_VALUES = ['pending', 'processing', 'partially_sent', 'sent', 'failed'];
+
+/** Optional — relevant mainly for weddings, never required for other event types. Mirrors backend/src/constants/orderStatus.js. */
+export const GUEST_TYPE_OPTIONS = [
+  { value: 'single', labelKey: 'try.guestType.single' },
+  { value: 'double', labelKey: 'try.guestType.double' },
+];
+
+export const RSVP_STATUS_BADGE = {
+  pending: 'default',
+  attending: 'success',
+  declined: 'danger',
+};

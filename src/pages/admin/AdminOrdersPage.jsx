@@ -4,6 +4,7 @@ import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Input, Select, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
+import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 import {
   ORDER_STATUS_VALUES,
@@ -14,20 +15,20 @@ import {
 
 const PAGE_SIZE = 20;
 
-function toOptions(values) {
-  return values.map((v) => ({ value: v, label: v[0].toUpperCase() + v.slice(1) }));
-}
-
-const STATUS_OPTIONS = toOptions(ORDER_STATUS_VALUES);
-const PAYMENT_OPTIONS = toOptions(PAYMENT_STATUS_VALUES);
-const DELIVERY_OPTIONS = toOptions(DELIVERY_STATUS_VALUES);
-
 function formatTzs(amount) {
   return new Intl.NumberFormat('en-TZ', { maximumFractionDigits: 0 }).format(amount);
 }
 
 export function AdminOrdersPage() {
   const toast = useToast();
+  const { t } = useLanguage();
+
+  function toOptions(values) {
+    return values.map((v) => ({ value: v, label: t(`status.${v}`) }));
+  }
+  const STATUS_OPTIONS = toOptions(ORDER_STATUS_VALUES);
+  const PAYMENT_OPTIONS = toOptions(PAYMENT_STATUS_VALUES);
+  const DELIVERY_OPTIONS = toOptions(DELIVERY_STATUS_VALUES);
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -65,9 +66,9 @@ export function AdminOrdersPage() {
       const res = await adminService.updateOrderStatus(order.id, { [field]: value });
       const updated = res.data.data.order;
       setOrders((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
-      toast.success('Order updated');
+      toast.success(t('admin.orders.updated'));
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Could not update this order'));
+      toast.error(getErrorMessage(error, t('admin.orders.updateFailed')));
     } finally {
       setUpdatingId(null);
     }
@@ -76,15 +77,11 @@ export function AdminOrdersPage() {
   return (
     <div className="ch-admin-page">
       <Seo title="Admin — Orders" />
-      <PageHeader
-        eyebrow="CardHub Admin"
-        title="Orders"
-        description="Card orders from the catalogue and the Try Our Service flow. Status changes here are real, manual reconciliation — no payment gateway is connected yet."
-      />
+      <PageHeader eyebrow="CardHub Admin" title={t('admin.orders.title')} description={t('admin.orders.description')} />
 
       <Input
         icon={<FiSearch aria-hidden="true" />}
-        placeholder="Search by customer name or phone..."
+        placeholder={t('admin.orders.searchPlaceholder')}
         value={search}
         onChange={(e) => {
           setPage(1);
@@ -96,10 +93,14 @@ export function AdminOrdersPage() {
       {status === 'loading' && <Skeleton height="320px" radius="var(--radius-lg)" />}
 
       {status === 'error' && (
-        <EmptyState icon={<FiAlertCircle />} title="Couldn't load orders" action={<Button variant="primary" onClick={load}>Retry</Button>} />
+        <EmptyState
+          icon={<FiAlertCircle />}
+          title={t('admin.orders.loadFailed')}
+          action={<Button variant="primary" onClick={load}>{t('catalogue.retry')}</Button>}
+        />
       )}
 
-      {status === 'empty' && <EmptyState title="No orders yet" description="Orders placed through the catalogue or Try Our Service will appear here." />}
+      {status === 'empty' && <EmptyState title={t('admin.orders.empty')} description={t('admin.orders.emptyDescription')} />}
 
       {status === 'success' && (
         <>
@@ -107,17 +108,17 @@ export function AdminOrdersPage() {
             <table className="ch-table">
               <thead>
                 <tr>
-                  <th>Customer</th>
-                  <th>Card</th>
-                  <th>Tier</th>
-                  <th>Qty</th>
-                  <th>Subtotal</th>
-                  <th>Status</th>
-                  <th>Payment</th>
-                  <th>Delivery</th>
-                  <th>SMS</th>
-                  <th>WhatsApp</th>
-                  <th>Placed</th>
+                  <th>{t('admin.orders.customer')}</th>
+                  <th>{t('admin.orders.card')}</th>
+                  <th>{t('admin.orders.tier')}</th>
+                  <th>{t('admin.orders.qty')}</th>
+                  <th>{t('admin.orders.subtotal')}</th>
+                  <th>{t('admin.orders.status')}</th>
+                  <th>{t('admin.orders.payment')}</th>
+                  <th>{t('admin.orders.delivery')}</th>
+                  <th>{t('channel.sms')}</th>
+                  <th>{t('channel.whatsapp')}</th>
+                  <th>{t('admin.orders.placed')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,13 +165,13 @@ export function AdminOrdersPage() {
                       </td>
                       <td>
                         <Badge variant={CHANNEL_STATUS_BADGE[order.sms?.status] || 'default'}>
-                          {order.sms?.status || 'not_requested'}
+                          {t(`status.${order.sms?.status || 'not_requested'}`)}
                         </Badge>
                         {order.sms?.error && <span className="ch-admin-orders__phone">{order.sms.error}</span>}
                       </td>
                       <td>
                         <Badge variant={CHANNEL_STATUS_BADGE[order.whatsapp?.status] || 'default'}>
-                          {order.whatsapp?.status || 'not_requested'}
+                          {t(`status.${order.whatsapp?.status || 'not_requested'}`)}
                         </Badge>
                         {order.whatsapp?.error && <span className="ch-admin-orders__phone">{order.whatsapp.error}</span>}
                       </td>

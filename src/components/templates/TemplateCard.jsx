@@ -3,9 +3,14 @@ import { GlassCard, Badge, Button } from '../ui';
 import { TemplateThumb } from './TemplateThumb';
 import { getCategoryLabel } from '../../constants/templateCategories';
 import { formatCardPrice } from '../../constants/pricingTiers';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected = false }) {
   const hasSecondaryAction = Boolean(onPreview) || Boolean(onSelect);
+  const { t } = useLanguage();
+  const categoryLabel = t(`category.${template.category}`) === `category.${template.category}`
+    ? getCategoryLabel(template.category)
+    : t(`category.${template.category}`);
 
   return (
     <GlassCard
@@ -19,7 +24,7 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected 
           </span>
         )}
       </TemplateThumb>
-      <Badge variant="default">{getCategoryLabel(template.category)}</Badge>
+      <Badge variant="default">{categoryLabel}</Badge>
       <h3 className="ch-h4">{template.name}</h3>
       {template.description && <p className="ch-body-sm">{template.description}</p>}
       {typeof template.priceTzs === 'number' && (
@@ -28,7 +33,7 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected 
       <div className="ch-template-card__actions">
         {onPreview && (
           <Button variant="outline" size="sm" fullWidth={!onSelect && !onUse} onClick={() => onPreview(template)}>
-            Preview
+            {t('catalogue.preview')}
           </Button>
         )}
         {onSelect && (
@@ -38,12 +43,12 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected 
             fullWidth={!onPreview && !onUse}
             onClick={() => onSelect(template)}
           >
-            {isSelected ? 'Selected' : 'Select'}
+            {isSelected ? t('catalogue.selected') : t('catalogue.select')}
           </Button>
         )}
         {onUse && (
           <Button variant="primary" size="sm" fullWidth={!hasSecondaryAction} onClick={() => onUse(template)}>
-            Use This Card
+            {t('catalogue.useThisCard')}
           </Button>
         )}
       </div>

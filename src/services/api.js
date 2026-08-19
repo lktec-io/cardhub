@@ -6,6 +6,14 @@ export const api = axios.create({
   baseURL: env.apiUrl,
   withCredentials: true,
   timeout: 15000,
+  // axios's default validateStatus only resolves 2xx — a legitimate HTTP
+  // 304 Not Modified (which this JSON API can produce via a conditional
+  // GET, see backend/src/app.js) would otherwise reject the promise and
+  // surface as a false "couldn't load" error even though the server is
+  // healthy. Treated as non-fatal defensively here; the backend has since
+  // also disabled ETag/caching for this API so a 304 shouldn't occur at
+  // all in practice.
+  validateStatus: (status) => (status >= 200 && status < 300) || status === 304,
 });
 
 api.interceptors.request.use((config) => {

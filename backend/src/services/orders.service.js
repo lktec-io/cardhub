@@ -6,8 +6,12 @@ import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { deliveryService } from './delivery.service.js';
 import { getPricingTier, DEFAULT_PRICING_TIER } from '../constants/pricingTiers.js';
 import { ORDER_SOURCE, DELIVERY_STATUS } from '../constants/orderStatus.js';
+import { RSVP_STATUS } from '../constants/rsvpStatus.js';
 import { toOrderDTO, toPublicOrderCardDTO } from '../utils/serializeOrder.js';
 import { parsePagination, buildPaginationMeta } from '../utils/pagination.js';
+import { generateRsvpCode } from '../utils/rsvpCode.js';
+
+const MAX_RSVP_CODE_ATTEMPTS = 5;
 
 /**
  * The "an order must belong to a real user OR carry guest contact info"
@@ -30,6 +34,24 @@ function assertHasContact({ userId, guestName, guestPhone }) {
 /** Unguessable, URL-safe — same reasoning as utils/slugify.js's uniqueSlug, just longer (this is the whole identifier, not a suffix). */
 function generatePublicToken() {
   return randomBytes(18).toString('base64url');
+}
+
+/**
+ * Creates the order with a fresh human-friendly rsvp_code, retrying with
+ * a new code only on a genuine rsvp_code collision (extremely unlikely —
+ * see utils/rsvpCode.js's entropy note) rather than masking any other
+ * insert failure.
+ */
+async function createOrderWithUniqueRsvpCode(fields) {
+  for (let attempt = 1; attempt <= MAX_RSVP_CODE_ATTEMPTS; attempt += 1) {
+    try {
+      return await orderRepository.create({ ...fields, rsvpCode: generateRsvpCode() });
+    } catch (error) {
+      const isRsvpCodeCollision = error.code === 'ER_DUP_ENTRY' && String(error.sqlMessage || '').includes('rsvp_code');
+      if (!isRsvpCodeCollision || attempt === MAX_RSVP_CODE_ATTEMPTS) throw error;
+    }
+  }
+  throw ApiError.internal('Could not generate a unique invitation link — please try again');
 }
 
 /** Turns the delivery.service.js result into the exact human sentence the customer sees — see docs/architecture.md "Try Our Service delivery". */
@@ -63,7 +85,10 @@ export const ordersService = {
    * services/delivery.service.js + utils/publicUrl.js, which resolve
    * both server-side from the already-resolved template).
    */
-  async submitTryService({ name, phone, templateId, quantity, channels }, requestMeta) {
+  async submitTryService(
+    { name, phone, templateId, quantity, channels, eventType, eventName, venue, eventDate, eventTime, guestType },
+    requestMeta
+  ) {
     const template = await templateRepository.findActiveById(templateId);
     if (!template) {
       throw ApiError.badRequest('The selected card is not available');
@@ -78,7 +103,7 @@ export const ordersService = {
     const guestPhone = phone; // already E.164-normalized by validateTryServicePayload
     assertHasContact({ userId: null, guestName, guestPhone });
 
-    let order = await orderRepository.create({
+    let order = await createOrderWithUniqueRsvpCode({
       userId: null,
       templateId: template.id,
       guestName,
@@ -90,6 +115,12 @@ export const ordersService = {
       source: ORDER_SOURCE.TRY_SERVICE,
       notes: null,
       publicToken: generatePublicToken(),
+      eventType,
+      eventName,
+      venue,
+      eventDate,
+      eventTime,
+      guestType,
     });
 
     await auditLogRepository.record({
@@ -150,5 +181,28 @@ export const ordersService = {
     const order = await orderRepository.findByPublicToken(token);
     if (!order) throw ApiError.notFound('Card not found');
     return toPublicOrderCardDTO(order);
+  },
+
+  /** Public — the guest's own attendance response, submitted from the order-card page. Same anonymous-lookup rule as getByPublicToken. */
+  async submitRsvp(token, status, requestMeta) {
+    const order = await orderRepository.findByPublicToken(token);
+    if (!order) throw ApiError.notFound('Card not found');
+
+    const updated = await orderRepository.updateRsvpStatus(order.id, status);
+
+    await auditLogRepository.record({
+      userId: order.user_id ?? null,
+      action: 'order.rsvp_submitted',
+      entityType: 'order',
+      entityId: order.id,
+      metadata: { status },
+      ipAddress: requestMeta?.ipAddress,
+      userAgent: requestMeta?.userAgent,
+    });
+
+    return {
+      order: toPublicOrderCardDTO(updated),
+      message: status === RSVP_STATUS.ATTENDING ? "Thank you — we can't wait to celebrate with you!" : 'Thank you for letting us know.',
+    };
   },
 };

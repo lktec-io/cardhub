@@ -2,19 +2,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiAlertCircle, FiSearch } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, InvitationPreview, Pagination } from '../../components/common';
-import { Modal, Button, EmptyState, Skeleton } from '../../components/ui';
+import { Modal, Button, EmptyState, Skeleton, Alert } from '../../components/ui';
 import { TemplateCard, TemplateFilters } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../hooks/useLanguage';
 import { ROUTES } from '../../constants/routes';
 import { formatCardPrice } from '../../constants/pricingTiers';
 
 export function TemplatesPage() {
-  const { templates, pagination, status, category, setCategory, search, setSearch, page, setPage, retry } =
+  const { templates, pagination, status, refreshError, category, setCategory, search, setSearch, page, setPage, retry } =
     useTemplateCatalog();
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   function handleUseTemplate() {
     setPreviewTemplate(null);
@@ -33,9 +35,9 @@ export function TemplatesPage() {
       />
       <Container>
         <SectionHeader
-          eyebrow="Card Catalogue"
-          title="A card for every celebration"
-          description="Browse CardHub's digital card catalogue, priced per card. Preview a design, then try the service or build a full invitation."
+          eyebrow={t('catalogue.eyebrow')}
+          title={t('catalogue.title')}
+          description={t('catalogue.description')}
         />
 
         <TemplateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
@@ -56,22 +58,27 @@ export function TemplatesPage() {
         {status === 'error' && (
           <EmptyState
             icon={<FiAlertCircle />}
-            title="Couldn't load templates"
-            description="Something went wrong while loading the catalog. Please try again."
+            title={t('catalogue.loadFailedTitle')}
+            description={t('catalogue.loadFailedDescription')}
             action={
               <Button variant="primary" onClick={retry}>
-                Retry
+                {t('catalogue.retry')}
               </Button>
             }
           />
         )}
 
         {status === 'empty' && (
-          <EmptyState icon={<FiSearch />} title="No templates found" description="Try a different search term or category." />
+          <EmptyState icon={<FiSearch />} title={t('catalogue.empty')} description={t('catalogue.emptyDescription')} />
         )}
 
         {status === 'success' && (
           <>
+            {refreshError && (
+              <Alert variant="warning" className="ch-templates-page__refresh-warning">
+                {t('catalogue.refreshWarning')}
+              </Alert>
+            )}
             <div className="ch-templates-grid">
               {templates.map((template) => (
                 <TemplateCard key={template.id} template={template} onPreview={setPreviewTemplate} onUse={handleUseCard} />
@@ -89,13 +96,13 @@ export function TemplatesPage() {
         footer={
           <>
             <Button variant="ghost" onClick={() => setPreviewTemplate(null)}>
-              Close
+              {t('catalogue.close')}
             </Button>
             <Button variant="secondary" onClick={() => previewTemplate && handleUseCard(previewTemplate)}>
-              Use This Card
+              {t('catalogue.useThisCard')}
             </Button>
             <Button variant="primary" onClick={handleUseTemplate}>
-              Build full invitation
+              {t('catalogue.buildFullInvitation')}
             </Button>
           </>
         }

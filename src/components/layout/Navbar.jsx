@@ -3,20 +3,22 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../hooks/useLanguage';
 import { LanguageToggle } from './LanguageToggle';
 
 const NAV_LINKS = [
-  { label: 'Home', to: ROUTES.HOME },
-  { label: 'Templates', to: ROUTES.TEMPLATES },
-  { label: 'Pricing', to: ROUTES.PRICING },
-  { label: 'How It Works', to: ROUTES.HOW_IT_WORKS },
-  { label: 'About', to: ROUTES.ABOUT },
-  { label: 'FAQ', to: ROUTES.FAQ },
+  { key: 'nav.home', to: ROUTES.HOME },
+  { key: 'nav.templates', to: ROUTES.TEMPLATES },
+  { key: 'nav.pricing', to: ROUTES.PRICING },
+  { key: 'nav.howItWorks', to: ROUTES.HOW_IT_WORKS },
+  { key: 'nav.about', to: ROUTES.ABOUT },
+  { key: 'nav.faq', to: ROUTES.FAQ },
 ];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
 
   const [lastPathname, setLastPathname] = useState(location.pathname);
@@ -42,7 +44,7 @@ export function Navbar() {
   }, [isOpen]);
 
   const ctaTarget = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.TEMPLATES;
-  const ctaLabel = isAuthenticated ? 'Go to dashboard' : 'Create Your Card';
+  const ctaLabel = isAuthenticated ? t('nav.goToDashboard') : t('nav.createYourCard');
 
   return (
     <>
@@ -55,7 +57,7 @@ export function Navbar() {
           <nav className="ch-navbar__links ch-navbar__links--desktop" aria-label="Primary">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.to} to={link.to} end={link.to === ROUTES.HOME}>
-                {link.label}
+                {t(link.key)}
               </NavLink>
             ))}
           </nav>
@@ -64,7 +66,7 @@ export function Navbar() {
             <LanguageToggle />
             {!isAuthenticated && (
               <NavLink to={ROUTES.LOGIN} className="ch-navbar__login">
-                Log in
+                {t('nav.login')}
               </NavLink>
             )}
             <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--sm">
@@ -110,12 +112,12 @@ export function Navbar() {
         <nav aria-label="Mobile" className="ch-navbar__sidebar-nav">
           {NAV_LINKS.map((link) => (
             <Link key={link.to} to={link.to}>
-              {link.label}
+              {t(link.key)}
             </Link>
           ))}
         </nav>
         <div className="ch-navbar__sidebar-actions">
-          {!isAuthenticated && <Link to={ROUTES.LOGIN}>Log in</Link>}
+          {!isAuthenticated && <Link to={ROUTES.LOGIN}>{t('nav.login')}</Link>}
           <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--full">
             {ctaLabel}
           </Link>

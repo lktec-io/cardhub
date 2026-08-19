@@ -16,8 +16,14 @@ export function useTemplateCatalog({ pageSize = 12 } = {}) {
   const [templates, setTemplates] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | success | error | empty
+  // Set only when a background refresh fails while we already have valid
+  // data on screen — the grid stays visible (per spec: "don't destroy
+  // already-loaded catalogue data simply because a subsequent background
+  // request failed"), and the caller can show a small inline warning.
+  const [refreshError, setRefreshError] = useState(false);
 
   const requestId = useRef(0);
+  const hasDataRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
@@ -51,14 +57,33 @@ export function useTemplateCatalog({ pageSize = 12 } = {}) {
       .list({ category: category || undefined, search: debouncedSearch || undefined, page: effectivePage, limit: pageSize })
       .then((res) => {
         if (currentRequest !== requestId.current) return;
-        const data = res.data.data;
+        // A stray 304 (or any response with no body) has nothing to
+        // apply — treated as a silent no-op rather than a crash, since
+        // there's no new data to render either way.
+        const data = res.data?.data;
+        if (!data) return;
         setTemplates(data.templates);
         setPagination(data.pagination);
+        hasDataRef.current = data.templates.length > 0;
+        setRefreshError(false);
         setStatus(data.templates.length === 0 ? 'empty' : 'success');
       })
       .catch(() => {
         if (currentRequest !== requestId.current) return;
-        setStatus('error');
+        // A real, already-loaded grid stays on screen through a
+        // background failure (e.g. a transient blip while switching
+        // filters) — only the very first load (nothing to show yet) goes
+        // to the hard error state. A filter/search change had already
+        // flipped status to 'loading' (showing the skeleton) before this
+        // request failed, so that has to be reverted back to 'success' —
+        // otherwise the page would be stuck showing the skeleton forever
+        // instead of the still-valid stale grid.
+        if (hasDataRef.current) {
+          setRefreshError(true);
+          setStatus('success');
+        } else {
+          setStatus('error');
+        }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
@@ -67,6 +92,7 @@ export function useTemplateCatalog({ pageSize = 12 } = {}) {
     templates,
     pagination,
     status,
+    refreshError,
     category,
     setCategory,
     search,

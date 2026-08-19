@@ -1,16 +1,9 @@
 import { ApiError } from '../utils/ApiError.js';
 import { EVENT_TYPES } from '../constants/eventTypes.js';
 import { EVENT_SORT_OPTIONS } from '../constants/eventSort.js';
+import { isValidCalendarDate, TIME_RE } from '../utils/dateTime.js';
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const VALID_TIMEZONES = new Set(Intl.supportedValuesOf('timeZone'));
-
-function isValidCalendarDate(value) {
-  if (!DATE_RE.test(value)) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
-}
 
 function pushIfInvalidText(details, field, value, { required = false, maxLength = 190, label }) {
   if (value === undefined || value === null || value === '') {

@@ -1,5 +1,5 @@
 import { ordersService } from '../services/orders.service.js';
-import { validateTryServicePayload } from '../validators/orders.validator.js';
+import { validateTryServicePayload, validateRsvpResponse } from '../validators/orders.validator.js';
 import { getCachedResult, setCachedResult } from '../utils/idempotencyCache.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess } from '../utils/ApiResponse.js';
@@ -9,6 +9,16 @@ export const publicOrdersController = {
   getByToken: asyncHandler(async (req, res) => {
     const order = await ordersService.getByPublicToken(req.params.token);
     sendSuccess(res, { data: { order } });
+  }),
+
+  /** The guest's own attendance response, submitted from the order-card page — PATCH /public/orders/:token/rsvp. */
+  submitRsvp: asyncHandler(async (req, res) => {
+    validateRsvpResponse(req.body);
+    const result = await ordersService.submitRsvp(req.params.token, req.body.status, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    sendSuccess(res, { message: result.message, data: { order: result.order } });
   }),
 
   submitTryService: asyncHandler(async (req, res) => {
@@ -27,10 +37,20 @@ export const publicOrdersController = {
       }
     }
 
-    const { normalizedPhone, normalizedChannels } = validateTryServicePayload(req.body);
+    const validated = validateTryServicePayload(req.body);
 
     const result = await ordersService.submitTryService(
-      { ...req.body, phone: normalizedPhone, channels: normalizedChannels },
+      {
+        ...req.body,
+        phone: validated.normalizedPhone,
+        channels: validated.normalizedChannels,
+        eventType: validated.eventType,
+        eventName: validated.eventName,
+        venue: validated.venue,
+        eventDate: validated.eventDate,
+        eventTime: validated.eventTime,
+        guestType: validated.guestType,
+      },
       { ipAddress: req.ip, userAgent: req.headers['user-agent'] }
     );
 

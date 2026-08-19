@@ -2,17 +2,29 @@ import { smsProvider } from './providers/smsProvider.js';
 import { whatsappProvider } from './providers/whatsappProvider.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { getPublicOrderUrl, getPublicCardImageUrl } from '../utils/publicUrl.js';
+import { buildInvitationSms, buildInvitationWhatsapp } from '../utils/messageTemplates.js';
 import { DELIVERY_STATUS, CHANNEL_STATUS, DELIVERY_CHANNELS } from '../constants/orderStatus.js';
 import { logger } from '../utils/logger.js';
 
-function buildSmsMessage({ template, publicUrl }) {
-  return `CardHub: Your ${template.name} card is ready. View it here: ${publicUrl}`;
-}
-
-function buildWhatsappCaption({ guestName, template, publicUrl }) {
-  const firstName = guestName ? guestName.trim().split(/\s+/)[0] : '';
-  const greeting = firstName ? `Hi ${firstName}! ` : '';
-  return `${greeting}Your ${template.name} card from CardHub is ready.\nView it here: ${publicUrl}`;
+/**
+ * Builds the outgoing message text for a channel. Every field here comes
+ * from the already-resolved, server-trusted `order` row — never a
+ * client-supplied value at send time (see orders.service.js). The
+ * invitation number is derived the same way serializeOrder.js does
+ * (order id + 1000), so the number a guest sees on their card always
+ * matches the one in the SMS.
+ */
+function messageFieldsFor(order) {
+  return {
+    guestName: order.guest_name,
+    eventType: order.event_type,
+    eventName: order.event_name,
+    venue: order.venue,
+    eventDate: order.event_date,
+    eventTime: order.event_time,
+    guestType: order.guest_type,
+    invitationNumber: String(1000 + Number(order.id)),
+  };
 }
 
 /**
@@ -85,22 +97,39 @@ export const deliveryService = {
    * and the order's own public_token).
    */
   async deliverOrder({ order, template, channels, requestMeta }) {
-    const publicUrl = getPublicOrderUrl(order.public_token);
+    const publicUrl = getPublicOrderUrl(order.rsvp_code || order.public_token);
+    const fields = messageFieldsFor(order);
     const channelResults = {};
 
+    // Each channel is independently try/caught — a bug or unexpected
+    // throw in one provider must never prevent the other channel from
+    // being attempted (see prompt requirement: SMS must still send if
+    // WhatsApp is unconfigured/broken, and vice versa).
     if (channels.includes(DELIVERY_CHANNELS.SMS)) {
-      const message = buildSmsMessage({ template, publicUrl });
-      const result = await smsProvider.send({ to: order.guest_phone, message });
+      let result;
+      try {
+        const message = buildInvitationSms({ ...fields, publicUrl });
+        result = await smsProvider.send({ to: order.guest_phone, message });
+      } catch (error) {
+        logger.error('SMS delivery threw unexpectedly', { orderId: order.id, message: error.message });
+        result = { status: 'failed', provider: 'beem', providerMessageId: null, error: error.message };
+      }
       channelResults.sms = result;
       await recordAttempt({ order, channel: DELIVERY_CHANNELS.SMS, result, requestMeta });
     }
 
     if (channels.includes(DELIVERY_CHANNELS.WHATSAPP)) {
-      const imageUrl = getPublicCardImageUrl(template);
-      const caption = buildWhatsappCaption({ guestName: order.guest_name, template, publicUrl });
-      const result = imageUrl
-        ? await whatsappProvider.sendCardImage({ to: order.guest_phone, imageUrl, caption })
-        : await whatsappProvider.sendCardMessage({ to: order.guest_phone, message: caption });
+      let result;
+      try {
+        const imageUrl = getPublicCardImageUrl(template);
+        const caption = buildInvitationWhatsapp({ ...fields, publicUrl });
+        result = imageUrl
+          ? await whatsappProvider.sendCardImage({ to: order.guest_phone, imageUrl, caption })
+          : await whatsappProvider.sendCardMessage({ to: order.guest_phone, message: caption });
+      } catch (error) {
+        logger.error('WhatsApp delivery threw unexpectedly', { orderId: order.id, message: error.message });
+        result = { status: 'failed', provider: whatsappProvider.providerName, providerMessageId: null, error: error.message };
+      }
       channelResults.whatsapp = result;
       await recordAttempt({ order, channel: DELIVERY_CHANNELS.WHATSAPP, result, requestMeta });
     }

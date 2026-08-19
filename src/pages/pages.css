@@ -1414,3 +1414,78 @@
   border-color: var(--border-accent);
   background: var(--accent-soft);
 }
+
+/* ---------- Try page: event details step ---------- */
+.ch-try-page__event-datetime {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 480px) {
+  .ch-try-page__event-datetime {
+    grid-template-columns: 1fr;
+  }
+}
+.ch-try-page__guest-type {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.ch-try-page__invitation-number {
+  font-size: var(--fs-body-sm);
+  color: var(--text-muted);
+}
+
+/* ---------- Catalogue: soft background-refresh warning ---------- */
+.ch-templates-page__refresh-warning {
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Order card page: event details, RSVP, QR ---------- */
+.ch-order-card-page__event-details {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+.ch-order-card-page__event-details dt {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ch-order-card-page__event-details dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+}
+
+.ch-order-card-page__rsvp {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ch-order-card-page__rsvp-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ch-order-card-page__qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ch-order-card-page__qr img {
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: var(--space-2);
+}

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { LanguageContext } from './language-context';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 import { LANGUAGES } from '../constants/languages';
+import { translate } from '../i18n/translations';
 
 function readStoredLanguage() {
   try {
@@ -13,15 +14,13 @@ function readStoredLanguage() {
 }
 
 /**
- * A real, persisted UI toggle — not a translation engine. CardHub's UI
- * copy has no Swahili dictionary yet (translating every page's text is a
- * content/i18n project of its own, well beyond a UI/UX polish pass), so
- * switching languages here does not yet change rendered text. What it
- * does do, honestly: reflects and persists the visitor's choice
- * (localStorage, survives reloads) and makes the active language visually
- * obvious in the navbar, on both mobile and desktop — the foundation a
- * real translation layer would plug into later without changing this
- * provider's shape.
+ * A real, persisted UI toggle backed by a real (if intentionally scoped)
+ * translation dictionary — see i18n/translations.js. It covers
+ * navigation and the catalogue/Try-Our-Service/order-card/admin-orders
+ * surfaces; other marketing pages remain English-only, a deliberate scope
+ * boundary, not an oversight. `t(key)` falls back to English, then to the
+ * raw key, so a missing translation is never blank. Reflects and persists
+ * the visitor's choice (localStorage, survives reloads).
  */
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(readStoredLanguage);
@@ -36,7 +35,9 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
-  const value = useMemo(() => ({ language, setLanguage, languages: LANGUAGES }), [language, setLanguage]);
+  const t = useCallback((key) => translate(key, language), [language]);
+
+  const value = useMemo(() => ({ language, setLanguage, languages: LANGUAGES, t }), [language, setLanguage, t]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

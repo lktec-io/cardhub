@@ -19,11 +19,19 @@ export const orderRepository = {
     source,
     notes,
     publicToken,
+    eventType,
+    eventName,
+    venue,
+    eventDate,
+    eventTime,
+    guestType,
+    rsvpCode,
   }) {
     const [result] = await pool.query(
       `INSERT INTO orders
-         (user_id, template_id, guest_name, guest_phone, pricing_tier, unit_price_tzs, quantity, subtotal_tzs, source, notes, public_token)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (user_id, template_id, guest_name, guest_phone, pricing_tier, unit_price_tzs, quantity, subtotal_tzs, source, notes, public_token,
+          event_type, event_name, venue, event_date, event_time, guest_type, rsvp_code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId ?? null,
         templateId ?? null,
@@ -36,6 +44,13 @@ export const orderRepository = {
         source,
         notes ?? null,
         publicToken ?? null,
+        eventType ?? null,
+        eventName ?? null,
+        venue ?? null,
+        eventDate ?? null,
+        eventTime ?? null,
+        guestType ?? null,
+        rsvpCode ?? null,
       ]
     );
     return this.findById(result.insertId);
@@ -46,10 +61,16 @@ export const orderRepository = {
     return rows[0] || null;
   },
 
-  /** Public, unauthenticated lookup — the order confirmation page reached via SMS/WhatsApp. Never by sequential id. */
+  /** Public, unauthenticated lookup — the order confirmation page reached via SMS/WhatsApp. Matches either the original public_token (migration 018) or the newer human-friendly rsvp_code (migration 019) — never the sequential id. */
   async findByPublicToken(token) {
-    const [rows] = await pool.query(`${ORDER_SELECT} WHERE o.public_token = ? LIMIT 1`, [token]);
+    const [rows] = await pool.query(`${ORDER_SELECT} WHERE o.public_token = ? OR o.rsvp_code = ? LIMIT 1`, [token, token]);
     return rows[0] || null;
+  },
+
+  /** Public, unauthenticated — records the guest's own attendance response from the order-card page. */
+  async updateRsvpStatus(id, rsvpStatus) {
+    await pool.query('UPDATE orders SET rsvp_status = ? WHERE id = ?', [rsvpStatus, id]);
+    return this.findById(id);
   },
 
   async findByIdAndUserId(id, userId) {

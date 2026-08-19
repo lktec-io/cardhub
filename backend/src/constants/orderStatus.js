@@ -49,3 +49,10 @@ export const ORDER_SOURCE = {
   TRY_SERVICE: 'try_service',
   DASHBOARD: 'dashboard',
 };
+
+/** Optional — relevant mainly for weddings, never required for other event types. */
+export const GUEST_TYPE = {
+  SINGLE: 'single',
+  DOUBLE: 'double',
+};
+export const GUEST_TYPE_VALUES = Object.values(GUEST_TYPE);

@@ -18,6 +18,10 @@ publicRouter.post('/invitations/:slug/rsvp', rsvpLimiter, publicRsvpController.s
 publicRouter.post('/orders/try', tryServiceLimiter, publicOrdersController.submitTryService);
 
 // The order confirmation page a customer reaches via the SMS/WhatsApp
-// link — keyed by the order's unguessable public_token, never its
-// sequential id (see utils/publicUrl.js).
+// link — keyed by the order's unguessable public_token/rsvp_code, never
+// its sequential id (see utils/publicUrl.js).
 publicRouter.get('/orders/:token', publicOrdersController.getByToken);
+
+// The guest's own attendance response from that same page — same
+// abuse-protection tier as the existing invitation RSVP endpoint above.
+publicRouter.patch('/orders/:token/rsvp', rsvpLimiter, publicOrdersController.submitRsvp);
