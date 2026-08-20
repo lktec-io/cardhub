@@ -4,14 +4,14 @@ Drop the real hero video here. Vite serves everything in `public/` from
 the site root, so a file placed at
 
 ```
-public/videos/cardhub-hero.mp4
+public/videos/cardhub-main-v2.mp4
 ```
 
-is reachable at `/videos/cardhub-hero.mp4` — exactly the path the
+is reachable at `/videos/cardhub-main-v2.mp4` — exactly the path the
 landing page hero (`src/pages/LandingPage.jsx`, `HERO_VIDEO_SRC`)
 already references.
 
-## Needed now: `cardhub-hero.mp4`
+## Needed now: `cardhub-main-v2.mp4`
 
 **This file does not exist yet.** No video was generated or downloaded
 to fill the gap, per explicit instruction. The hero is already fully

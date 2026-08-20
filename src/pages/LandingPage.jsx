@@ -10,7 +10,7 @@ import { formatCardPrice, PRICING_TIER_LIST } from '../constants/pricingTiers';
 import { useLanguage } from '../hooks/useLanguage';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
-const HERO_VIDEO_SRC = '/videos/cardhub-hero.mp4';
+const HERO_VIDEO_SRC = '/videos/cardhub-main-v2.mp4';
 
 const HERO_MESSAGES = {
   en: ['Your Moment. Your Card.', 'Beautiful Cards. Made Simple.', 'Celebrate. Share. Remember.', 'Create. Send. Celebrate.'],
