@@ -15,7 +15,7 @@ already references.
 
 **This file does not exist yet.** No video was generated or downloaded
 to fill the gap, per explicit instruction. The hero is already fully
-wired to use d in — no code change needed:
+wired to use it the moment it's dropped in — no code change needed:
 
 - Renders as a full-bleed background behind the hero text/photo, muted,
   autoplaying, looping, `playsInline` (so it plays inline on iOS instead
