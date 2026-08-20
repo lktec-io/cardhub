@@ -37,4 +37,10 @@ export const adminService = {
   listAuditLogs(params) {
     return api.get('/admin/audit-logs', { params });
   },
+  listPayments(params) {
+    return api.get('/admin/payments', { params });
+  },
+  getPayment(id) {
+    return api.get(`/admin/payments/${id}`);
+  },
 };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiAlertCircle, FiClock, FiCreditCard, FiDollarSign, FiShoppingBag, FiUsers } from 'react-icons/fi';
+import { FiAlertCircle, FiClock, FiCreditCard, FiDollarSign, FiShoppingBag, FiUsers, FiXCircle } from 'react-icons/fi';
 import { PageHeader, Seo } from '../../components/common';
 import { Button, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
@@ -75,6 +75,8 @@ export function AdminDashboardPage() {
             label={t('admin.dashboard.revenue')}
             value={stats.revenueTzs === 0 ? t('admin.dashboard.noPaidOrders') : new Intl.NumberFormat('en-TZ').format(stats.revenueTzs)}
           />
+          <StatTile icon={FiClock} label={t('admin.dashboard.paymentsPending')} value={stats.payments.pending + stats.payments.processing} />
+          <StatTile icon={FiXCircle} label={t('admin.dashboard.paymentsFailed')} value={stats.payments.failed} />
         </div>
       )}
     </div>

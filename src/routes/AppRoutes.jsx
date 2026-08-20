@@ -52,6 +52,7 @@ import { AdminCustomerDetailPage } from '../pages/admin/AdminCustomerDetailPage'
 import { AdminEventsPage } from '../pages/admin/AdminEventsPage';
 import { AdminTemplatesPage } from '../pages/admin/AdminTemplatesPage';
 import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage';
+import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
 
 import { ProtectedRoute } from './ProtectedRoute';
@@ -124,6 +125,7 @@ export function AppRoutes() {
           <Route path={ROUTES.ADMIN_EVENTS} element={<AdminEventsPage />} />
           <Route path={ROUTES.ADMIN_TEMPLATES} element={<AdminTemplatesPage />} />
           <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrdersPage />} />
+          <Route path={ROUTES.ADMIN_PAYMENTS} element={<AdminPaymentsPage />} />
           <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<AdminAuditLogsPage />} />
         </Route>
       </Route>

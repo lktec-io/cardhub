@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   FiBarChart2,
+  FiCreditCard,
   FiFileText,
   FiGrid,
   FiImage,
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { key: 'sidebar.admin.customers', to: ROUTES.ADMIN_CUSTOMERS, icon: FiUsers, enabled: true },
   { key: 'sidebar.admin.templates', to: ROUTES.ADMIN_TEMPLATES, icon: FiLayers, enabled: true },
   { key: 'sidebar.orders', to: ROUTES.ADMIN_ORDERS, icon: FiShoppingBag, enabled: true },
+  { key: 'sidebar.admin.payments', to: ROUTES.ADMIN_PAYMENTS, icon: FiCreditCard, enabled: true },
   { key: 'sidebar.admin.events', to: ROUTES.ADMIN_EVENTS, icon: FiImage, enabled: true },
   { key: 'sidebar.messages', icon: FiMessageSquare, enabled: false },
   { key: 'sidebar.analytics', icon: FiBarChart2, enabled: false },

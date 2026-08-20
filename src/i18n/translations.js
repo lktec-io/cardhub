@@ -210,8 +210,8 @@ export const TRANSLATIONS = {
   // Admin orders
   'admin.orders.title': { en: 'Orders', sw: 'Oda' },
   'admin.orders.description': {
-    en: 'Card orders from the catalogue and the Try Our Service flow. Status changes here are real, manual reconciliation — no payment gateway is connected yet.',
-    sw: 'Oda za kadi kutoka kwenye orodha na huduma ya Jaribu Huduma Yetu. Mabadiliko ya hali hapa ni ya kweli, ya kufanywa kwa mkono — hakuna mfumo wa malipo bado.',
+    en: 'Card orders from the catalogue, checkout, and the Try Our Service flow. See the Payments section for full transaction detail.',
+    sw: 'Oda za kadi kutoka kwenye orodha, malipo, na huduma ya Jaribu Huduma Yetu. Angalia sehemu ya Malipo kwa maelezo kamili ya miamala.',
   },
   'admin.orders.searchPlaceholder': { en: 'Search by customer name or phone...', sw: 'Tafuta kwa jina la mteja au namba...' },
   'admin.orders.loadFailed': { en: "Couldn't load orders", sw: 'Imeshindikana kupakia oda' },
@@ -231,6 +231,36 @@ export const TRANSLATIONS = {
   'admin.orders.placed': { en: 'Placed', sw: 'Tarehe' },
   'admin.orders.updated': { en: 'Order updated', sw: 'Oda imesasishwa' },
   'admin.orders.updateFailed': { en: 'Could not update this order', sw: 'Imeshindikana kusasisha oda hii' },
+  'admin.orders.providerRef': { en: 'Ref', sw: 'Namba' },
+
+  // Admin payments
+  'admin.payments.title': { en: 'Payments', sw: 'Malipo' },
+  'admin.payments.description': {
+    en: 'Every payment attempt across card orders — status is only ever set by a verified provider confirmation.',
+    sw: 'Kila jaribio la malipo kwenye oda za kadi — hali hubadilishwa tu na uthibitisho halisi kutoka kwa mtoa huduma.',
+  },
+  'admin.payments.searchPlaceholder': { en: 'Search by order number, customer, or reference...', sw: 'Tafuta kwa namba ya oda, mteja, au namba ya rejea...' },
+  'admin.payments.loadFailed': { en: "Couldn't load payments", sw: 'Imeshindikana kupakia malipo' },
+  'admin.payments.empty': { en: 'No payments found', sw: 'Hakuna malipo yaliyopatikana' },
+  'admin.payments.emptyDescription': { en: 'Payments from card checkouts will appear here.', sw: 'Malipo kutoka kwenye ununuzi wa kadi yataonekana hapa.' },
+  'admin.payments.orderNumber': { en: 'Order #', sw: 'Namba ya Oda' },
+  'admin.payments.customer': { en: 'Customer', sw: 'Mteja' },
+  'admin.payments.card': { en: 'Card', sw: 'Kadi' },
+  'admin.payments.amount': { en: 'Amount', sw: 'Kiasi' },
+  'admin.payments.method': { en: 'Method', sw: 'Njia' },
+  'admin.payments.provider': { en: 'Provider', sw: 'Mtoa Huduma' },
+  'admin.payments.providerReference': { en: 'Provider reference', sw: 'Namba ya Rejea' },
+  'admin.payments.status': { en: 'Status', sw: 'Hali' },
+  'admin.payments.created': { en: 'Created', sw: 'Iliundwa' },
+  'admin.payments.paidAt': { en: 'Paid at', sw: 'Ililipwa' },
+  'admin.payments.failureReason': { en: 'Failure reason', sw: 'Sababu ya Kushindwa' },
+  'admin.payments.filterStatus': { en: 'All statuses', sw: 'Hali zote' },
+  'admin.payments.filterMethod': { en: 'All methods', sw: 'Njia zote' },
+  'admin.payments.dateFrom': { en: 'From', sw: 'Kuanzia' },
+  'admin.payments.dateTo': { en: 'To', sw: 'Hadi' },
+  'admin.payments.viewDetails': { en: 'View details', sw: 'Ona Maelezo' },
+  'admin.payments.detailsTitle': { en: 'Payment details', sw: 'Maelezo ya Malipo' },
+  'admin.payments.notAvailable': { en: 'Not yet available', sw: 'Bado haipatikani' },
 
   // Landing page
   'landing.badge': { en: 'Now serving Tanzania', sw: 'Sasa tunahudumia Tanzania' },
@@ -596,6 +626,7 @@ export const TRANSLATIONS = {
   'sidebar.admin.customers': { en: 'Customers', sw: 'Wateja' },
   'sidebar.admin.templates': { en: 'Cards / Templates', sw: 'Kadi / Miundo' },
   'sidebar.admin.events': { en: 'Events', sw: 'Matukio' },
+  'sidebar.admin.payments': { en: 'Payments', sw: 'Malipo' },
   'sidebar.admin.auditLogs': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
   'sidebar.admin.backToCardHub': { en: 'Back to CardHub', sw: 'Rudi CardHub' },
 
@@ -768,6 +799,8 @@ export const TRANSLATIONS = {
   'admin.dashboard.cardsSold': { en: 'Cards Sold', sw: 'Kadi Zilizouzwa' },
   'admin.dashboard.revenue': { en: 'Revenue (TZS)', sw: 'Mapato (TZS)' },
   'admin.dashboard.noPaidOrders': { en: '0 (no paid orders yet)', sw: '0 (hakuna oda zilizolipwa bado)' },
+  'admin.dashboard.paymentsPending': { en: 'Payments Pending', sw: 'Malipo Yanayosubiri' },
+  'admin.dashboard.paymentsFailed': { en: 'Payments Failed', sw: 'Malipo Yaliyoshindwa' },
 
   // Admin customers
   'admin.customers.title': { en: 'Customers', sw: 'Wateja' },

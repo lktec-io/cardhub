@@ -25,4 +25,7 @@ adminRouter.get('/orders', adminController.listOrders);
 adminRouter.get('/orders/:id', adminController.getOrder);
 adminRouter.patch('/orders/:id/status', writeLimiter, adminController.updateOrderStatus);
 
+adminRouter.get('/payments', adminController.listPayments);
+adminRouter.get('/payments/:id', adminController.getPayment);
+
 adminRouter.get('/audit-logs', adminController.listAuditLogs);

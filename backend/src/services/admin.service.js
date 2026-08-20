@@ -9,11 +9,13 @@ import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { toPublicUser } from '../utils/serializeUser.js';
 import { toEventDTO, toPublicTemplate } from '../utils/serializeEvent.js';
 import { toOrderDTO, toAdminOrderDTO } from '../utils/serializeOrder.js';
+import { toAdminPaymentDTO } from '../utils/serializePayment.js';
 import { escapeLike } from '../utils/escapeLike.js';
 import { parsePagination, buildPaginationMeta } from '../utils/pagination.js';
 import { ROLES } from '../constants/roles.js';
 import { PRICING_TIER_VALUES } from '../constants/pricingTiers.js';
 import { ORDER_STATUS } from '../constants/orderStatus.js';
+import { PAYMENT_STATUS_VALUES, PAYMENT_METHOD_VALUES } from '../constants/paymentStatus.js';
 import { validateOrderStatusUpdate } from '../validators/orders.validator.js';
 
 const USER_STATUS_VALUES = ['active', 'inactive', 'suspended'];
@@ -21,7 +23,7 @@ const TEMPLATE_STATUS_VALUES = ['active', 'inactive'];
 
 export const adminService = {
   async getStats() {
-    const [totalCustomers, totalEvents, publishedInvitations, guestStats, totalOrders, pendingOrders, cardsSold, revenueTzs] =
+    const [totalCustomers, totalEvents, publishedInvitations, guestStats, totalOrders, pendingOrders, cardsSold, revenueTzs, paymentStats] =
       await Promise.all([
         userRepository.countByRole(ROLES.CUSTOMER),
         eventRepository.countAll(),
@@ -31,9 +33,20 @@ export const adminService = {
         orderRepository.countByStatus(ORDER_STATUS.PENDING),
         orderRepository.sumCardsSold(),
         orderRepository.sumRevenue(),
+        paymentRepository.getStats(),
       ]);
 
     return {
+      payments: {
+        total: Number(paymentStats.total),
+        paid: Number(paymentStats.paid),
+        pending: Number(paymentStats.pending),
+        processing: Number(paymentStats.processing),
+        failed: Number(paymentStats.failed),
+        cancelled: Number(paymentStats.cancelled),
+        expired: Number(paymentStats.expired),
+        totalPaidTzs: Number(paymentStats.total_paid_amount),
+      },
       totalCustomers,
       totalEvents,
       publishedInvitations,
@@ -227,6 +240,37 @@ export const adminService = {
     });
 
     return toAdminOrderDTO(order);
+  },
+
+  /** Read-only admin payment listing — see payment.repository.js#findAllAdmin for the search/filter shape. */
+  async listPayments({ page, limit, status, method, dateFrom, dateTo, search }) {
+    if (status && !PAYMENT_STATUS_VALUES.includes(status)) {
+      throw ApiError.validation([{ field: 'status', message: 'Invalid payment status' }]);
+    }
+    if (method && !PAYMENT_METHOD_VALUES.includes(method)) {
+      throw ApiError.validation([{ field: 'method', message: 'Invalid payment method' }]);
+    }
+    const pagination = parsePagination({ page, limit });
+    const { rows, total } = await paymentRepository.findAllAdmin({
+      limit: pagination.limit,
+      offset: pagination.offset,
+      status,
+      method,
+      dateFrom,
+      dateTo,
+      search: search ? escapeLike(search) : undefined,
+    });
+
+    return {
+      payments: rows.map(toAdminPaymentDTO),
+      pagination: buildPaginationMeta({ page: pagination.page, limit: pagination.limit, total }),
+    };
+  },
+
+  async getPayment(id) {
+    const payment = await paymentRepository.findByIdAdmin(id);
+    if (!payment) throw ApiError.notFound('Payment not found');
+    return toAdminPaymentDTO(payment);
   },
 
   async listAuditLogs({ page, limit, action, userId }) {

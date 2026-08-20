@@ -153,6 +153,9 @@ export function AdminOrdersPage() {
                           onChange={(e) => updateField(order, 'paymentStatus', e.target.value)}
                           className="ch-admin-orders__select"
                         />
+                        <span className="ch-admin-orders__phone">
+                          {order.payment ? [order.payment.provider, order.payment.providerReference].filter(Boolean).join(' · ') : t('status.unpaid')}
+                        </span>
                       </td>
                       <td>
                         <Select

@@ -78,6 +78,17 @@ export const adminController = {
     sendSuccess(res, { message: 'Order updated', data: { order } });
   }),
 
+  listPayments: asyncHandler(async (req, res) => {
+    const result = await adminService.listPayments(req.query);
+    sendSuccess(res, { data: result });
+  }),
+
+  getPayment: asyncHandler(async (req, res) => {
+    validateId(req.params.id);
+    const payment = await adminService.getPayment(req.params.id);
+    sendSuccess(res, { data: { payment } });
+  }),
+
   listAuditLogs: asyncHandler(async (req, res) => {
     const result = await adminService.listAuditLogs(req.query);
     sendSuccess(res, { data: result });

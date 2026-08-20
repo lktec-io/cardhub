@@ -57,6 +57,7 @@ export const ROUTES = {
   ADMIN_ORDERS: '/admin/orders',
   ADMIN_ORDER_DETAIL: '/admin/orders/:id',
   adminOrderDetail: (id) => `/admin/orders/${id}`,
+  ADMIN_PAYMENTS: '/admin/payments',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
 
   NOT_FOUND: '*',
