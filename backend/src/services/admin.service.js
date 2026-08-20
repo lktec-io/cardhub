@@ -4,6 +4,7 @@ import { eventRepository } from '../repositories/event.repository.js';
 import { templateRepository } from '../repositories/template.repository.js';
 import { guestRepository } from '../repositories/guest.repository.js';
 import { orderRepository } from '../repositories/order.repository.js';
+import { paymentRepository } from '../repositories/payment.repository.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { toPublicUser } from '../utils/serializeUser.js';
 import { toEventDTO, toPublicTemplate } from '../utils/serializeEvent.js';
@@ -186,8 +187,10 @@ export const adminService = {
       search: search ? escapeLike(search) : undefined,
     });
 
+    const paymentsByOrderId = await paymentRepository.findLatestByOrderIds(rows.map((row) => row.id));
+
     return {
-      orders: rows.map(toAdminOrderDTO),
+      orders: rows.map((row) => toAdminOrderDTO(row, paymentsByOrderId[row.id])),
       pagination: buildPaginationMeta({ page: pagination.page, limit: pagination.limit, total }),
     };
   },
@@ -195,7 +198,8 @@ export const adminService = {
   async getOrder(id) {
     const order = await orderRepository.findById(id);
     if (!order) throw ApiError.notFound('Order not found');
-    return toAdminOrderDTO(order);
+    const payments = await paymentRepository.findByOrderId(id);
+    return toAdminOrderDTO(order, payments[0]);
   },
 
   /**

@@ -5,7 +5,7 @@ import { getCategoryLabel } from '../../constants/templateCategories';
 import { formatCardPrice } from '../../constants/pricingTiers';
 import { useLanguage } from '../../hooks/useLanguage';
 
-export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected = false }) {
+export function TemplateCard({ template, onPreview, onSelect, onUse, onBuy, isSelected = false }) {
   const hasSecondaryAction = Boolean(onPreview) || Boolean(onSelect);
   const { t } = useLanguage();
   const categoryLabel = t(`category.${template.category}`) === `category.${template.category}`
@@ -49,6 +49,11 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, isSelected 
         {onUse && (
           <Button variant="primary" size="sm" fullWidth={!hasSecondaryAction} onClick={() => onUse(template)}>
             {t('catalogue.useThisCard')}
+          </Button>
+        )}
+        {onBuy && (
+          <Button variant="primary" size="sm" fullWidth={!hasSecondaryAction && !onUse} onClick={() => onBuy(template)}>
+            {t('catalogue.buyNow')}
           </Button>
         )}
       </div>

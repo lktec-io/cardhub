@@ -106,6 +106,22 @@ export const env = {
        webhookVerifyToken: trimmed(process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) || 'mimi_ndio_cardhub_2026',
   },
 
+  // Payments (Phase 3) — services/providers/paymentProvider.js. No
+  // gateway is connected in this environment and none were invented.
+  // `provider` selects the transport; only 'beem' is planned (reusing
+  // the same Beem account as SMS/WhatsApp above), but its exact
+  // collection-initiation endpoint/payload isn't documented anywhere
+  // this integration could verify — see paymentProvider.js's comment.
+  // Leaving PAYMENT_PROVIDER unset keeps isConfigured false and every
+  // checkout honestly reports "unavailable" rather than faking a charge.
+  payment: {
+    provider: trimmed(process.env.PAYMENT_PROVIDER) || '',
+    apiKey: trimmed(process.env.BEEM_API_KEY) || '',
+    secretKey: trimmed(process.env.BEEM_SECRET_KEY) || '',
+    webhookSecret: trimmed(process.env.PAYMENT_WEBHOOK_SECRET) || '',
+    callbackUrl: firstCleanUrl(process.env.PAYMENT_CALLBACK_URL) || '',
+  },
+
   frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,
   apiUrl: firstCleanUrl(process.env.API_URL) || DEFAULT_API_URL,
 };

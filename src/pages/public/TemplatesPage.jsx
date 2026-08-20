@@ -27,6 +27,11 @@ export function TemplatesPage() {
     navigate(`${ROUTES.TRY}?templateId=${template.id}`);
   }
 
+  function handleBuyNow(template) {
+    setPreviewTemplate(null);
+    navigate(`${ROUTES.CHECKOUT}?templateId=${template.id}`);
+  }
+
   return (
     <div className="ch-templates-page">
       <Seo
@@ -81,7 +86,13 @@ export function TemplatesPage() {
             )}
             <div className="ch-templates-grid">
               {templates.map((template) => (
-                <TemplateCard key={template.id} template={template} onPreview={setPreviewTemplate} onUse={handleUseCard} />
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onPreview={setPreviewTemplate}
+                  onUse={handleUseCard}
+                  onBuy={handleBuyNow}
+                />
               ))}
             </div>
             <Pagination page={page} totalPages={pagination?.totalPages} onChange={setPage} />
@@ -100,6 +111,9 @@ export function TemplatesPage() {
             </Button>
             <Button variant="secondary" onClick={() => previewTemplate && handleUseCard(previewTemplate)}>
               {t('catalogue.useThisCard')}
+            </Button>
+            <Button variant="secondary" onClick={() => previewTemplate && handleBuyNow(previewTemplate)}>
+              {t('catalogue.buyNow')}
             </Button>
             <Button variant="primary" onClick={handleUseTemplate}>
               {t('catalogue.buildFullInvitation')}

@@ -50,6 +50,7 @@ export const TRANSLATIONS = {
   'catalogue.select': { en: 'Select', sw: 'Chagua' },
   'catalogue.selected': { en: 'Selected', sw: 'Imechaguliwa' },
   'catalogue.useThisCard': { en: 'Use This Card', sw: 'Tumia Kadi Hii' },
+  'catalogue.buyNow': { en: 'Buy Now', sw: 'Nunua Sasa' },
   'catalogue.buildFullInvitation': { en: 'Build full invitation', sw: 'Tengeneza Mwaliko Kamili' },
   'catalogue.close': { en: 'Close', sw: 'Funga' },
 
@@ -163,6 +164,7 @@ export const TRANSLATIONS = {
   'status.cancelled': { en: 'Cancelled', sw: 'Imeghairiwa' },
   'status.unpaid': { en: 'Unpaid', sw: 'Haijalipwa' },
   'status.paid': { en: 'Paid', sw: 'Imelipwa' },
+  'status.expired': { en: 'Expired', sw: 'Imeisha muda' },
   'status.attending': { en: 'Attending', sw: 'Nitahudhuria' },
   'status.declined': { en: 'Not attending', sw: 'Sitahudhuria' },
   'status.active': { en: 'Active', sw: 'Hai' },
@@ -853,6 +855,46 @@ export const TRANSLATIONS = {
   'hero.slide.2.description': { en: 'Send beautiful invitations instantly', sw: 'Tuma mialiko mizuri papo hapo' },
   'hero.slide.3.title': { en: 'Every Guest Matters', sw: 'Kila Mgeni Anahesabika' },
   'hero.slide.3.description': { en: 'Simple RSVP. Smart guest management.', sw: 'RSVP rahisi. Usimamizi mahiri wa wageni.' },
+
+  // Checkout (Phase 3)
+  'checkout.title': { en: 'Checkout', sw: 'Malipo' },
+  'checkout.description': { en: 'Complete your purchase to receive your card.', sw: 'Kamilisha malipo kupokea kadi yako.' },
+  'checkout.chooseCardFirst': { en: 'Please choose a card from the catalogue first.', sw: 'Tafadhali chagua kadi kutoka kwenye orodha kwanza.' },
+  'checkout.browseCatalogue': { en: 'Browse the catalogue', sw: 'Vinjari orodha ya kadi' },
+  'checkout.yourDetails': { en: 'Your details', sw: 'Taarifa zako' },
+  'checkout.eventDetails': { en: 'Event details', sw: 'Taarifa za tukio' },
+  'checkout.orderSummary': { en: 'Order summary', sw: 'Muhtasari wa oda' },
+  'checkout.card': { en: 'Card', sw: 'Kadi' },
+  'checkout.tier': { en: 'Tier', sw: 'Kiwango' },
+  'checkout.total': { en: 'Total', sw: 'Jumla' },
+  'checkout.paymentMethod': { en: 'Payment method', sw: 'Njia ya malipo' },
+  'checkout.mobileMoney': { en: 'Mobile Money', sw: 'Pesa za Simu' },
+  'checkout.payNow': { en: 'Pay now', sw: 'Lipa Sasa' },
+  'checkout.genericError': { en: "We couldn't start your payment. Please try again.", sw: 'Tumeshindwa kuanzisha malipo yako. Tafadhali jaribu tena.' },
+  'checkout.savedOrderNote': {
+    en: 'Your order is saved either way — this only affects when your card is delivered.',
+    sw: 'Oda yako imehifadhiwa hata hivyo — hii inaathiri tu wakati kadi yako itatumwa.',
+  },
+
+  // Payment status
+  'payment.orderNumber': { en: 'Order', sw: 'Oda' },
+  'payment.amount': { en: 'Amount', sw: 'Kiasi' },
+  'payment.statusLabel': { en: 'Payment status', sw: 'Hali ya Malipo' },
+  'payment.pendingTitle': { en: 'Your payment is being processed.', sw: 'Malipo yako yanashughulikiwa.' },
+  'payment.pendingDescription': { en: "This page updates automatically — no need to refresh.", sw: 'Ukurasa huu unasasishwa moja kwa moja — hauitaji kuonyesha upya.' },
+  'payment.paidTitle': { en: 'Payment successful', sw: 'Malipo Yamefanikiwa' },
+  'payment.paidDescription': { en: 'Your invitation is ready.', sw: 'Mualiko wako uko tayari.' },
+  'payment.failedTitle': { en: 'Payment was not completed. Please try again.', sw: 'Malipo hayakukamilika. Tafadhali jaribu tena.' },
+  'payment.expiredTitle': { en: 'This payment session has expired. Please create a new payment.', sw: 'Kipindi hiki cha malipo kimeisha muda. Tafadhali anzisha malipo mapya.' },
+  'payment.cancelledTitle': { en: 'This payment was cancelled.', sw: 'Malipo haya yamesitishwa.' },
+  'payment.viewInvitation': { en: 'View invitation', sw: 'Ona Mualiko' },
+  'payment.tryAgain': { en: 'Try again', sw: 'Jaribu Tena' },
+  'payment.notFound': { en: 'Payment not found', sw: 'Malipo hayakupatikana' },
+  'payment.paymentUnavailableTitle': { en: 'Online payment is not connected yet', sw: 'Malipo mtandaoni bado hayajaunganishwa' },
+  'payment.paymentUnavailableDescription': {
+    en: 'Your order is saved. Our team will follow up to arrange payment.',
+    sw: 'Oda yako imehifadhiwa. Timu yetu itawasiliana nawe kupanga malipo.',
+  },
 
   // Create event wizard
   'wizard.step.eventType': { en: 'Event Type', sw: 'Aina ya Tukio' },

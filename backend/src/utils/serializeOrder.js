@@ -44,11 +44,26 @@ export function toOrderDTO(row) {
   };
 }
 
-/** Admin DTO — adds the registered customer's identity when the order is tied to an account. */
-export function toAdminOrderDTO(row) {
+/**
+ * Admin DTO — adds the registered customer's identity when the order is
+ * tied to an account, plus the most recent payment's admin-relevant
+ * fields (method/provider reference/paid date) when one is passed in.
+ * Never includes the raw provider webhook payload — read-only summary
+ * fields only, per the "no unnecessary admin complexity" instruction.
+ */
+export function toAdminOrderDTO(row, payment) {
   return {
     ...toOrderDTO(row),
     customer: row.user_id ? { id: row.user_id, name: row.user_name, email: row.user_email } : null,
+    payment: payment
+      ? {
+          method: payment.method,
+          provider: payment.provider,
+          providerReference: payment.provider_reference,
+          status: payment.status,
+          paidAt: payment.paid_at,
+        }
+      : null,
   };
 }
 

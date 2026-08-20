@@ -1766,3 +1766,213 @@
   background: #fff;
   padding: var(--space-2);
 }
+
+/* ---------- Checkout page ---------- */
+.ch-checkout-page {
+  flex: 1;
+  padding: var(--space-12) 0 var(--space-16);
+}
+
+.ch-checkout-page__loading {
+  height: 280px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-active);
+  animation: ch-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.ch-checkout-page__layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+  margin-top: var(--space-8);
+}
+@media (max-width: 860px) {
+  .ch-checkout-page__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ch-checkout-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.ch-checkout-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ch-checkout-page__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 480px) {
+  .ch-checkout-page__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ch-checkout-page__payment-method {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-accent);
+  background: var(--accent-soft);
+  font-weight: var(--fw-medium);
+}
+.ch-checkout-page__payment-method svg {
+  font-size: 1.2rem;
+  color: var(--color-gold-500);
+}
+
+.ch-checkout-page__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--navbar-height, 72px) + var(--space-6));
+}
+@media (max-width: 860px) {
+  .ch-checkout-page__summary {
+    position: static;
+  }
+}
+
+.ch-checkout-page__summary-thumb {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.ch-checkout-page__summary-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ch-checkout-page__summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+.ch-checkout-page__summary-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.ch-checkout-page__summary-list dt {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ch-checkout-page__summary-list dd {
+  margin: 0;
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  text-align: right;
+}
+.ch-checkout-page__summary-total {
+  border-bottom: none !important;
+}
+.ch-checkout-page__summary-total dd {
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-bold);
+  color: var(--color-gold-500);
+}
+
+/* ---------- Payment status page ---------- */
+.ch-payment-status-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) 0;
+}
+
+.ch-payment-status-page__status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-16) 0;
+  color: var(--text-muted);
+}
+
+.ch-payment-status-page__inner {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ch-payment-status-page__icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+.ch-payment-status-page__icon--paid {
+  color: var(--color-success, #2e9e5b);
+}
+.ch-payment-status-page__icon--failed {
+  color: var(--color-danger, #d1453b);
+}
+
+.ch-payment-status-page__card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  border-top: 2px solid var(--color-gold-500);
+  box-shadow: var(--shadow-glow);
+}
+
+.ch-payment-status-page__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.ch-payment-status-page__row span {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ch-payment-status-page__row strong {
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+}
+
+.ch-payment-status-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-4);
+}
+@media (max-width: 480px) {
+  .ch-payment-status-page__actions {
+    flex-direction: column;
+  }
+  .ch-payment-status-page__actions .ch-btn {
+    width: 100%;
+  }
+}

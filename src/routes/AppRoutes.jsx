@@ -11,6 +11,7 @@ import { TemplatesPage } from '../pages/public/TemplatesPage';
 import { PricingPage } from '../pages/public/PricingPage';
 import { HowItWorksPage } from '../pages/public/HowItWorksPage';
 import { TryPage } from '../pages/public/TryPage';
+import { CheckoutPage } from '../pages/public/CheckoutPage';
 import { AboutPage } from '../pages/public/AboutPage';
 import { ContactPage } from '../pages/public/ContactPage';
 import { FaqPage } from '../pages/public/FaqPage';
@@ -43,6 +44,7 @@ import { EventAnalyticsPage } from '../pages/dashboard/events/EventAnalyticsPage
 
 import { InvitationPage } from '../pages/public/InvitationPage';
 import { OrderCardPage } from '../pages/public/OrderCardPage';
+import { PaymentStatusPage } from '../pages/public/PaymentStatusPage';
 
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
@@ -68,6 +70,7 @@ export function AppRoutes() {
         <Route path={ROUTES.PRICING} element={<PricingPage />} />
         <Route path={ROUTES.HOW_IT_WORKS} element={<HowItWorksPage />} />
         <Route path={ROUTES.TRY} element={<TryPage />} />
+        <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
         <Route path={ROUTES.ABOUT} element={<AboutPage />} />
         <Route path={ROUTES.CONTACT} element={<ContactPage />} />
         <Route path={ROUTES.FAQ} element={<FaqPage />} />
@@ -130,6 +133,9 @@ export function AppRoutes() {
 
       {/* Order confirmation — the link sent over SMS/WhatsApp, no auth required */}
       <Route path={ROUTES.CARD} element={<OrderCardPage />} />
+
+      {/* Payment status — reached right after checkout, no auth required */}
+      <Route path={ROUTES.PAYMENT_STATUS} element={<PaymentStatusPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

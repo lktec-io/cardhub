@@ -23,7 +23,7 @@ const MAX_RSVP_CODE_ATTEMPTS = 5;
  * place that rule is actually enforced — called before every order is
  * created, regardless of source.
  */
-function assertHasContact({ userId, guestName, guestPhone }) {
+export function assertHasContact({ userId, guestName, guestPhone }) {
   const hasUser = userId !== null && userId !== undefined;
   const hasGuestContact = Boolean(guestName) && Boolean(guestPhone);
   if (!hasUser && !hasGuestContact) {
@@ -32,7 +32,7 @@ function assertHasContact({ userId, guestName, guestPhone }) {
 }
 
 /** Unguessable, URL-safe — same reasoning as utils/slugify.js's uniqueSlug, just longer (this is the whole identifier, not a suffix). */
-function generatePublicToken() {
+export function generatePublicToken() {
   return randomBytes(18).toString('base64url');
 }
 
@@ -40,9 +40,11 @@ function generatePublicToken() {
  * Creates the order with a fresh human-friendly rsvp_code, retrying with
  * a new code only on a genuine rsvp_code collision (extremely unlikely —
  * see utils/rsvpCode.js's entropy note) rather than masking any other
- * insert failure.
+ * insert failure. Exported so payment.service.js's paid checkout flow
+ * reuses the exact same order-creation path as Try Our Service instead
+ * of a second, parallel implementation.
  */
-async function createOrderWithUniqueRsvpCode(fields) {
+export async function createOrderWithUniqueRsvpCode(fields) {
   for (let attempt = 1; attempt <= MAX_RSVP_CODE_ATTEMPTS; attempt += 1) {
     try {
       return await orderRepository.create({ ...fields, rsvpCode: generateRsvpCode() });
@@ -55,7 +57,7 @@ async function createOrderWithUniqueRsvpCode(fields) {
 }
 
 /** Turns the delivery.service.js result into the exact human sentence the customer sees — see docs/architecture.md "Try Our Service delivery". */
-function buildDeliveryMessage({ overallStatus, channels }) {
+export function buildDeliveryMessage({ overallStatus, channels }) {
   const wantsBoth = channels.includes('sms') && channels.includes('whatsapp');
 
   if (overallStatus === DELIVERY_STATUS.SENT) {

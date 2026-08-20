@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { publicController } from '../../controllers/public.controller.js';
 import { publicRsvpController } from '../../controllers/publicRsvp.controller.js';
 import { publicOrdersController } from '../../controllers/publicOrders.controller.js';
+import { checkoutController } from '../../controllers/checkout.controller.js';
 import { rsvpLimiter, tryServiceLimiter } from '../../middleware/rateLimiter.js';
 
 export const publicRouter = Router();
@@ -25,3 +26,10 @@ publicRouter.get('/orders/:token', publicOrdersController.getByToken);
 // The guest's own attendance response from that same page — same
 // abuse-protection tier as the existing invitation RSVP endpoint above.
 publicRouter.patch('/orders/:token/rsvp', rsvpLimiter, publicOrdersController.submitRsvp);
+
+// Phase 3 — real card purchases. Same abuse-protection tier as Try Our
+// Service (a single-visitor conversion form, not a household submitting
+// repeatedly). Never marks anything "paid" — see payments.routes.js for
+// the actual webhook that can.
+publicRouter.post('/checkout', tryServiceLimiter, checkoutController.initiate);
+publicRouter.get('/checkout/:token/status', checkoutController.status);
