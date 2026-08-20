@@ -103,6 +103,7 @@ export const env = {
     phoneNumberId: trimmed(process.env.WHATSAPP_PHONE_NUMBER_ID) || '',
     businessAccountId: trimmed(process.env.WHATSAPP_BUSINESS_ACCOUNT_ID) || '',
     apiVersion: trimmed(process.env.WHATSAPP_API_VERSION) || 'v21.0',
+       webhookVerifyToken: trimmed(process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) || 'mimi_ndio_cardhub_2026',
   },
 
   frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,
