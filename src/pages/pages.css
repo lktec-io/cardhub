@@ -331,6 +331,46 @@
   }
 }
 
+/* Mobile-only in-image caption (title + description for the active
+   slide) — a real child of .ch-hero__photo (position:relative, clipped),
+   the same containing block as the numbers above, so it is always
+   pixel-precisely inside the image regardless of viewport width. Hidden
+   on desktop, where .ch-hero-selector (LandingPage.jsx) is the one
+   floating card shown instead. Constrained width + right offset so it
+   never reaches under .ch-hero-slideshow__numbers, pinned top-right. */
+.ch-hero-slideshow__caption {
+  display: none;
+}
+@media (max-width: 640px) {
+  .ch-hero-slideshow__caption {
+    display: block;
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    right: 52px;
+    z-index: 2;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: linear-gradient(160deg, rgba(5, 11, 20, 0.62) 0%, rgba(5, 11, 20, 0.22) 100%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .ch-hero-slideshow__caption-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: var(--fw-semibold);
+    line-height: 1.3;
+  }
+  .ch-hero-slideshow__caption-description {
+    margin: 2px 0 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+}
+
 /* Shown automatically (via the <img> onError handler) when
    /images/hero-couple.jpg hasn't been supplied yet — a soft celebration
    gradient instead of a broken-image icon. See public/images/README.md. */
@@ -405,17 +445,17 @@
   line-height: 1.35;
 }
 
-/* Mobile: never float over the photo (risk of covering faces/subject) —
-   becomes its own full-width static card sitting below the image
-   instead, per explicit instruction not to just shrink the desktop
-   version. */
+/* Mobile: the floating desktop card is replaced entirely by the in-image
+   caption below (.ch-hero-slideshow__caption, a true child of the photo
+   box, rendered by HeroSlideshow.jsx) — explicitly requested so the text
+   sits pixel-precisely inside the image at every width instead of
+   depending on this element's own (differently-centered) sibling box. */
 @media (max-width: 640px) {
+  .ch-hero__visual {
+    padding-bottom: 0;
+  }
   .ch-hero-selector {
-    position: static;
-    max-width: none;
-    width: 100%;
-    margin-top: var(--space-3);
-    box-shadow: var(--shadow-sm);
+    display: none;
   }
 }
 

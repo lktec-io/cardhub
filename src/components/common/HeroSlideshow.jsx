@@ -31,7 +31,7 @@ const SLIDE_DURATION_MS = 3000;
  * child of it), so the parent (LandingPage.jsx) owns rendering it while
  * this component stays a generic, reusable "cycle these photos" primitive.
  */
-export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange }) {
+export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange, captions }) {
   const reducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedIndices, setFailedIndices] = useState(() => new Set());
@@ -64,8 +64,22 @@ export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange }) {
 
   if (primaryFailed) return null;
 
+  const activeCaption = captions?.[activeIndex];
+
   return (
     <>
+      {/* Mobile-only, real DOM child of the (clipped, position:relative)
+          photo box — same containing block as the 01/02/03 numbers below,
+          so it's always pixel-precisely inside the image at any width,
+          never dependent on a sibling's centering math. Hidden entirely
+          on desktop via CSS (see .ch-hero-slideshow__caption). */}
+      {activeCaption && (
+        <div className="ch-hero-slideshow__caption">
+          <p className="ch-hero-slideshow__caption-title">{activeCaption.title}</p>
+          <p className="ch-hero-slideshow__caption-description">{activeCaption.description}</p>
+        </div>
+      )}
+
       {HERO_SLIDES.map((slide, index) => {
         const isActive = index === activeIndex;
         const src = failedIndices.has(index) ? HERO_SLIDES[0].src : slide.src;

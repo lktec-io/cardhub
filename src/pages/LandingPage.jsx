@@ -49,6 +49,14 @@ export function LandingPage() {
   const [status, setStatus] = useState('loading');
   const showHeroVideo = !reducedMotion && !heroVideoFailed;
   const activeSlideContent = HERO_SLIDE_CONTENT[activeSlideIndex] || HERO_SLIDE_CONTENT[0];
+  // Same title/description text as the desktop floating selector below,
+  // handed to HeroSlideshow so it can render an in-image caption for
+  // mobile (a true DOM child of the photo box, not a sibling) — see
+  // HeroSlideshow.jsx and .ch-hero-slideshow__caption in pages.css.
+  const slideCaptions = HERO_SLIDE_CONTENT.map(({ key }) => ({
+    title: t(`${key}.title`),
+    description: t(`${key}.description`),
+  }));
 
   useEffect(() => {
     templatesService
@@ -90,6 +98,7 @@ export function LandingPage() {
                   alt="A couple celebrating their wedding — CardHub turns moments like this into a shareable digital card"
                   onAllFailed={() => setHeroPhotoFailed(true)}
                   onActiveIndexChange={setActiveSlideIndex}
+                  captions={slideCaptions}
                 />
               </div>
               {!heroPhotoFailed && (

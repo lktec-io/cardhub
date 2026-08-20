@@ -29,16 +29,16 @@
   max-width: calc(var(--container-max) + var(--space-6) * 2);
   margin: 0 auto;
   border-radius: var(--radius-full);
-  /* Premium glassmorphism: a genuinely translucent (not near-opaque)
-     white wash with a faint green tint, strong blur + saturation boost
-     so scrolled content stays visibly (if softly) legible through it,
-     a soft green-tinted border instead of a neutral one, and a subtle
-     brand-colored glow layered under the normal depth shadow. */
-  border: 1px solid rgba(34, 197, 94, 0.16);
-  background: linear-gradient(135deg, rgba(240, 253, 244, 0.62) 0%, rgba(255, 255, 255, 0.58) 100%);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  box-shadow: var(--shadow-md), 0 0 26px rgba(34, 197, 94, 0.14);
+  /* Frosted-glass privacy panel: heavy blur + a high-opacity soft
+     mint/champagne tint so content scrolling behind it is genuinely
+     obscured (not just softened) — not a plain-white nor a solid panel,
+     but well past "see-through". Soft green-tinted border + a refined
+     two-layer shadow (depth + a faint brand glow) underneath. */
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.92) 0%, rgba(250, 247, 237, 0.9) 100%);
+  backdrop-filter: blur(34px) saturate(150%);
+  -webkit-backdrop-filter: blur(34px) saturate(150%);
+  box-shadow: var(--shadow-md), 0 0 22px rgba(34, 197, 94, 0.1);
   transition: box-shadow var(--duration-base) var(--ease-standard), background var(--duration-base) var(--ease-standard);
 }
 
