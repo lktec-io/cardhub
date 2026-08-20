@@ -82,29 +82,8 @@ export function LandingPage() {
                   {t('landing.tryOurService')}
                 </Link>
               </div>
-
-              {/* A separate, foreground element below the text — never a
-                  background, never sits behind or under the copy above. */}
-              <div className="ch-hero__video-wrap">
-                {showHeroVideo ? (
-                  <video
-                    className="ch-hero__video"
-                    src={HERO_VIDEO_SRC}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    aria-hidden="true"
-                    onError={() => setHeroVideoFailed(true)}
-                  />
-                ) : (
-                  <div className="ch-hero__video-placeholder" role="img" aria-label="CardHub video coming soon">
-                    <FiFilm aria-hidden="true" />
-                  </div>
-                )}
-              </div>
             </div>
+
             <div className="ch-hero__visual ch-animate-scale-in">
               <div className={`ch-hero__photo ${heroPhotoFailed ? 'ch-hero__photo--fallback' : ''}`}>
                 <HeroSlideshow
@@ -122,6 +101,31 @@ export function LandingPage() {
                     <p className="ch-hero-selector__title">{t(`${activeSlideContent.key}.title`)}</p>
                     <p className="ch-hero-selector__description">{t(`${activeSlideContent.key}.description`)}</p>
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* A separate, foreground element below the text/image — never a
+                background, never sits behind or under anything. Its own grid
+                item (see pages.css .ch-hero__grid) so mobile can place it
+                after the image without it ever being nested inside the text
+                block, which is what caused it to appear before the image. */}
+            <div className="ch-hero__video-wrap">
+              {showHeroVideo ? (
+                <video
+                  className="ch-hero__video"
+                  src={HERO_VIDEO_SRC}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  aria-hidden="true"
+                  onError={() => setHeroVideoFailed(true)}
+                />
+              ) : (
+                <div className="ch-hero__video-placeholder" role="img" aria-label="CardHub video coming soon">
+                  <FiFilm aria-hidden="true" />
                 </div>
               )}
             </div>

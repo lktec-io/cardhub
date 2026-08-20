@@ -11,16 +11,34 @@
   z-index: 2;
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: var(--space-12);
+  column-gap: var(--space-12);
+  row-gap: var(--space-4);
   text-align: left;
 }
 
+/* Desktop: content top-left, video directly beneath it in the same
+   column (identical position to the old nested layout), photo spans
+   both rows on the right — the same premium composition as before,
+   just expressed as three explicitly-placed grid items instead of one
+   item nesting another, which is what made a correct mobile order
+   impossible (see the mobile override below). */
 .ch-hero__content {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-4);
+}
+.ch-hero__video-wrap {
+  grid-column: 1;
+  grid-row: 2;
+}
+.ch-hero__visual {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 
 @media (max-width: 960px) {
@@ -29,6 +47,7 @@
   }
   .ch-hero__grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: var(--space-8);
     text-align: center;
   }
@@ -36,13 +55,17 @@
     align-items: center;
     padding: 0 var(--space-2);
   }
-  /* Content (headline → CTAs → video) first on mobile, exactly the
-     order the copy reads in — the photo slideshow follows below it. */
-  .ch-hero__content {
-    order: 1;
-  }
-  .ch-hero__visual {
-    order: 2;
+  /* Explicit mobile hierarchy: hero text/typewriter, then the image
+     slider (visually dominant), then the video as its own section
+     below — never side-by-side, never accidental flex wrapping. Source
+     order already matches (content, visual, video-wrap in the JSX), so
+     this only needs to cancel the desktop grid-row/column placement
+     above rather than reorder anything. */
+  .ch-hero__content,
+  .ch-hero__visual,
+  .ch-hero__video-wrap {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
 
@@ -123,8 +146,8 @@
 
 @media (max-width: 640px) {
   .ch-hero__video-wrap {
-    max-width: 360px;
-    margin: var(--space-4) auto 0;
+    max-width: 340px;
+    margin: var(--space-5) auto 0;
   }
 }
 
@@ -213,7 +236,7 @@
   inset: 0;
   opacity: 0;
   z-index: 0;
-  transition: opacity 1100ms var(--ease-standard);
+  transition: opacity 900ms var(--ease-standard);
   transform: scale(1);
 }
 
@@ -222,20 +245,24 @@
   z-index: 1;
 }
 
-/* Subtle, slow zoom-drift on whichever slide is active — restarts every
-   time a slide becomes active again, since the animation is only ever
-   applied to the current --active element. Skipped entirely under
-   prefers-reduced-motion (HeroSlideshow.jsx never adds this class then). */
+/* Fade + subtle scale, in one continuous motion: the kenburns animation
+   (below) starts a touch zoomed-in rather than at a flat scale(1), so
+   the moment a slide fades in it already reads as "arriving" rather
+   than a static swap, then keeps drifting slowly for as long as the
+   slide stays active — restarts every time a slide becomes active
+   again, since the animation is only ever applied to the current
+   --active element. Skipped entirely under prefers-reduced-motion
+   (HeroSlideshow.jsx never adds this class then). */
 @keyframes ch-hero-kenburns {
   from {
-    transform: scale(1);
+    transform: scale(1.03);
   }
   to {
-    transform: scale(1.07);
+    transform: scale(1.09);
   }
 }
 .ch-hero-slideshow__slide--kenburns {
-  animation: ch-hero-kenburns 6500ms var(--ease-out) forwards;
+  animation: ch-hero-kenburns 5000ms var(--ease-out) forwards;
 }
 
 .ch-hero-slideshow__dots {
@@ -267,7 +294,7 @@
   background: rgba(255, 255, 255, 0.85);
 }
 .ch-hero-slideshow__dot--active {
-  background: var(--color-gold-400);
+  background: var(--color-green-400);
   transform: scale(1.25);
 }
 

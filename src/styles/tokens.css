@@ -201,14 +201,18 @@
 
   --border: rgba(22, 32, 61, 0.09);
   --border-strong: rgba(22, 32, 61, 0.16);
-  --border-accent: rgba(201, 154, 69, 0.5);
+  /* Green, not gold — the public site's primary accent is CardHub green
+     (see --accent below); gold stays available separately via
+     --color-gold-* for deliberate secondary/decorative touches only
+     (featured-tier ribbons, the hero photo's gradient backdrop, etc.). */
+  --border-accent: rgba(22, 163, 74, 0.4);
 
-  --accent: var(--color-royal-500);
-  --accent-hover: var(--color-royal-400);
-  --accent-active: var(--color-royal-600);
-  --accent-soft: rgba(42, 68, 199, 0.1);
-  --accent-gradient: linear-gradient(135deg, var(--color-royal-400) 0%, var(--color-royal-600) 100%);
-  --accent-contrast-text: var(--color-royal-600);
+  --accent: var(--color-green-500);
+  --accent-hover: var(--color-green-400);
+  --accent-active: var(--color-green-600);
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-gradient: linear-gradient(135deg, var(--color-green-400) 0%, var(--color-green-600) 100%);
+  --accent-contrast-text: var(--color-green-600);
 
   --gradient-hero: radial-gradient(120% 100% at 18% 0%, var(--color-blue-mist-100) 0%, var(--color-cream-50) 55%),
     radial-gradient(70% 55% at 100% 8%, var(--color-accent-gold-soft) 0%, transparent 62%);
@@ -216,8 +220,10 @@
   --shadow-sm: 0 1px 2px rgba(22, 32, 61, 0.06);
   --shadow-md: 0 8px 24px rgba(22, 32, 61, 0.08);
   --shadow-lg: 0 20px 48px rgba(22, 32, 61, 0.14);
-  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(201, 154, 69, 0.22);
+  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(22, 163, 74, 0.2);
 
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -225,4 +231,80 @@
   background-image: var(--gradient-hero);
   background-attachment: fixed;
   background-repeat: no-repeat;
+}
+
+/* ---------- Ambient background motion (public theme only) ----------
+   Two large, softly blurred gradient blobs drifting very slowly behind
+   the content — CSS-only (no JS animation loop), a lightweight way to
+   keep the marketing surface from reading as flat/static white without
+   turning it into a distracting effect. `isolation: isolate` above gives
+   this element its own stacking context so z-index:0 here can never leak
+   above the fixed navbar (z-index: var(--z-sticky)) or below the page's
+   own background. */
+.ch-public-theme::before,
+.ch-public-theme::after {
+  content: '';
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.ch-public-theme::before {
+  top: -12%;
+  left: -12%;
+  width: 52vw;
+  height: 52vw;
+  max-width: 620px;
+  max-height: 620px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.22) 0%, rgba(34, 197, 94, 0) 70%);
+  animation: ch-ambient-drift-1 28s ease-in-out infinite;
+}
+
+.ch-public-theme::after {
+  bottom: -16%;
+  right: -12%;
+  width: 48vw;
+  height: 48vw;
+  max-width: 560px;
+  max-height: 560px;
+  background: radial-gradient(circle, rgba(16, 37, 107, 0.08) 0%, rgba(201, 154, 69, 0.1) 45%, rgba(201, 154, 69, 0) 75%);
+  animation: ch-ambient-drift-2 34s ease-in-out infinite;
+}
+
+@keyframes ch-ambient-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, 6%) scale(1.08);
+  }
+}
+@keyframes ch-ambient-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-5%, -4%) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-public-theme::before,
+  .ch-public-theme::after {
+    animation: none;
+  }
+}
+
+/* Routed page content and the footer paint above the ambient blobs — the
+   navbar doesn't need this, it's already position:fixed with its own
+   much higher z-index (--z-sticky) in layout.css. */
+.ch-public-main,
+.ch-footer {
+  position: relative;
+  z-index: 1;
 }

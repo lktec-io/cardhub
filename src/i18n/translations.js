@@ -882,11 +882,11 @@ export const TRANSLATIONS = {
   'changeTemplate.tryDifferent': { en: 'Try a different search or category.', sw: 'Jaribu utafutaji au kundi lingine.' },
 
   // Hero slideshow floating selectors
-  'hero.slide.1.title': { en: 'Your Special Moment', sw: 'Wakati Wako Maalum' },
+  'hero.slide.1.title': { en: '01 — Your Story', sw: '01 — Hadithi Yako' },
   'hero.slide.1.description': { en: 'Beautiful digital invitations made to be remembered', sw: 'Mialiko mizuri ya kidijitali iliyotengenezwa kukumbukwa' },
-  'hero.slide.2.title': { en: 'Invite With Elegance', sw: 'Alika kwa Umaridadi' },
+  'hero.slide.2.title': { en: '02 — Your Invitation', sw: '02 — Mwaliko Wako' },
   'hero.slide.2.description': { en: 'Send beautiful invitations instantly', sw: 'Tuma mialiko mizuri papo hapo' },
-  'hero.slide.3.title': { en: 'Every Guest Matters', sw: 'Kila Mgeni Anahesabika' },
+  'hero.slide.3.title': { en: '03 — Your Guests', sw: '03 — Wageni Wako' },
   'hero.slide.3.description': { en: 'Simple RSVP. Smart guest management.', sw: 'RSVP rahisi. Usimamizi mahiri wa wageni.' },
 
   // Checkout (Phase 3)

@@ -9,7 +9,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
  * no code change needed. See public/hero/README.md.
  */
 const HERO_SLIDES = [{ src: '/hero/hero-1.jpg' }, { src: '/hero/hero-2.jpg' }, { src: '/hero/hero-3.jpg' }];
-const SLIDE_DURATION_MS = 5500;
+const SLIDE_DURATION_MS = 4000;
 
 /**
  * Premium hero background slideshow — a slow crossfade + subtle Ken
