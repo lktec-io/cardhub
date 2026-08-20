@@ -9,7 +9,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
  * no code change needed. See public/hero/README.md.
  */
 const HERO_SLIDES = [{ src: '/hero/hero-1.jpg' }, { src: '/hero/hero-2.jpg' }, { src: '/hero/hero-3.jpg' }];
-const SLIDE_DURATION_MS = 4000;
+const SLIDE_DURATION_MS = 3800;
 
 /**
  * Premium hero background slideshow — a slow crossfade + subtle Ken
@@ -86,7 +86,7 @@ export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange }) {
       })}
 
       {HERO_SLIDES.length > 1 && (
-        <div className="ch-hero-slideshow__dots" role="tablist" aria-label="Hero image slides">
+        <div className="ch-hero-slideshow__numbers" role="tablist" aria-label="Hero image slides">
           {HERO_SLIDES.map((slide, index) => (
             <button
               key={slide.src}
@@ -94,9 +94,11 @@ export function HeroSlideshow({ alt, onAllFailed, onActiveIndexChange }) {
               role="tab"
               aria-selected={index === activeIndex}
               aria-label={`Slide ${index + 1}`}
-              className={`ch-hero-slideshow__dot ${index === activeIndex ? 'ch-hero-slideshow__dot--active' : ''}`}
+              className={`ch-hero-slideshow__number ${index === activeIndex ? 'ch-hero-slideshow__number--active' : ''}`}
               onClick={() => setActiveIndex(index)}
-            />
+            >
+              {String(index + 1).padStart(2, '0')}
+            </button>
           ))}
         </div>
       )}

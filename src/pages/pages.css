@@ -55,17 +55,25 @@
     align-items: center;
     padding: 0 var(--space-2);
   }
-  /* Explicit mobile hierarchy: hero text/typewriter, then the image
-     slider (visually dominant), then the video as its own section
-     below — never side-by-side, never accidental flex wrapping. Source
-     order already matches (content, visual, video-wrap in the JSX), so
-     this only needs to cancel the desktop grid-row/column placement
-     above rather than reorder anything. */
+  /* Explicit mobile hierarchy: the image slider first (visually
+     dominant), then the hero text/typewriter, then the video as its
+     own section below — never side-by-side, never accidental flex
+     wrapping. `order` is scoped to this media query only, so desktop's
+     explicit grid-row/column placement above is completely unaffected. */
   .ch-hero__content,
   .ch-hero__visual,
   .ch-hero__video-wrap {
     grid-column: 1;
     grid-row: auto;
+  }
+  .ch-hero__visual {
+    order: 1;
+  }
+  .ch-hero__content {
+    order: 2;
+  }
+  .ch-hero__video-wrap {
+    order: 3;
   }
 }
 
@@ -265,37 +273,62 @@
   animation: ch-hero-kenburns 5000ms var(--ease-out) forwards;
 }
 
-.ch-hero-slideshow__dots {
+/* Vertical 01/02/03 slide selector — lives inside the photo's own
+   clipped box (not floating outside it like .ch-hero-selector below),
+   so it always reads as "part of the image" on every viewport. */
+.ch-hero-slideshow__numbers {
   position: absolute;
-  left: 50%;
-  bottom: var(--space-3);
-  transform: translateX(-50%);
+  top: var(--space-4);
+  right: var(--space-4);
   z-index: 2;
   display: flex;
-  gap: 7px;
-  padding: 6px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(5, 11, 20, 0.28);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  flex-direction: column;
+  gap: 8px;
 }
 
-.ch-hero-slideshow__dot {
-  width: 6px;
-  height: 6px;
+.ch-hero-slideshow__number {
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(5, 11, 20, 0.32);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+  transition: background var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
 }
-.ch-hero-slideshow__dot:hover {
-  background: rgba(255, 255, 255, 0.85);
+.ch-hero-slideshow__number:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
 }
-.ch-hero-slideshow__dot--active {
-  background: var(--color-green-400);
-  transform: scale(1.25);
+.ch-hero-slideshow__number--active {
+  background: var(--color-green-500);
+  border-color: var(--color-green-500);
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+}
+
+@media (max-width: 640px) {
+  .ch-hero-slideshow__numbers {
+    top: var(--space-3);
+    right: var(--space-3);
+    gap: 6px;
+  }
+  .ch-hero-slideshow__number {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
 }
 
 /* Shown automatically (via the <img> onError handler) when

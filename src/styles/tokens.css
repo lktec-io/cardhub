@@ -300,6 +300,104 @@
   }
 }
 
+/* Six small blurred green dots that slowly pop in, drift up, and fade —
+   distinct from the two large ambient blobs above, giving the page a
+   gentle "alive" feeling rather than just a static gradient. Fixed
+   (viewport-relative) so they stay visible while scrolling, same
+   reasoning as the blobs. Pre-set positions/delays/durations per dot
+   (not randomized at runtime) so this is pure CSS, no JS loop. */
+.ch-ambient-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ch-ambient-particles span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-green-400);
+  filter: blur(3px);
+  opacity: 0;
+  animation: ch-particle-float 17s ease-in-out infinite;
+}
+.ch-ambient-particles span:nth-child(1) {
+  left: 8%;
+  top: 24%;
+  width: 10px;
+  height: 10px;
+  animation-delay: 0s;
+  animation-duration: 16s;
+}
+.ch-ambient-particles span:nth-child(2) {
+  left: 84%;
+  top: 16%;
+  width: 7px;
+  height: 7px;
+  animation-delay: 3s;
+  animation-duration: 19s;
+}
+.ch-ambient-particles span:nth-child(3) {
+  left: 22%;
+  top: 70%;
+  width: 9px;
+  height: 9px;
+  animation-delay: 6s;
+  animation-duration: 15s;
+}
+.ch-ambient-particles span:nth-child(4) {
+  left: 68%;
+  top: 60%;
+  width: 6px;
+  height: 6px;
+  animation-delay: 2s;
+  animation-duration: 21s;
+}
+.ch-ambient-particles span:nth-child(5) {
+  left: 46%;
+  top: 38%;
+  width: 8px;
+  height: 8px;
+  animation-delay: 8s;
+  animation-duration: 18s;
+}
+.ch-ambient-particles span:nth-child(6) {
+  left: 92%;
+  top: 80%;
+  width: 7px;
+  height: 7px;
+  animation-delay: 5s;
+  animation-duration: 20s;
+}
+
+@keyframes ch-particle-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.9);
+  }
+  15% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.55;
+    transform: translateY(-40px) scale(1.1);
+  }
+  85% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-90px) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-ambient-particles span {
+    animation: none;
+    opacity: 0.12;
+  }
+}
+
 /* Routed page content and the footer paint above the ambient blobs — the
    navbar doesn't need this, it's already position:fixed with its own
    much higher z-index (--z-sticky) in layout.css. */
