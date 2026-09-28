@@ -122,6 +122,18 @@ export const env = {
     callbackUrl: firstCleanUrl(process.env.PAYMENT_CALLBACK_URL) || '',
   },
 
+  // Ticket sales payment mode — services/providers/paymentGateway.js.
+  //   'demo' — DEMO PAYMENT MODE: no money moves; a simulated confirmation
+  //            step marks the order paid and tickets are flagged is_demo.
+  //   'live' — uses the real payment provider above (honestly reports
+  //            "unavailable" until one is actually wired in).
+  // Defaults to 'demo' outside production and 'live' in production, so a
+  // production server never hands out free "paid" tickets unless an
+  // operator explicitly sets TICKET_PAYMENT_MODE=demo.
+  tickets: {
+    paymentMode: (trimmed(process.env.TICKET_PAYMENT_MODE) || (isProd ? 'live' : 'demo')).toLowerCase(),
+  },
+
   frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,
   apiUrl: firstCleanUrl(process.env.API_URL) || DEFAULT_API_URL,
 };

@@ -13,6 +13,20 @@ export function getPublicOrderUrl(publicToken) {
   return `${env.frontendUrl}/card/${publicToken}`;
 }
 
+/** A single ticket's shareable page — keyed by the ticket's random token, never the buyer's details or a sequential id. */
+export function getPublicTicketUrl(ticketToken) {
+  return `${env.frontendUrl}/ticket/t/${ticketToken}`;
+}
+
+/**
+ * What a ticket's QR code encodes: a verification page URL carrying only
+ * the random token. No name, phone or price is in the QR itself; a
+ * scanner resolves the token server-side (GET /tickets/verify/:token).
+ */
+export function getTicketVerifyUrl(ticketToken) {
+  return `${env.frontendUrl}/ticket/verify/${ticketToken}`;
+}
+
 /**
  * The card's image, as an absolute HTTPS URL external providers (Meta
  * WhatsApp Cloud API) can fetch. Built-in catalogue templates are

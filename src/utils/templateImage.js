@@ -10,3 +10,9 @@ export function getLocalCatalogueImagePath(slug) {
   if (!slug || typeof slug !== 'string') return null;
   return `${LOCAL_CATALOGUE_IMAGE_DIR}/${slug}.jpg`;
 }
+
+/** The actual card image file for a template, in the same priority order TemplateThumb renders it. */
+export function getTemplateImageSrc(template) {
+  if (!template) return null;
+  return template.previewImage || getLocalCatalogueImagePath(template.slug);
+}

@@ -9,6 +9,7 @@ import { LanguageToggle } from './LanguageToggle';
 const NAV_LINKS = [
   { key: 'nav.home', to: ROUTES.HOME },
   { key: 'nav.templates', to: ROUTES.TEMPLATES },
+  { key: 'nav.tickets', to: ROUTES.TICKETS },
   { key: 'nav.pricing', to: ROUTES.PRICING },
   { key: 'nav.howItWorks', to: ROUTES.HOW_IT_WORKS },
   { key: 'nav.about', to: ROUTES.ABOUT },

@@ -833,3 +833,69 @@ above). Payment, email, SMS, and image storage delivery are
 architecturally complete but not connected to a live provider — see
 [`docs/production.md`](production.md) for exactly what that means and how
 to connect one.
+
+## Ticket marketplace
+
+Public routes: `/ticket` (marketplace), `/ticket/event/:slug`,
+`/ticket/order/:token` (buyer's private checkout/payment/tickets page),
+`/ticket/t/:token` (one shareable ticket), `/ticket/verify/:token` (where
+the QR points: VALID/INVALID for door staff). API: `/api/v1/tickets/*`.
+
+### Data model (migrations 021–025)
+
+- **events** is reused (no parallel "ticketed event" table): adds
+  `ticket_sales_enabled`, `end_time`, `organizer_contact`. The existing
+  random `slug` is the public event slug. An event is on the marketplace only
+  when it's `published`, `ticket_sales_enabled = 1`, not deleted, dated today
+  or later, and has at least one active ticket type.
+- **ticket_types**: price, capacity (`quantity_available`), `quantity_sold`,
+  `quantity_reserved`, `max_per_order`, sales window, status. A CHECK
+  constraint makes `sold + reserved <= available` impossible to violate.
+- **ticket_orders**: one purchase (type × quantity). Server-computed
+  `unit_price_tzs`/`total_tzs` (CHECK `total = unit × quantity`), random
+  `public_token`, client `idempotency_key` (unique), `status` using the same
+  vocabulary as payments, 15-minute `reservation_expires_at`, `is_demo`.
+- **tickets**: one row per admission. `ticket_code` (`CH-XXXXXXXX`, 40
+  random bits, human-facing) and `token` (256-bit, the QR/verify secret).
+  `UNIQUE(ticket_order_id, seq)` makes issuance idempotent.
+- **payments** is reused: adds `ticket_order_id` (not a second payments table).
+
+### Flow and guarantees
+
+1. `POST /tickets/orders` reserves inventory with one conditional UPDATE
+   (two buyers can't both get the last ticket), then creates the order plus a
+   pending payment row in the same transaction. The price is never read from
+   the request. Replaying the same `idempotencyKey` returns the same order.
+2. `POST /tickets/orders/:token/pay` asks the provider to start payment
+   (order row locked, so a double tap can't start two attempts).
+3. Paid: live providers only through `POST /payments/webhook`
+   (payment.service.js → tickets.service.js#fulfilFromVerifiedPayment). Demo
+   mode only through `POST /tickets/orders/:token/demo-confirm`, which refuses
+   when `TICKET_PAYMENT_MODE` isn't `demo` and refuses non-demo payment rows.
+   The webhook, in turn, refuses demo rows.
+4. Lapsed reservations are released by a bounded `FOR UPDATE SKIP LOCKED`
+   sweep that runs on event-page loads and new checkouts, and by the order
+   page itself. There's no cron.
+
+### Demo PIN
+
+The demo payment screen asks for a fixed, published code (`1234`, in
+`src/constants/tickets.js`), checked in the browser only. It is never sent to
+the API (the demo-confirm request has no body), stored or logged. There is no
+PIN field anywhere in the API. A live gateway replaces this screen with the
+provider's own USSD/STK push or hosted checkout.
+
+### Going live with a gateway
+
+Implement `createPayment`, `verifyWebhookSignature` and
+`normalizeWebhookEvent` for the chosen provider in
+`services/providers/paymentProvider.js` (or add a provider and select it in
+`services/providers/paymentGateway.js`), register
+`PAYMENT_CALLBACK_URL`, then set `TICKET_PAYMENT_MODE=live`. The ticket code
+itself doesn't change.
+
+### Demo data
+
+`npm run seed:demo-tickets` (after `npm run seed`) creates "Afro Night 2026"
+with Regular/VIP/VVIP at TZS 10,000/20,000/50,000, owned by an inactive,
+non-login system account. It's idempotent and deliberately not part of `npm run seed`.

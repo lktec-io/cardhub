@@ -1,22 +1,74 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FiAlertCircle, FiSearch } from 'react-icons/fi';
 import { Container, SectionHeader, Seo, Pagination } from '../../components/common';
-import { Modal, Button, EmptyState, Skeleton, Alert } from '../../components/ui';
-import { TemplateCard, TemplateFilters, TemplateThumb } from '../../components/templates';
+import { Button, EmptyState, Skeleton, Alert } from '../../components/ui';
+import { CardLightbox, TemplateCard, TemplateFilters } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
+import { useCardActions } from '../../hooks/useCardActions';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useToast } from '../../hooks/useToast';
+import { templatesService } from '../../services/templatesService';
 import { ROUTES } from '../../constants/routes';
-import { formatCardPrice } from '../../constants/pricingTiers';
 
 export function TemplatesPage() {
   const { templates, pagination, status, refreshError, category, setCategory, search, setSearch, page, setPage, retry } =
     useTemplateCatalog();
   const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const toast = useToast();
+  const { share, download } = useCardActions();
+  const sharedCardId = searchParams.get('card');
+
+  // A shared card link (/templates?card=<id>) opens that card's preview directly.
+  useEffect(() => {
+    if (!sharedCardId || !/^\d+$/.test(sharedCardId)) return undefined;
+    // Opened from this page's own grid: already have it, no fetch needed.
+    if (previewTemplate && String(previewTemplate.id) === sharedCardId) return undefined;
+    let active = true;
+    templatesService
+      .getOne(sharedCardId)
+      .then((res) => active && setPreviewTemplate(res.data.data.template))
+      .catch(() => {
+        if (!active) return;
+        toast.error(t('catalogue.cardNotFound'));
+        setSearchParams((current) => {
+          const next = new URLSearchParams(current);
+          next.delete('card');
+          return next;
+        }, { replace: true });
+      });
+    return () => {
+      active = false;
+    };
+    // Only react to the link itself changing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedCardId]);
+
+  const openPreview = useCallback(
+    (template) => {
+      setPreviewTemplate(template);
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        next.set('card', String(template.id));
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  const closePreview = useCallback(() => {
+    setPreviewTemplate(null);
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete('card');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   function handleUseTemplate() {
     setPreviewTemplate(null);
@@ -89,8 +141,9 @@ export function TemplatesPage() {
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  onPreview={setPreviewTemplate}
-                  onUse={handleUseCard}
+                  onPreview={openPreview}
+                  onShare={share}
+                  onDownload={download}
                   onBuy={handleBuyNow}
                 />
               ))}
@@ -100,37 +153,27 @@ export function TemplatesPage() {
         )}
       </Container>
 
-      <Modal
-        isOpen={Boolean(previewTemplate)}
-        onClose={() => setPreviewTemplate(null)}
-        title={previewTemplate?.name}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setPreviewTemplate(null)}>
-              {t('catalogue.close')}
-            </Button>
-            <Button variant="secondary" onClick={() => previewTemplate && handleUseCard(previewTemplate)}>
-              {t('catalogue.useThisCard')}
-            </Button>
-            <Button variant="secondary" onClick={() => previewTemplate && handleBuyNow(previewTemplate)}>
-              {t('catalogue.buyNow')}
-            </Button>
-            <Button variant="primary" onClick={handleUseTemplate}>
-              {t('catalogue.buildFullInvitation')}
-            </Button>
-          </>
+      <CardLightbox
+        template={previewTemplate}
+        onClose={closePreview}
+        onShare={share}
+        onDownload={download}
+        actions={
+          previewTemplate && (
+            <>
+              <Button variant="secondary" size="sm" onClick={() => handleUseCard(previewTemplate)}>
+                {t('catalogue.useThisCard')}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleUseTemplate}>
+                {t('catalogue.buildFullInvitation')}
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => handleBuyNow(previewTemplate)}>
+                {t('catalogue.buyNow')}
+              </Button>
+            </>
+          )
         }
-      >
-        {previewTemplate && (
-          <div className="ch-templates-page__preview">
-            <TemplateThumb template={previewTemplate} className="ch-templates-page__preview-thumb" />
-            <p className="ch-body-sm">{previewTemplate.description}</p>
-            {typeof previewTemplate.priceTzs === 'number' && (
-              <p className="ch-templates-page__preview-price">{formatCardPrice(previewTemplate.priceTzs)}</p>
-            )}
-          </div>
-        )}
-      </Modal>
+      />
     </div>
   );
 }

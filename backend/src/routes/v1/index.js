@@ -15,6 +15,7 @@ import { paymentsRouter } from './payments.routes.js';
 import { billingRouter } from './billing.routes.js';
 import { adminRouter } from './admin.routes.js';
 import { affiliatesRouter } from './affiliates.routes.js';
+import { ticketsRouter } from './tickets.routes.js';
 
 export const v1Router = Router();
 
@@ -34,3 +35,4 @@ v1Router.use('/payments', paymentsRouter);
 v1Router.use('/billing', billingRouter);
 v1Router.use('/admin', adminRouter);
 v1Router.use('/affiliates', affiliatesRouter);
+v1Router.use('/tickets', ticketsRouter);

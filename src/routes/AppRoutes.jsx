@@ -42,6 +42,12 @@ import { InvitationBuilderPage } from '../pages/dashboard/events/builder/Invitat
 import { GuestsPage } from '../pages/dashboard/events/guests/GuestsPage';
 import { EventAnalyticsPage } from '../pages/dashboard/events/EventAnalyticsPage';
 
+import { TicketMarketplacePage } from '../pages/tickets/TicketMarketplacePage';
+import { TicketEventPage } from '../pages/tickets/TicketEventPage';
+import { TicketOrderPage } from '../pages/tickets/TicketOrderPage';
+import { TicketPassPage } from '../pages/tickets/TicketPassPage';
+import { TicketVerifyPage } from '../pages/tickets/TicketVerifyPage';
+
 import { InvitationPage } from '../pages/public/InvitationPage';
 import { OrderCardPage } from '../pages/public/OrderCardPage';
 import { PaymentStatusPage } from '../pages/public/PaymentStatusPage';
@@ -77,7 +83,16 @@ export function AppRoutes() {
         <Route path={ROUTES.FAQ} element={<FaqPage />} />
         <Route path={ROUTES.TERMS} element={<TermsPage />} />
         <Route path={ROUTES.PRIVACY} element={<PrivacyPage />} />
+
+        {/* Ticket marketplace — public, guest checkout; orders/tickets are keyed by random tokens */}
+        <Route path={ROUTES.TICKETS} element={<TicketMarketplacePage />} />
+        <Route path={ROUTES.TICKET_EVENT} element={<TicketEventPage />} />
+        <Route path={ROUTES.TICKET_ORDER} element={<TicketOrderPage />} />
+        <Route path={ROUTES.TICKET_PASS} element={<TicketPassPage />} />
       </Route>
+
+      {/* Where a ticket QR points — chrome-free VALID/INVALID screen for door staff */}
+      <Route path={ROUTES.TICKET_VERIFY} element={<TicketVerifyPage />} />
 
       <Route element={<AuthLayout />}>
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />

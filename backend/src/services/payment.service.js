@@ -4,6 +4,8 @@ import { paymentRepository } from '../repositories/payment.repository.js';
 import { templateRepository } from '../repositories/template.repository.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { paymentProvider } from './providers/paymentProvider.js';
+import { DEMO_PROVIDER_NAME } from './providers/demoPaymentProvider.js';
+import { ticketsService } from './tickets.service.js';
 import { deliveryService } from './delivery.service.js';
 import { getPricingTier, DEFAULT_PRICING_TIER } from '../constants/pricingTiers.js';
 import { ORDER_SOURCE, ORDER_STATUS, PAYMENT_STATUS as ORDER_PAYMENT_STATUS, DELIVERY_STATUS, DELIVERY_CHANNEL_VALUES } from '../constants/orderStatus.js';
@@ -158,8 +160,16 @@ export const paymentService = {
       throw ApiError.notFound('No matching payment for this reference');
     }
 
+    // Demo-provider rows are settled only by tickets.service.js#confirmDemoPayment, never by a webhook.
+    if (payment.provider === DEMO_PROVIDER_NAME) {
+      throw ApiError.badRequest('Webhook rejected');
+    }
+
     // Already settled — replay-safe no-op, not an error (providers retry webhooks).
     if (payment.status === PAYMENT_STATUS.PAID) {
+      // Ticket issuance is idempotent, so a retry also repairs a fulfilment
+      // that failed after the payment row was marked paid.
+      if (payment.ticket_order_id) await ticketsService.fulfilFromVerifiedPayment(payment.ticket_order_id);
       return { alreadyProcessed: true };
     }
 
@@ -168,6 +178,7 @@ export const paymentService = {
       if (canTransition(payment.status, nextStatus)) {
         await paymentRepository.updateStatus(payment.id, { status: nextStatus, failureReason: 'Provider reported payment not successful' });
         if (payment.order_id) await orderRepository.updateStatusFields(payment.order_id, { paymentStatus: ORDER_PAYMENT_STATUS.FAILED });
+        if (payment.ticket_order_id) await ticketsService.failFromProvider(payment.ticket_order_id);
       }
       return { alreadyProcessed: false, status: 'failed' };
     }
@@ -201,6 +212,9 @@ export const paymentService = {
 
     if (payment.order_id) {
       await this._fulfilOrder(payment.order_id);
+    }
+    if (payment.ticket_order_id) {
+      await ticketsService.fulfilFromVerifiedPayment(payment.ticket_order_id);
     }
 
     return { alreadyProcessed: false, status: 'paid' };

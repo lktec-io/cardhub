@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX } from 'react-icons/fi';
 
-export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }) {
+export function Modal({ isOpen, onClose, title, children, footer, size = 'md', className = '' }) {
   const dialogRef = useRef(null);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' })
     <div className="ch-modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
       <div
         ref={dialogRef}
-        className={`ch-modal ch-modal--${size} ch-animate-scale-in`}
+        className={`ch-modal ch-modal--${size} ch-animate-scale-in ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'ch-modal-title' : undefined}

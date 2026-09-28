@@ -10,6 +10,7 @@ const COLUMNS = [
       { labelKey: 'footer.about', to: ROUTES.ABOUT },
       { labelKey: 'nav.howItWorks', to: ROUTES.HOW_IT_WORKS },
       { labelKey: 'nav.templates', to: ROUTES.TEMPLATES },
+      { labelKey: 'nav.tickets', to: ROUTES.TICKETS },
       { labelKey: 'nav.pricing', to: ROUTES.PRICING },
       { labelKey: 'landing.tryOurService', to: ROUTES.TRY },
     ],

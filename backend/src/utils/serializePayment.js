@@ -21,12 +21,22 @@ export function toAdminPaymentDTO(row) {
     id: row.id,
     orderId: row.order_row_id ?? row.order_id ?? null,
     orderNumber: toInvitationNumber(row.order_row_id ?? row.order_id),
-    template: row.template_name ? { name: row.template_name } : null,
+    // Ticket sales have no card template; the admin table's existing
+    // "card" column shows "Ticket · <event> · <type>" for them instead.
+    template: row.template_name
+      ? { name: row.template_name }
+      : row.ticket_event_title
+        ? { name: `Ticket · ${row.ticket_event_title}${row.ticket_type_name ? ` · ${row.ticket_type_name}` : ''}` }
+        : null,
     customer: row.order_user_id || row.user_id
       ? { name: row.user_name, email: row.user_email, phone: row.user_phone }
       : row.guest_name || row.guest_phone
         ? { name: row.guest_name, phone: row.guest_phone, guest: true }
-        : null,
+        : row.ticket_buyer_name
+          ? { name: row.ticket_buyer_name, phone: row.ticket_buyer_phone, email: row.ticket_buyer_email, guest: true }
+          : null,
+    ticketOrderId: row.ticket_order_row_id ?? row.ticket_order_id ?? null,
+    isDemo: row.provider === 'demo',
     amount: row.amount,
     currency: row.currency,
     method: row.method,

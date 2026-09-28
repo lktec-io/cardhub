@@ -43,6 +43,26 @@ export const rsvpLimiter = rateLimit({
   handler: limitHandler,
 });
 
+// Public ticket checkout (create order / start payment / demo confirm).
+// Looser than tryServiceLimiter: one buyer may reasonably retry payment,
+// or buy for a second ticket type, within the hour.
+export const ticketCheckoutLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: limitHandler,
+});
+
+// Ticket verification — generous enough for a door scanner working through a queue, tight enough to stop token enumeration.
+export const ticketVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: limitHandler,
+});
+
 // Public, unauthenticated "Try Our Service" lead-gen submissions — tighter
 // than rsvpLimiter since this is a single-visitor conversion form, not a
 // household responding for several guests.

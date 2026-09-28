@@ -1,19 +1,50 @@
 import { pool } from '../config/db.js';
 
+// Ticket-sale context for admin payment rows (all NULL for card and
+// subscription payments), so an admin can recognise a ticket sale.
+const TICKET_ADMIN_JOINS = `
+      LEFT JOIN ticket_orders tko ON tko.id = p.ticket_order_id
+      LEFT JOIN events tke ON tke.id = tko.event_id
+      LEFT JOIN ticket_types tkt ON tkt.id = tko.ticket_type_id`;
+const TICKET_ADMIN_COLUMNS = `tko.id AS ticket_order_row_id, tko.buyer_name AS ticket_buyer_name, tko.buyer_phone AS ticket_buyer_phone,
+              tko.buyer_email AS ticket_buyer_email, tke.title AS ticket_event_title, tkt.name AS ticket_type_name`;
+
 export const paymentRepository = {
-  /** A payment row belongs to exactly one of orderId/subscriptionId — enforced in payment.service.js, not the DB (see migration 020's comment). */
-  async create({ orderId, userId, subscriptionId, amount, currency, method, provider, status }) {
-    const [result] = await pool.query(
-      `INSERT INTO payments (order_id, user_id, subscription_id, amount, currency, method, provider, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [orderId ?? null, userId ?? null, subscriptionId ?? null, amount, currency, method ?? null, provider ?? null, status]
+  /**
+   * A payment row belongs to exactly one of orderId/subscriptionId/ticketOrderId —
+   * enforced in the services, not the DB (see migrations 020 and 025).
+   * `db` is an optional transaction connection (utils/withTransaction.js).
+   */
+  async create({ orderId, ticketOrderId, userId, subscriptionId, amount, currency, method, provider, status }, db = pool) {
+    const [result] = await db.query(
+      `INSERT INTO payments (order_id, ticket_order_id, user_id, subscription_id, amount, currency, method, provider, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orderId ?? null, ticketOrderId ?? null, userId ?? null, subscriptionId ?? null, amount, currency, method ?? null, provider ?? null, status]
     );
-    return this.findById(result.insertId);
+    return this.findById(result.insertId, db);
   },
 
-  async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM payments WHERE id = ? LIMIT 1', [id]);
+  async findById(id, db = pool) {
+    const [rows] = await db.query('SELECT * FROM payments WHERE id = ? LIMIT 1', [id]);
     return rows[0] || null;
+  },
+
+  /** The current payment attempt for a ticket order (most recent row), optionally row-locked inside a transaction. */
+  async findLatestByTicketOrderId(ticketOrderId, db = pool, { forUpdate = false } = {}) {
+    const [rows] = await db.query(
+      `SELECT * FROM payments WHERE ticket_order_id = ? ORDER BY id DESC LIMIT 1${forUpdate ? ' FOR UPDATE' : ''}`,
+      [ticketOrderId]
+    );
+    return rows[0] || null;
+  },
+
+  /** Closes any still-open attempt for a ticket order (reservation expired / payment failed). Settled rows are never touched. */
+  async closeOpenByTicketOrderId(ticketOrderId, { status, failureReason }, db = pool) {
+    await db.query(
+      `UPDATE payments SET status = ?, failure_reason = ?
+       WHERE ticket_order_id = ? AND status IN ('pending', 'processing')`,
+      [status, failureReason ?? null, ticketOrderId]
+    );
   },
 
   async findByOrderId(orderId) {
@@ -42,17 +73,17 @@ export const paymentRepository = {
   },
 
   /** Set once, right after the provider accepts a createPayment() call — before any webhook can arrive. */
-  async attachProviderReference(id, providerReference) {
-    await pool.query('UPDATE payments SET provider_reference = ? WHERE id = ?', [providerReference, id]);
-    return this.findById(id);
+  async attachProviderReference(id, providerReference, db = pool) {
+    await db.query('UPDATE payments SET provider_reference = ? WHERE id = ?', [providerReference, id]);
+    return this.findById(id, db);
   },
 
-  async updateStatus(id, { status, failureReason, paidAt }) {
-    await pool.query(
+  async updateStatus(id, { status, failureReason, paidAt }, db = pool) {
+    await db.query(
       `UPDATE payments SET status = ?, failure_reason = ?, paid_at = ? WHERE id = ?`,
       [status, failureReason ?? null, paidAt ?? null, id]
     );
-    return this.findById(id);
+    return this.findById(id, db);
   },
 
   /**
@@ -92,9 +123,11 @@ export const paymentRepository = {
         "o.guest_name LIKE ? ESCAPE '\\\\'",
         "o.guest_phone LIKE ? ESCAPE '\\\\'",
         "p.provider_reference LIKE ? ESCAPE '\\\\'",
+        "tko.buyer_name LIKE ? ESCAPE '\\\\'",
+        "tko.buyer_phone LIKE ? ESCAPE '\\\\'",
       ];
       const like = `%${search}%`;
-      const searchParams = [like, like, like, like, like, like];
+      const searchParams = [like, like, like, like, like, like, like, like];
       if (orderIdFromSearch !== null && orderIdFromSearch > 0) {
         searchConditions.push('o.id = ?');
         searchParams.push(orderIdFromSearch);
@@ -108,11 +141,13 @@ export const paymentRepository = {
       LEFT JOIN orders o ON o.id = p.order_id
       LEFT JOIN event_templates et ON et.id = o.template_id
       LEFT JOIN users u ON u.id = COALESCE(p.user_id, o.user_id)
+      ${TICKET_ADMIN_JOINS}
     `;
 
     const [rows] = await pool.query(
       `SELECT p.*, o.id AS order_row_id, o.guest_name, o.guest_phone, o.user_id AS order_user_id,
-              et.name AS template_name, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+              et.name AS template_name, u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
+              ${TICKET_ADMIN_COLUMNS}
        FROM payments p
        ${joins}
        ${whereClause}
@@ -127,11 +162,13 @@ export const paymentRepository = {
   async findByIdAdmin(id) {
     const [rows] = await pool.query(
       `SELECT p.*, o.id AS order_row_id, o.guest_name, o.guest_phone, o.user_id AS order_user_id,
-              et.name AS template_name, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+              et.name AS template_name, u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
+              ${TICKET_ADMIN_COLUMNS}
        FROM payments p
        LEFT JOIN orders o ON o.id = p.order_id
        LEFT JOIN event_templates et ON et.id = o.template_id
        LEFT JOIN users u ON u.id = COALESCE(p.user_id, o.user_id)
+       ${TICKET_ADMIN_JOINS}
        WHERE p.id = ?
        LIMIT 1`,
       [id]
@@ -150,7 +187,7 @@ export const paymentRepository = {
          COALESCE(SUM(status = 'failed'), 0) AS failed,
          COALESCE(SUM(status = 'cancelled'), 0) AS cancelled,
          COALESCE(SUM(status = 'expired'), 0) AS expired,
-         COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) AS total_paid_amount
+         COALESCE(SUM(CASE WHEN status = 'paid' AND (provider IS NULL OR provider <> 'demo') THEN amount ELSE 0 END), 0) AS total_paid_amount
        FROM payments`
     );
     return rows[0];

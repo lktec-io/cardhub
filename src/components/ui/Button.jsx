@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { FiLoader } from 'react-icons/fi';
 
-const VARIANTS = ['primary', 'secondary', 'ghost', 'outline', 'danger'];
+const VARIANTS = ['primary', 'brand', 'secondary', 'ghost', 'outline', 'danger'];
 const SIZES = ['sm', 'md', 'lg'];
 
 export const Button = forwardRef(function Button(

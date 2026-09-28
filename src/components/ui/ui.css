@@ -55,6 +55,24 @@
   transform: translateY(-1px);
 }
 
+/* Solid CardHub deep blue — the event/ticketing surfaces' primary action.
+   Uses fixed brand colors (not theme tokens) so it reads the same on the
+   light public theme and the dark app shell. */
+.ch-btn--brand {
+  background: var(--color-navy-800);
+  color: var(--color-white);
+  border-color: var(--color-navy-800);
+  box-shadow: var(--shadow-sm);
+}
+.ch-btn--brand:not(:disabled):hover {
+  background: var(--color-royal-600);
+  border-color: var(--color-royal-600);
+}
+.ch-btn--brand:focus-visible {
+  outline: 2px solid var(--color-royal-400);
+  outline-offset: 2px;
+}
+
 .ch-btn--secondary {
   background: var(--surface);
   color: var(--text-primary);
