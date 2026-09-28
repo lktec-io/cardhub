@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FiAlertCircle, FiCalendar, FiMapPin, FiSearch, FiX } from 'react-icons/fi';
+import { FiAlertCircle, FiCalendar, FiInfo, FiMapPin, FiSearch, FiX } from 'react-icons/fi';
 import { Container, Pagination, Seo } from '../../components/common';
 import { Button, EmptyState, Input, Select, Skeleton } from '../../components/ui';
 import { TicketEventCard } from '../../components/tickets';
@@ -21,6 +21,7 @@ export function TicketMarketplacePage() {
   const [searchInput, setSearchInput] = useState(params.get('search') || '');
   const [locationInput, setLocationInput] = useState(params.get('location') || '');
   const [state, setState] = useState({ status: 'loading', events: [], pagination: null, key: null });
+  const [paymentMode, setPaymentMode] = useState(null);
   const [reloadToken, setReloadToken] = useState(0);
   const requestId = useRef(0);
 
@@ -59,6 +60,7 @@ export function TicketMarketplacePage() {
       .then((res) => {
         if (current !== requestId.current) return;
         const { events, pagination } = res.data.data;
+        setPaymentMode(res.data.data.paymentMode);
         setState({ status: events.length ? 'success' : 'empty', events, pagination, key: queryKey });
       })
       .catch(() => {
@@ -92,6 +94,12 @@ export function TicketMarketplacePage() {
           <p className="ch-tix-eyebrow">{t('tix.market.eyebrow')}</p>
           <h1 className="ch-tix-market__title">{t('tix.market.title')}</h1>
           <p className="ch-tix-market__lead">{t('tix.market.lead')}</p>
+          {paymentMode === 'demo' && (
+            <p className="ch-tix-demo-note ch-tix-market__demo">
+              <FiInfo aria-hidden="true" />
+              {t('tix.event.demoNote')}
+            </p>
+          )}
 
           <div className="ch-tix-filters" role="search">
             <Input

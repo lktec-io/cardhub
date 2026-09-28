@@ -215,6 +215,11 @@
 .ch-tix-filters .ch-field {
   min-width: 0;
 }
+@media (max-width: 374px) {
+  .ch-tix-filters {
+    grid-template-columns: 1fr;
+  }
+}
 .ch-tix-filters__clear {
   margin-top: var(--space-3);
   font-size: var(--fs-body-sm);
@@ -1106,9 +1111,22 @@
 }
 .ch-tix-demo__actions {
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: var(--space-3);
   margin-top: var(--space-2);
+}
+.ch-tix-demo__actions .ch-btn {
+  min-width: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+@media (max-width: 359px) {
+  .ch-tix-demo__actions {
+    grid-template-columns: 1fr;
+  }
+  .ch-tix-demo__actions .ch-btn[type='submit'] {
+    order: -1;
+  }
 }
 
 /* ---------- Success + ticket ---------- */
@@ -1550,4 +1568,9 @@
   .ch-tix-pass__qr img {
     width: 220px;
   }
+}
+
+.ch-tix-market__demo {
+  margin-top: var(--space-4);
+  max-width: 58ch;
 }

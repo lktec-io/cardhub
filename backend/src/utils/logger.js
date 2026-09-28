@@ -12,6 +12,9 @@ const SENSITIVE_KEYS = new Set([
   'authorization',
   'jwtAccessSecret',
   'jwtRefreshSecret',
+  // Defence in depth: nothing in CardHub logs these, and no API accepts them.
+  'pin',
+  'otp',
 ]);
 
 function redact(meta) {

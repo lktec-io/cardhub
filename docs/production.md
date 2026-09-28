@@ -31,6 +31,43 @@ PORT=4006 pm2 start src/server.js --name cardhub-api
 pm2 save
 ```
 
+### Deploying the ticket marketplace (migrations 021–025)
+
+Additive only: five migrations that add columns to `events`/`payments` and
+create `ticket_types`, `ticket_orders`, `tickets`. No existing row changes
+and no existing column is altered.
+
+```bash
+# 0. Back up first (see "Database backup strategy")
+mysqldump -u <user> -p cardhub | gzip > ~/cardhub-before-tickets-$(date +%Y%m%d).sql.gz
+
+# 1. API
+cd backend
+npm install --omit=dev
+npm run migrate                 # applies 021 → 025, logs "Applied migration: …" for each
+#    add to backend/.env:  TICKET_PAYMENT_MODE=demo
+npm run seed:demo-tickets       # optional: "Afro Night 2026" demo event (idempotent)
+pm2 restart cardhub-api --update-env
+
+# 2. Frontend (from the repo root; includes public/events/afro-night-2026.svg)
+npm install && npm run build    # then publish dist/ as usual
+
+# 3. Verify
+cd backend && npm run smoke:tickets -- https://cardhub.co.tz/api/v1
+```
+
+- `TICKET_PAYMENT_MODE` unset in production means `live`: the flow works up
+  to payment, then honestly reports "online payment not connected". Set
+  `demo` only while you deliberately want the public demo purchase flow.
+  Demo tickets are labelled DEMO on every screen, on the PNG, and in
+  verification, and demo payments are excluded from admin revenue totals.
+- `smoke:tickets` buys one demo Regular ticket (a fixed test buyer, flagged
+  `is_demo`) and exits non-zero on the first failing step, naming what to fix.
+- Nginx needs nothing new: `/ticket/*` is served by the existing
+  `try_files $uri /index.html` fallback.
+- Rollback: `npm run migrate:down` five times (025 → 021). This drops only the
+  ticket tables and columns, so export ticket data first if any real sales exist.
+
 Nginx should terminate TLS for `cardhub.co.tz`, proxy `/api/` to
 `http://127.0.0.1:4006` (the PM2-managed Node process — `127.0.0.1` here
 is the loopback address Nginx uses to reach a same-host process, not a
@@ -107,7 +144,7 @@ protects against nothing. Use a dedicated MySQL user with only
 ## Migration strategy
 
 - Every schema change is a new file in `backend/src/database/migrations/`,
-  numbered sequentially (currently 001–017), each with `-- +up` and
+  numbered sequentially (currently 001–025), each with `-- +up` and
   `-- +down` sections, tracked in `schema_migrations`.
 - **Never edit an already-applied migration.** If a mistake ships, write a
   new migration that corrects it. The one exception is a migration that

@@ -13,6 +13,18 @@ const IDEMPOTENCY_KEY_RE = /^[A-Za-z0-9-]{16,64}$/;
 
 export const DATE_PRESETS = ['today', 'weekend', 'week', 'month'];
 
+// No ticket endpoint takes a PIN or any other payment secret. Refusing
+// such a field outright, rather than ignoring it, makes a mistaken client
+// (or a future integration) fail loudly instead of quietly sending PINs over the wire.
+const PAYMENT_SECRET_KEY_RE = /pin|otp|passcode|password|secret/i;
+
+export function assertNoPaymentSecrets(body) {
+  if (!body || typeof body !== 'object') return;
+  if (Object.keys(body).some((key) => PAYMENT_SECRET_KEY_RE.test(key))) {
+    throw ApiError.badRequest('CardHub never accepts a mobile money PIN or password. Remove it from the request.');
+  }
+}
+
 /** Marketplace filters. Anything unrecognised is dropped rather than rejected, so a stale shared URL still loads. */
 export function parseEventListQuery(query) {
   const search = typeof query.search === 'string' ? query.search.trim().slice(0, SEARCH_MAX) : '';

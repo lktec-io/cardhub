@@ -1,6 +1,7 @@
 import { ticketsService } from '../services/tickets.service.js';
 import {
   assertEventSlug,
+  assertNoPaymentSecrets,
   assertOrderToken,
   validateCreateTicketOrderPayload,
   validateStartPaymentPayload,
@@ -25,6 +26,7 @@ export const ticketsController = {
   }),
 
   createOrder: asyncHandler(async (req, res) => {
+    assertNoPaymentSecrets(req.body);
     const input = validateCreateTicketOrderPayload(req.body);
     const order = await ticketsService.createOrder(input, requestMeta(req));
     sendSuccess(res, { statusCode: 201, message: 'Tickets reserved. Complete payment to confirm.', data: { order } });
@@ -38,6 +40,7 @@ export const ticketsController = {
 
   startPayment: asyncHandler(async (req, res) => {
     assertOrderToken(req.params.token);
+    assertNoPaymentSecrets(req.body);
     const { phone } = validateStartPaymentPayload(req.body);
     const result = await ticketsService.startPayment(req.params.token, { phone });
     sendSuccess(res, { message: result.message || 'Payment started', data: result });
@@ -46,6 +49,7 @@ export const ticketsController = {
   /** DEMO PAYMENT MODE only. Takes no body at all: the demo PIN never leaves the browser. */
   confirmDemoPayment: asyncHandler(async (req, res) => {
     assertOrderToken(req.params.token);
+    assertNoPaymentSecrets(req.body);
     const order = await ticketsService.confirmDemoPayment(req.params.token, requestMeta(req));
     sendSuccess(res, { message: order.status === 'paid' ? 'Demo payment confirmed' : 'Order updated', data: { order } });
   }),

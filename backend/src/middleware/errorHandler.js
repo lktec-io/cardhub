@@ -27,13 +27,18 @@ export function errorHandler(err, req, res, next) {
   const apiError = normalizeError(err);
   const isServerError = apiError.statusCode >= 500;
 
+  // A body-parser SyntaxError message quotes part of the raw request body
+  // (Node 22: `Unexpected token ..., "{"phone":"07..." is not valid JSON`),
+  // which could put customer data in the logs. Log a fixed message instead.
+  const isBodyParseError = err.name === 'SyntaxError' && 'body' in err;
+
   logger[isServerError ? 'error' : 'warn']('Request failed', {
     method: req.method,
     path: req.originalUrl,
     statusCode: apiError.statusCode,
     code: apiError.code,
-    message: err.message,
-    ...(env.isProd ? {} : { stack: err.stack }),
+    message: isBodyParseError ? 'Malformed JSON in request body (content not logged)' : err.message,
+    ...(env.isProd || isBodyParseError ? {} : { stack: err.stack }),
   });
 
   res.status(apiError.statusCode).json({
