@@ -29,6 +29,7 @@
   font-size: var(--fs-h2);
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--heading-color);
   margin: 0;
 }
 
@@ -68,6 +69,7 @@
 .ch-section-header__title {
   font-size: var(--fs-h1);
   font-weight: 800;
+  color: var(--heading-color);
   letter-spacing: -0.025em;
   line-height: 1.12;
   margin: 0;
@@ -109,4 +111,18 @@
 .ch-pagination__status {
   color: var(--text-muted);
   font-size: var(--fs-caption);
+}
+
+/* Mobile headings (see typography.css). */
+@media screen and (max-width: 768px) {
+  .ch-page-header__title,
+  .ch-section-header__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .ch-section-header__description {
+    font-size: var(--fs-body);
+  }
 }

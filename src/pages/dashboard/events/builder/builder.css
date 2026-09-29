@@ -297,7 +297,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: var(--color-navy-950);
+  background: var(--bg-secondary);
   overflow-y: auto;
 }
 
@@ -309,10 +309,10 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-control);
-  background: rgba(5, 11, 20, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  color: var(--color-white);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-md);
+  color: var(--color-brand-navy);
   display: flex;
   align-items: center;
   justify-content: center;

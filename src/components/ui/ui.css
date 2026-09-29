@@ -64,7 +64,7 @@
   width: 100%;
 }
 
-/* The single conversion colour: green on the dark app, navy on the public site. */
+/* Primary action: solid red with white text, on every screen. */
 .ch-btn--primary {
   background: var(--action-bg);
   color: var(--action-fg);
@@ -90,16 +90,16 @@
   border-color: var(--conversion-bg-hover);
 }
 
-/* Deep navy on every theme — strong secondary emphasis next to a conversion action. */
+/* Deep navy blue: navigation-type emphasis (Browse events, View Event) next to a red action. */
 .ch-btn--brand {
-  background: var(--color-navy-800);
+  background: var(--color-brand-navy);
   color: var(--color-white);
-  border-color: var(--color-navy-800);
+  border-color: var(--color-brand-navy);
   box-shadow: var(--shadow-sm);
 }
 .ch-btn--brand:not(:disabled):hover {
-  background: var(--color-royal-600);
-  border-color: var(--color-royal-600);
+  background: var(--color-brand-navy-hover);
+  border-color: var(--color-brand-navy-hover);
 }
 
 .ch-btn--secondary {
@@ -132,12 +132,13 @@
 }
 
 .ch-btn--danger {
-  background: var(--danger-soft);
-  color: var(--color-danger-500);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: var(--bg-elevated);
+  color: var(--danger);
+  border-color: rgba(220, 38, 38, 0.35);
 }
 .ch-btn--danger:not(:disabled):hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--danger-soft);
+  border-color: var(--danger);
 }
 
 .ch-btn__icon {
@@ -334,7 +335,7 @@
 
 .ch-checkbox__mark {
   opacity: 0;
-  color: var(--action-fg);
+  color: var(--selected-fg);
   font-size: 14px;
   transition: opacity var(--duration-fast);
 }
@@ -345,8 +346,8 @@
 
 .ch-checkbox__input:checked + .ch-checkbox__box,
 .ch-checkbox__box:has(.ch-checkbox__input:checked) {
-  background: var(--action-bg);
-  border-color: var(--action-bg);
+  background: var(--selected-bg);
+  border-color: var(--selected-bg);
 }
 
 .ch-checkbox__input:focus-visible ~ .ch-checkbox__mark,
@@ -366,7 +367,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--action-bg);
+  background: var(--selected-bg);
   opacity: 0;
   transition: opacity var(--duration-fast);
 }
@@ -427,7 +428,7 @@
 .ch-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 8, 16, 0.62);
+  background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,7 +548,7 @@
 }
 .ch-badge--success {
   background: var(--success-soft);
-  color: var(--accent-contrast-text);
+  color: var(--success);
 }
 .ch-badge--warning {
   background: var(--warning-soft);
@@ -597,10 +598,10 @@
   color: var(--info);
 }
 .ch-alert--success {
-  border-left-color: var(--accent);
+  border-left-color: var(--success);
 }
 .ch-alert--success .ch-alert__icon {
-  color: var(--accent);
+  color: var(--success);
 }
 .ch-alert--warning {
   border-left-color: var(--warning);
@@ -655,7 +656,7 @@
   color: var(--info);
 }
 .ch-toast--success .ch-toast__icon {
-  color: var(--accent);
+  color: var(--success);
 }
 .ch-toast--warning .ch-toast__icon {
   color: var(--warning);
@@ -738,8 +739,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--action-bg);
-  color: var(--action-fg);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
   font-weight: var(--fw-semibold);
   overflow: hidden;
   flex-shrink: 0;
@@ -847,12 +848,12 @@ hr.ch-divider {
 }
 
 .ch-switch input:checked ~ .ch-switch__track {
-  background: var(--action-bg);
-  border-color: var(--action-bg);
+  background: var(--selected-bg);
+  border-color: var(--selected-bg);
 }
 .ch-switch input:checked ~ .ch-switch__track .ch-switch__thumb {
   transform: translateX(18px);
-  background: var(--action-fg);
+  background: var(--selected-fg);
 }
 
 .ch-switch input:focus-visible ~ .ch-switch__track {

@@ -109,7 +109,7 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, onBuy, onSh
         )}
         {onSelect && (
           <Button
-            variant={isSelected ? 'primary' : 'secondary'}
+            variant={isSelected ? 'brand' : 'secondary'}
             size="sm"
             fullWidth={!onPreview && !onUse}
             onClick={() => onSelect(template)}

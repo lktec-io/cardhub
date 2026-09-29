@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .ch-tix {
-  --tix-navy: var(--color-navy-900);
+  --tix-navy: var(--color-brand-navy);
   --tix-navy-2: var(--color-navy-800);
   --tix-royal: var(--color-royal-600);
   --tix-ink: var(--color-navy-950);
@@ -278,7 +278,7 @@
   justify-content: center;
   color: rgba(255, 255, 255, 0.5);
   font-size: 2rem;
-  background: linear-gradient(150deg, var(--color-navy-800) 0%, var(--color-royal-700) 100%);
+  background: var(--color-brand-navy);
 }
 
 /* ---------- Event card ---------- */
@@ -984,7 +984,7 @@
   background: #ffffff;
   border: 1px solid rgba(22, 32, 61, 0.1);
   border-radius: var(--radius-surface);
-  box-shadow: 0 24px 60px rgba(5, 11, 20, 0.35);
+  box-shadow: var(--shadow-lg);
   color: var(--color-navy-950);
   backdrop-filter: none;
 }
@@ -1033,7 +1033,7 @@
 .ch-tix-demo__summary {
   padding: var(--space-4);
   border-radius: var(--radius-control);
-  background: var(--color-navy-900);
+  background: var(--color-brand-navy);
   color: #fff;
   text-align: center;
 }
@@ -1566,4 +1566,43 @@
 .ch-tix-market__demo {
   margin-top: var(--space-4);
   max-width: 58ch;
+}
+
+/* Ticket-module headings in navy. :where() keeps specificity at zero so
+   explicit colours (e.g. the white title on the ticket's navy header) still win. */
+:where(.ch-tix) :where(h1, h2, h3) {
+  color: var(--heading-color);
+}
+
+/* Mobile headings (see typography.css). */
+@media screen and (max-width: 768px) {
+  .ch-tix-market__title,
+  .ch-tix-event__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .ch-tix-success__title,
+  .ch-tix-status__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .ch-tix-pass__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .ch-tix-panel__title,
+  .ch-tix-section__title,
+  .ch-tix-card__title,
+  .ch-tix-type__name,
+  .ch-tix-summary__title {
+    font-weight: 700;
+  }
+  .ch-tix-pay__amount-value {
+    font-size: 1.75rem;
+  }
+  .ch-tix-market__lead {
+    font-size: var(--fs-body);
+  }
 }

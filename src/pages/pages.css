@@ -52,10 +52,7 @@
   display: block;
   font-size: var(--fs-h3);
   font-weight: var(--fw-bold);
-  background: linear-gradient(135deg, var(--color-green-300), var(--color-green-500));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-brand-navy);
   margin-bottom: var(--space-3);
 }
 
@@ -190,6 +187,7 @@
 .ch-gallery-card__title {
   font-size: 1.05rem;
   font-weight: 800;
+  color: var(--heading-color);
   line-height: 1.25;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
@@ -277,8 +275,8 @@
   z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
-  background: rgba(5, 11, 20, 0.94);
-  color: #fff;
+  background: rgba(246, 248, 251, 0.98);
+  color: var(--text-primary);
   animation: ch-fade-in var(--duration-base) var(--ease-out) both;
 }
 .ch-lightbox__close {
@@ -291,15 +289,15 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
-  background: rgba(5, 11, 20, 0.6);
-  color: #fff;
+  background: var(--bg-elevated);
+  color: var(--color-brand-navy);
   font-size: 1.3rem;
   cursor: pointer;
 }
 .ch-lightbox__close:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--surface);
 }
 .ch-lightbox__stage {
   flex: 1;
@@ -315,7 +313,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   font-size: 2rem;
   border-radius: var(--radius-control);
 }
@@ -336,26 +334,26 @@
   justify-content: space-between;
   gap: var(--space-3) var(--space-5);
   padding: var(--space-4) var(--space-5) calc(var(--space-4) + env(safe-area-inset-bottom));
-  background: #081827;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
 }
 .ch-lightbox__info {
   min-width: 0;
 }
 .ch-lightbox__category {
-  color: var(--color-gold-300);
+  color: var(--accent);
   font-size: 0.72rem;
   font-weight: var(--fw-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .ch-lightbox__title {
-  color: #fff;
+  color: var(--heading-color);
   font-size: 1.2rem;
   font-weight: 800;
 }
 .ch-lightbox__price {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
   font-size: var(--fs-caption);
 }
 .ch-lightbox__actions {
@@ -366,30 +364,22 @@
 .ch-lightbox__actions .ch-btn {
   border-radius: var(--radius-control);
 }
-.ch-lightbox__actions .ch-btn--secondary {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-.ch-lightbox__actions .ch-btn--secondary:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.16);
-}
 .ch-lightbox__tool {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
-  background: transparent;
-  color: #fff;
+  background: var(--bg-elevated);
+  color: var(--color-brand-navy);
   font: inherit;
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 .ch-lightbox__tool:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface);
 }
 @media (max-width: 640px) {
   .ch-lightbox__bar {
@@ -443,9 +433,9 @@
 }
 .ch-chip--active,
 .ch-chip--active:hover {
-  background: var(--action-bg);
-  color: var(--action-fg);
-  border-color: var(--action-bg);
+  background: var(--selected-bg);
+  color: var(--selected-fg);
+  border-color: var(--selected-bg);
 }
 
 /* ---------- Public catalogue (TemplatesPage.jsx) ----------
@@ -480,6 +470,7 @@
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.03em;
+  color: var(--heading-color);
 }
 .ch-catalogue__lead {
   color: var(--text-secondary);
@@ -799,7 +790,7 @@
   padding: var(--space-6);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
 }
 .ch-about-page__card svg {
   color: var(--accent);
@@ -912,7 +903,8 @@
 }
 .ch-settings-page__tab--active {
   background: var(--accent-soft);
-  color: var(--color-green-400);
+  color: var(--color-brand-navy);
+  font-weight: var(--fw-bold);
 }
 
 .ch-settings-page__panel {
@@ -974,7 +966,7 @@
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   cursor: pointer;
 }
 .ch-notification-row:hover {
@@ -1027,7 +1019,7 @@
 /* ---------- Public invitation page ---------- */
 .ch-invite-page {
   min-height: 100dvh;
-  background: var(--color-navy-950);
+  background: var(--bg-primary);
 }
 
 .ch-invite-status {
@@ -1077,7 +1069,7 @@
   padding: var(--space-6);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   margin-bottom: var(--space-8);
 }
 @media (max-width: 720px) {
@@ -1199,7 +1191,7 @@
   padding: var(--space-5);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
 }
 .ch-admin-stat-tile svg {
   color: var(--accent);
@@ -1372,7 +1364,7 @@
   padding: var(--space-3);
   border-radius: var(--radius-control);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   cursor: pointer;
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
   font: inherit;
@@ -1593,7 +1585,7 @@
   padding: var(--space-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-surface);
-  background: var(--surface);
+  background: var(--bg-elevated);
   margin-bottom: var(--space-6);
 }
 @media (max-width: 640px) {
@@ -1701,7 +1693,7 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-control);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   cursor: pointer;
   transition: border-color var(--duration-fast), background var(--duration-fast);
   flex: 1;
@@ -1997,5 +1989,25 @@
   }
   .ch-payment-status-page__actions .ch-btn {
     width: 100%;
+  }
+}
+
+/* Mobile headings (see typography.css). */
+@media screen and (max-width: 768px) {
+  .ch-catalogue__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .ch-catalogue__lead {
+    font-size: var(--fs-body);
+  }
+  .ch-gallery-card__title,
+  .ch-lightbox__title {
+    font-weight: 700;
+  }
+  .ch-lightbox__title {
+    font-size: 1.05rem;
   }
 }

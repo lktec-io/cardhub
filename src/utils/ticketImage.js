@@ -18,7 +18,7 @@ const SCALE = 2;
 const COLORS = {
   page: '#eef3fa',
   card: '#ffffff',
-  navy: '#081827',
+  navy: '#12305f', // --color-brand-navy
   navySoft: '#122c42',
   royal: '#1e3399',
   gold: '#c99a45',

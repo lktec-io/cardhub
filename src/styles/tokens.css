@@ -62,83 +62,87 @@
   --color-success-500: var(--color-green-500);
   --color-info-500: #38bdf8;
 
-  /* ================= Semantic tokens ================= */
+  /* ================= Semantic tokens =================
+     ONE light theme for the whole platform (public site, auth,
+     dashboard, admin). Colour roles:
+       red          primary + conversion buttons only
+       deep navy    brand, headers, navigation, selected states
+       royal blue   text accents (eyebrows, links), focus ring
+       green        status only: success, paid, available */
+
+  /* Brand */
+  --color-brand-navy: #12305f; /* deep navy blue; white text 13:1 */
+  --color-brand-navy-hover: #1b3f7a;
+  --color-red-600: #dc2626; /* white text 4.8:1 */
+  --color-red-700: #b91c1c;
 
   /* Surfaces */
-  --bg-primary: var(--color-navy-950);
-  --bg-secondary: var(--color-navy-900);
-  --bg-elevated: var(--color-navy-850);
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.07);
-  --surface-active: rgba(255, 255, 255, 0.1);
+  --bg-primary: #f6f8fb;
+  --bg-secondary: #eef2f8;
+  --bg-elevated: var(--color-white);
+  --surface: rgba(15, 23, 42, 0.04);
+  --surface-hover: rgba(15, 23, 42, 0.07);
+  --surface-active: rgba(15, 23, 42, 0.1);
 
-  /* Glass */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-bg-strong: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: 16px;
+  /* GlassCard renders as a solid white card: no translucency or blur. */
+  --glass-bg: var(--color-white);
+  --glass-bg-strong: var(--color-white);
+  --glass-border: rgba(15, 23, 42, 0.09);
+  --glass-blur: 0px;
 
   /* Text */
-  --text-primary: var(--color-slate-100);
-  --text-secondary: var(--color-slate-400);
-  --text-muted: var(--color-slate-500);
-  --text-on-accent: #04140c;
-  --text-inverse: var(--color-navy-950);
+  --text-primary: #0b1424;
+  --text-secondary: #46526a;
+  --text-muted: #5f6b82;
+  --text-on-accent: #ffffff;
+  --text-inverse: var(--color-white);
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-accent: rgba(52, 211, 153, 0.4);
+  --border: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-accent: rgba(30, 51, 153, 0.3);
 
-  /* Accent */
-  --accent: var(--color-green-500);
-  --accent-hover: var(--color-green-400);
-  --accent-active: var(--color-green-600);
-  --accent-soft: rgba(34, 197, 94, 0.14);
-  /* Flat, not a gradient: kept under its historical name so every
-     existing reference (checked checkboxes, switches, avatars, selected
-     states) picks up the solid action colour. */
-  --accent-gradient: var(--action-bg);
-  /* Readable text color for content sitting on --accent-soft (e.g. Badge's
-     "accent" variant) — kept separate from --accent itself since a soft
-     tinted background often needs a lighter/different shade than the
-     solid accent color to stay readable. */
-  --accent-contrast-text: var(--color-green-400);
+  /* Text accent (eyebrows, links, highlighted figures) — royal blue, 9:1 on white. */
+  --accent: var(--color-royal-600);
+  --accent-hover: var(--color-royal-700);
+  --accent-active: var(--color-royal-700);
+  --accent-soft: rgba(30, 51, 153, 0.08);
+  --accent-contrast-text: var(--color-royal-600);
 
-  /* Primary action — the one colour for conversion buttons and selected
-     states. Dark app: CardHub green with near-black text (13:1). The
-     public theme below swaps it for deep navy with white text. */
-  --action-bg: var(--color-green-500);
-  --action-bg-hover: var(--color-green-400);
-  --action-fg: #04140c;
+  /* Selected / checked states (chips, checkboxes, switches, radios, avatars) — navy, never red. */
+  --selected-bg: var(--color-brand-navy);
+  --selected-fg: #ffffff;
+  /* Historical name, kept so every existing reference resolves to the flat selected colour. */
+  --accent-gradient: var(--selected-bg);
 
-  /* Conversion accent — reserved for the money/creation actions only
-     (Create Invitation, Buy Ticket, Pay, Buy Now, Sign in). Solid dark
-     emerald with white text (#047857 on #fff text = 5.5:1), identical on
-     both themes so the "do it" button is always recognisable. */
-  --conversion-bg: #047857;
-  --conversion-bg-hover: #065f46;
-  --conversion-fg: #ffffff;
+  /* Primary action: solid red with white text. */
+  --action-bg: var(--color-red-600);
+  --action-bg-hover: var(--color-red-700);
+  --action-fg: #ffffff;
+
+  /* Conversion (Create Invitation, Buy Ticket, Pay, Buy Now, Log in) — same red as primary. */
+  --conversion-bg: var(--action-bg);
+  --conversion-bg-hover: var(--action-bg-hover);
+  --conversion-fg: var(--action-fg);
 
   /* Form fields and focus */
-  --field-bg: var(--surface);
-  --field-border: var(--border-strong);
-  --focus-color: var(--color-green-400);
-  --focus-ring: 0 0 0 3px rgba(34, 197, 94, 0.22);
+  --field-bg: var(--color-white);
+  --field-border: rgba(15, 23, 42, 0.18);
+  --focus-color: var(--color-royal-500);
+  --focus-ring: 0 0 0 3px rgba(42, 68, 199, 0.18);
 
-  /* Status */
-  --success: var(--color-success-500);
-  --success-soft: rgba(34, 197, 94, 0.14);
-  --warning: var(--color-warning-500);
-  --warning-soft: rgba(251, 191, 36, 0.14);
-  --danger: var(--color-danger-600);
-  --danger-soft: rgba(239, 68, 68, 0.14);
-  --info: var(--color-info-500);
-  --info-soft: rgba(56, 189, 248, 0.14);
+  /* Status — the only place green appears. */
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.1);
+  --warning: #b45309;
+  --warning-soft: rgba(245, 158, 11, 0.12);
+  --danger: var(--color-red-600);
+  --danger-soft: rgba(220, 38, 38, 0.08);
+  --info: #0369a1;
+  --info-soft: rgba(3, 105, 161, 0.08);
 
-  /* Backdrop gradient used behind hero / auth surfaces */
-  --gradient-hero: radial-gradient(120% 120% at 15% 0%, var(--color-navy-700) 0%, var(--color-navy-950) 55%),
-    radial-gradient(80% 60% at 100% 100%, rgba(34, 197, 94, 0.12) 0%, transparent 60%);
+  /* Soft page wash behind the top of every page */
+  --gradient-hero: linear-gradient(180deg, #eaf0f9 0%, rgba(246, 248, 251, 0) 520px);
 
   /* ---- Radius ----
      Three semantic steps, used by role rather than by size:
@@ -162,10 +166,10 @@
   --radius-full: 999px;
 
   /* ---- Shadows ---- */
-  --shadow-sm: 0 1px 2px rgba(2, 6, 16, 0.4);
-  --shadow-md: 0 8px 24px rgba(2, 6, 16, 0.35);
-  --shadow-lg: 0 20px 48px rgba(2, 6, 16, 0.45);
-  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(34, 197, 94, 0.18);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 2px 6px rgba(15, 23, 42, 0.05), 0 18px 44px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 0 3px rgba(42, 68, 199, 0.12);
 
   /* ---- Layout rhythm ---- */
   --gutter: 16px; /* page side padding; grows at tablet/desktop below */
@@ -205,7 +209,7 @@
   --z-modal: 1300;
   --z-toast: 1400;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @media (min-width: 640px) {
@@ -221,73 +225,10 @@
   }
 }
 
-/* ==========================================================================
-   PUBLIC / MARKETING THEME OVERRIDE
-   Applied via a single wrapper class (PublicLayout — landing, catalogue,
-   pricing, Try Our Service, how-it-works, about, contact, faq, terms,
-   privacy). Every UI primitive (Button, Card, GlassCard, Input, Badge, ...)
-   already reads colors through the semantic tokens above, so redefining
-   them here reflows the whole public surface to the warmer celebration
-   palette without touching a single component's CSS or JSX. The dashboard,
-   admin, and auth screens are deliberately NOT wrapped in this class and
-   keep the original dark navy + green identity — this pass targets the
-   first-impression marketing surface, not the authenticated app shell.
-   ========================================================================== */
+/* Public site wrapper (PublicLayout, and the standalone public pages that
+   reuse it). The whole platform shares the light theme in :root above,
+   so this only lays out the page and paints the page wash. */
 .ch-public-theme {
-  color-scheme: light;
-
-  /* Cool, neutral light surfaces: white cards on a near-white page.
-     The earlier cream/gold "celebration" tint is retired in favour of a
-     clean, high-contrast base; gold stays available via --color-gold-*
-     for small deliberate touches only. */
-  --bg-primary: #f6f8fb;
-  --bg-secondary: #eef2f8;
-  --bg-elevated: var(--color-white);
-  --surface: rgba(15, 23, 42, 0.04);
-  --surface-hover: rgba(15, 23, 42, 0.07);
-  --surface-active: rgba(15, 23, 42, 0.1);
-
-  /* GlassCard renders as a solid card here: no translucency or blur. */
-  --glass-bg: var(--color-white);
-  --glass-bg-strong: var(--color-white);
-  --glass-border: rgba(15, 23, 42, 0.09);
-  --glass-blur: 0px;
-
-  --text-primary: #0b1424;
-  --text-secondary: #46526a;
-  --text-muted: #5f6b82;
-  --text-on-accent: #ffffff;
-  --text-inverse: var(--color-white);
-
-  --border: rgba(15, 23, 42, 0.09);
-  --border-strong: rgba(15, 23, 42, 0.16);
-  --border-accent: rgba(21, 128, 61, 0.35);
-
-  /* Green as a text/icon accent only, at a shade that reads on white
-     (#15803d on #fff = 5.0:1). The old #22c55e with white text was 2.3:1. */
-  --accent: #15803d;
-  --accent-hover: #166534;
-  --accent-active: #14532d;
-  --accent-soft: rgba(21, 128, 61, 0.09);
-  --accent-contrast-text: #15803d;
-
-  /* Primary action = CardHub deep navy with white text (15:1). */
-  --action-bg: var(--color-navy-800);
-  --action-bg-hover: var(--color-royal-600);
-  --action-fg: #ffffff;
-
-  --field-bg: var(--color-white);
-  --field-border: rgba(15, 23, 42, 0.18);
-  --focus-color: var(--color-royal-500);
-  --focus-ring: 0 0 0 3px rgba(42, 68, 199, 0.18);
-
-  --gradient-hero: linear-gradient(180deg, #eaf0f9 0%, rgba(246, 248, 251, 0) 520px);
-
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 2px 6px rgba(15, 23, 42, 0.05), 0 18px 44px rgba(15, 23, 42, 0.12);
-  --shadow-glow: 0 0 0 3px rgba(42, 68, 199, 0.12);
-
   display: flex;
   flex-direction: column;
   min-height: 100svh;

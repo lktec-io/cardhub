@@ -15,7 +15,7 @@
   padding: var(--space-5);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -33,7 +33,7 @@
 }
 
 .ch-guest-stats__tile--success .ch-guest-stats__value {
-  color: var(--color-green-400);
+  color: var(--success);
 }
 .ch-guest-stats__tile--danger .ch-guest-stats__value {
   color: var(--color-danger-500);
@@ -151,7 +151,7 @@
   padding: var(--space-4);
   border-radius: var(--radius-surface);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-elevated);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);

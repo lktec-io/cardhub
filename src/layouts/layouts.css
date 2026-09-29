@@ -14,8 +14,9 @@
 
 .ch-auth-layout__brand {
   font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-brand-navy);
 }
 
 .ch-auth-layout__panel {

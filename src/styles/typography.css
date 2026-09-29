@@ -10,11 +10,13 @@
   /* Mobile-first scale. Headings scale up from here at the (min-width: 768px)
      breakpoint below; body/supporting/caption tiers stay constant across
      breakpoints — see "Typography system" in docs/architecture.md. */
-  --fs-display: 1.75rem; /* 28px */
+  --fs-display: 1.875rem; /* 30px */
   --fs-h1: 1.75rem; /* 28px */
-  --fs-h2: 1.75rem; /* 28px */
-  --fs-h3: 1.375rem; /* 22px */
-  --fs-h4: 1.125rem; /* 18px */
+  --fs-h2: 1.5rem; /* 24px */
+  --fs-h3: 1.1875rem; /* 19px */
+  --fs-h4: 1.0625rem; /* 17px */
+  /* Headings are deep navy blue — the platform identity colour. */
+  --heading-color: var(--color-brand-navy);
   --fs-body-lg: 1.0625rem; /* 17px */
   --fs-body: 1rem; /* 16px */
   --fs-body-sm: 0.96rem; /* 15.36px — secondary body */
@@ -70,7 +72,7 @@ h4,
 .ch-h3,
 .ch-h4 {
   font-family: var(--font-sans);
-  color: var(--text-primary);
+  color: var(--heading-color);
   line-height: var(--lh-heading);
   font-weight: var(--fw-bold);
   margin: 0;
@@ -146,4 +148,26 @@ p {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* Mobile headings: smaller and lighter so titles read balanced on a phone
+   instead of stretching thick across the screen. Sizes come from the
+   mobile token values above; this trims weight and tracking. Page-level
+   title classes repeat the same rule at the end of their own stylesheet. */
+@media screen and (max-width: 768px) {
+  h1,
+  h2,
+  h3,
+  .ch-display,
+  .ch-h1,
+  .ch-h2,
+  .ch-h3 {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  h4,
+  .ch-h4 {
+    font-weight: 600;
+  }
 }
