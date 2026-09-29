@@ -379,7 +379,7 @@ export function TicketEventPage() {
 
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
 
-                <Button type="submit" variant="brand" size="lg" fullWidth isLoading={isSubmitting} rightIcon={<FiArrowRight aria-hidden="true" />}>
+                <Button type="submit" variant="conversion" size="lg" fullWidth isLoading={isSubmitting} rightIcon={<FiArrowRight aria-hidden="true" />}>
                   {t('tix.checkout.continue')}
                 </Button>
                 <p className="ch-tix-checkout__fineprint">{t('tix.checkout.holdNote')}</p>
@@ -401,7 +401,7 @@ export function TicketEventPage() {
             <p className="ch-tix-stickybar__amount">{formatTzs(selectedType ? displayTotal : event.startingPriceTzs)}</p>
           </div>
           <Button
-            variant="brand"
+            variant="conversion"
             onClick={() => (selectedType ? checkoutRef.current : ticketsRef.current)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
           >
             {selectedType ? t('tix.checkout.checkout') : t('tix.event.buyTicket')}

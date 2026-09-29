@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FiAlertCircle, FiSearch } from 'react-icons/fi';
-import { Container, SectionHeader, Seo, Pagination } from '../../components/common';
+import { Container, Seo, Pagination } from '../../components/common';
 import { Button, EmptyState, Skeleton, Alert } from '../../components/ui';
 import { CardLightbox, TemplateCard, TemplateFilters } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
@@ -85,29 +85,36 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="ch-templates-page">
+    <div className="ch-templates-page ch-catalogue">
       <Seo
         title="Templates"
         description="Browse CardHub's digital invitation templates for weddings, birthdays, send-offs, graduations, and more."
       />
-      <Container>
-        <SectionHeader
-          eyebrow={t('catalogue.eyebrow')}
-          title={t('catalogue.title')}
-          description={t('catalogue.description')}
-        />
+      <section className="ch-catalogue__intro">
+        <Container className="ch-catalogue__intro-inner">
+          <div className="ch-catalogue__intro-copy">
+            <p className="ch-catalogue__eyebrow">{t('catalogue.eyebrow')}</p>
+            <h1 className="ch-catalogue__title">{t('catalogue.title')}</h1>
+            <p className="ch-catalogue__lead">{t('catalogue.description')}</p>
+          </div>
+          {status === 'success' && typeof pagination?.total === 'number' && (
+            <p className="ch-catalogue__count">
+              <strong>{pagination.total}</strong>
+              <span>{t('catalogue.designs')}</span>
+            </p>
+          )}
+        </Container>
+      </section>
 
-        <TemplateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
+      <Container className="ch-catalogue__body">
+        <div className="ch-catalogue__toolbar">
+          <TemplateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
+        </div>
 
         {status === 'loading' && (
-          <div className="ch-templates-grid">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="ch-template-card-skeleton">
-                <Skeleton height="140px" radius="var(--radius-md)" />
-                <Skeleton height="16px" width="60%" />
-                <Skeleton height="22px" width="80%" />
-                <Skeleton height="36px" />
-              </div>
+          <div className="ch-catalogue__grid">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} height="420px" radius="var(--radius-surface)" />
             ))}
           </div>
         )}
@@ -136,7 +143,7 @@ export function TemplatesPage() {
                 {t('catalogue.refreshWarning')}
               </Alert>
             )}
-            <div className="ch-templates-grid">
+            <div className="ch-catalogue__grid">
               {templates.map((template) => (
                 <TemplateCard
                   key={template.id}

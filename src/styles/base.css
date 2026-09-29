@@ -74,11 +74,11 @@ button {
   color: inherit;
 }
 
-/* Accessible focus ring — never remove without replacing */
+/* Accessible focus ring — never remove without replacing. The outline
+   follows each element's own border-radius, so it never reshapes it. */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-color);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
 }
 
 /* Touch press feedback — only on devices whose primary input has no

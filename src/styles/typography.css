@@ -72,38 +72,42 @@ h4,
   font-family: var(--font-sans);
   color: var(--text-primary);
   line-height: var(--lh-heading);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   margin: 0;
+  text-wrap: balance;
 }
 
 .ch-display {
   font-size: var(--fs-display);
-  line-height: var(--lh-tight);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 h1,
 .ch-h1 {
   font-size: var(--fs-h1);
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 h2,
 .ch-h2 {
   font-size: var(--fs-h2);
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 h3,
 .ch-h3 {
   font-size: var(--fs-h3);
+  letter-spacing: -0.01em;
 }
 
 h4,
 .ch-h4 {
   font-size: var(--fs-h4);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-bold);
 }
 
 p {

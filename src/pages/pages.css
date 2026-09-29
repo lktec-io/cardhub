@@ -1,540 +1,6 @@
-/* ---------- Hero ---------- */
-.ch-hero {
-  position: relative;
-  padding: var(--space-16) 0 var(--space-20);
-  text-align: center;
-  overflow: hidden;
-}
-
-.ch-hero__grid {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: var(--space-12);
-  row-gap: var(--space-4);
-  text-align: left;
-}
-
-/* Desktop: content top-left, video directly beneath it in the same
-   column (identical position to the old nested layout), photo spans
-   both rows on the right — the same premium composition as before,
-   just expressed as three explicitly-placed grid items instead of one
-   item nesting another, which is what made a correct mobile order
-   impossible (see the mobile override below). */
-.ch-hero__content {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-.ch-hero__video-wrap {
-  grid-column: 1;
-  grid-row: 2;
-}
-.ch-hero__visual {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-@media (max-width: 960px) {
-  .ch-hero {
-    padding: 0 0 var(--space-12);
-  }
-  .ch-hero__grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: var(--space-8);
-    text-align: center;
-  }
-  .ch-hero__content {
-    align-items: center;
-    padding: 0 var(--space-2);
-  }
-  /* Explicit mobile hierarchy: the image slider first (visually
-     dominant), then the hero text/typewriter, then the video as its
-     own section below — never side-by-side, never accidental flex
-     wrapping. `order` is scoped to this media query only, so desktop's
-     explicit grid-row/column placement above is completely unaffected. */
-  .ch-hero__content,
-  .ch-hero__visual,
-  .ch-hero__video-wrap {
-    grid-column: 1;
-    grid-row: auto;
-  }
-  .ch-hero__visual {
-    order: 1;
-  }
-  .ch-hero__content {
-    order: 2;
-  }
-  .ch-hero__video-wrap {
-    order: 3;
-  }
-}
-
-.ch-hero__title {
-  margin-top: var(--space-2);
-  color: var(--text-primary);
-}
-
-.ch-hero__subtitle {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-semibold);
-  color: var(--accent);
-  margin: 0;
-}
-
-.ch-hero__description {
-  font-size: var(--fs-body-lg);
-  color: var(--text-secondary);
-  max-width: 56ch;
-}
-
-.ch-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  justify-content: center;
-  margin-top: var(--space-2);
-}
-
-.ch-hero__actions .ch-btn {
-  border-radius: 8px;
-}
-
-/* ---------- Event-platform hero copy ---------- */
-.ch-hero__eyebrow {
-  font-size: var(--fs-label);
-  font-weight: var(--fw-bold);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-royal-600);
-}
-
-.ch-hero__headline {
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  max-width: 13ch;
-}
-.ch-hero__headline span {
-  display: inline-block;
-}
-.ch-hero__headline-accent {
-  color: var(--color-royal-600);
-}
-
-.ch-hero__categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ch-hero__categories li {
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(22, 32, 61, 0.1);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--color-navy-800);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-}
-
-.ch-hero__support {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
-  font-size: var(--fs-body-sm);
-}
-.ch-hero__support svg {
-  color: var(--color-royal-600);
-}
-.ch-hero__support strong {
-  color: var(--color-navy-900);
-  font-weight: var(--fw-bold);
-  white-space: nowrap;
-}
-.ch-hero__support:hover strong {
-  color: var(--color-royal-600);
-}
-
-@media (max-width: 960px) {
-  .ch-hero__headline {
-    max-width: none;
-  }
-  .ch-hero__categories {
-    justify-content: center;
-  }
-}
-@media (max-width: 640px) {
-  .ch-hero__headline {
-    font-size: clamp(2rem, 1.2rem + 4.2vw, 2.4rem);
-  }
-}
-
-@media (max-width: 640px) {
-  .ch-hero__actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  .ch-hero__actions .ch-btn {
-    width: 100%;
-  }
-}
-
-/* ---------- Hero video (LandingPage.jsx) ----------
-   A real foreground element below the hero text/CTAs — never a
-   background, never sits under or behind anything. Participates in
-   normal document flow like any other content, so it can never cause
-   layout shift the way an absolutely-positioned background would. */
-.ch-hero__video-wrap {
-  width: 100%;
-  max-width: 480px;
-  margin-top: var(--space-2);
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-md);
-  background: var(--surface);
-}
-
-.ch-hero__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.ch-hero__video-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  color: rgba(255, 255, 255, 0.75);
-  background: linear-gradient(150deg, var(--color-royal-500) 0%, var(--color-royal-700) 60%, var(--color-gold-600) 130%);
-}
-
-@media (max-width: 640px) {
-  .ch-hero__video-wrap {
-    max-width: 340px;
-    margin: var(--space-5) auto 0;
-  }
-}
-
-/* ---------- Hero rotating headline ---------- */
-.ch-rotating-headline {
-  display: block;
-  min-height: 2.6em;
-  line-height: 1.3;
-}
-
-.ch-rotating-headline__text {
-  display: inline-block;
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
-}
-
-.ch-rotating-headline__text--leaving {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.ch-rotating-headline__caret {
-  display: inline-block;
-  width: 2px;
-  height: 0.9em;
-  margin-left: 2px;
-  background: currentColor;
-  vertical-align: -0.1em;
-  animation: ch-caret-blink 900ms steps(1) infinite;
-}
-
-@keyframes ch-caret-blink {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* ---------- Hero photo ---------- */
-.ch-hero__visual {
-  position: relative;
-  padding-bottom: var(--space-8);
-}
-
-.ch-hero__photo {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(155deg, var(--color-royal-500) 0%, var(--color-royal-700) 55%, var(--color-gold-600) 130%);
-}
-
-.ch-hero__photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 28%;
-}
-
-@media (max-width: 640px) {
-  .ch-hero__photo {
-    max-width: 340px;
-    aspect-ratio: 1 / 1;
-  }
-  .ch-hero__photo-img {
-    object-position: center 22%;
-  }
-}
-
-/* ---------- Hero slideshow (HeroSlideshow.jsx) ----------
-   3 photos stacked in the same box via position:absolute — swapping
-   slides is a pure opacity crossfade, so it can never shift layout. All
-   3 <img> tags are always mounted (not conditionally rendered), which
-   preloads every slide up front instead of only fetching one on demand. */
-.ch-hero-slideshow__slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  z-index: 0;
-  transition: opacity 900ms var(--ease-standard);
-  transform: scale(1);
-}
-
-.ch-hero-slideshow__slide--active {
-  opacity: 1;
-  z-index: 1;
-}
-
-/* Fade + subtle scale, in one continuous motion: the kenburns animation
-   (below) starts a touch zoomed-in rather than at a flat scale(1), so
-   the moment a slide fades in it already reads as "arriving" rather
-   than a static swap, then keeps drifting slowly for as long as the
-   slide stays active — restarts every time a slide becomes active
-   again, since the animation is only ever applied to the current
-   --active element. Skipped entirely under prefers-reduced-motion
-   (HeroSlideshow.jsx never adds this class then). */
-@keyframes ch-hero-kenburns {
-  from {
-    transform: scale(1.03);
-  }
-  to {
-    transform: scale(1.09);
-  }
-}
-.ch-hero-slideshow__slide--kenburns {
-  animation: ch-hero-kenburns 5000ms var(--ease-out) forwards;
-}
-
-/* Vertical 01/02/03 slide selector — lives inside the photo's own
-   clipped box (not floating outside it like .ch-hero-selector below),
-   so it always reads as "part of the image" on every viewport. */
-.ch-hero-slideshow__numbers {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ch-hero-slideshow__number {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  background: rgba(5, 11, 20, 0.32);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 11px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: background var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard),
-    border-color var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
-}
-.ch-hero-slideshow__number:hover {
-  border-color: rgba(255, 255, 255, 0.55);
-  color: #ffffff;
-}
-.ch-hero-slideshow__number--active {
-  background: var(--color-green-500);
-  border-color: var(--color-green-500);
-  color: #ffffff;
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
-}
-
-@media (max-width: 640px) {
-  .ch-hero-slideshow__numbers {
-    top: var(--space-3);
-    right: var(--space-3);
-    gap: 6px;
-  }
-  .ch-hero-slideshow__number {
-    width: 28px;
-    height: 28px;
-    font-size: 10px;
-  }
-}
-
-/* Mobile-only in-image caption (title + description for the active
-   slide) — a real child of .ch-hero__photo (position:relative, clipped),
-   the same containing block as the numbers above, so it is always
-   pixel-precisely inside the image regardless of viewport width. Hidden
-   on desktop, where .ch-hero-selector (LandingPage.jsx) is the one
-   floating card shown instead. Constrained width + right offset so it
-   never reaches under .ch-hero-slideshow__numbers, pinned top-right. */
-.ch-hero-slideshow__caption {
-  display: none;
-}
-@media (max-width: 640px) {
-  .ch-hero-slideshow__caption {
-    display: block;
-    position: absolute;
-    top: var(--space-3);
-    left: var(--space-3);
-    right: 52px;
-    z-index: 2;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
-    background: linear-gradient(160deg, rgba(5, 11, 20, 0.62) 0%, rgba(5, 11, 20, 0.22) 100%);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-  }
-  .ch-hero-slideshow__caption-title {
-    margin: 0;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: var(--fw-semibold);
-    line-height: 1.3;
-  }
-  .ch-hero-slideshow__caption-description {
-    margin: 2px 0 0;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 11px;
-    line-height: 1.35;
-  }
-}
-
-/* Shown automatically (via the <img> onError handler) when
-   /images/hero-couple.jpg hasn't been supplied yet — a soft celebration
-   gradient instead of a broken-image icon. See public/images/README.md. */
-.ch-hero__photo--fallback::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(60% 60% at 30% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
-}
-
-/* ---------- Hero floating selector (per-slide caption card) ----------
-   A sibling of .ch-hero__photo (not nested inside it), the same pattern
-   the old static preview card used — so it can float partially over the
-   photo's edge without being clipped by the photo box's own
-   overflow:hidden. Remounts on every slide change (React key=
-   activeSlideIndex in LandingPage.jsx), so this element's own mount
-   animation below doubles as the "synchronized with the slide" entrance. */
-.ch-hero-selector {
-  position: absolute;
-  top: var(--space-5);
-  left: -14px;
-  z-index: 3;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  max-width: 240px;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-lg);
-  animation: ch-hero-selector-in 520ms var(--ease-out) both;
-}
-
-@keyframes ch-hero-selector-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ch-hero-selector__icon {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 1rem;
-}
-
-.ch-hero-selector__title {
-  margin: 0;
-  font-size: var(--fs-body-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--text-primary);
-}
-
-.ch-hero-selector__description {
-  margin: 2px 0 0;
-  font-size: var(--fs-caption);
-  color: var(--text-secondary);
-  line-height: 1.35;
-}
-
-/* Mobile: the floating desktop card is replaced entirely by the in-image
-   caption below (.ch-hero-slideshow__caption, a true child of the photo
-   box, rendered by HeroSlideshow.jsx) — explicitly requested so the text
-   sits pixel-precisely inside the image at every width instead of
-   depending on this element's own (differently-centered) sibling box. */
-@media (max-width: 640px) {
-  .ch-hero__visual {
-    padding-bottom: 0;
-  }
-  .ch-hero-selector {
-    display: none;
-  }
-}
-
 /* ---------- Sections ---------- */
 .ch-section {
-  padding: var(--space-20) 0;
+  padding: var(--section-y) 0;
   /* Any in-page anchor (e.g. a future /#pricing link) lands with this
      much clearance above it, so the fixed floating navbar never covers
      the section heading — see ScrollToTop.jsx for the JS-driven version
@@ -542,78 +8,12 @@
   scroll-margin-top: calc(var(--navbar-height) + var(--navbar-gap) * 2 + var(--space-4));
 }
 
-@media (max-width: 640px) {
-  .ch-section {
-    padding: var(--space-12) 0;
-  }
-}
 
 /* ---------- Section variant ---------- */
 .ch-section--alt {
-  background: var(--color-cream-100);
+  background: var(--bg-elevated);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* ---------- Value prop grid ---------- */
-.ch-value-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-}
-
-@media (max-width: 960px) {
-  .ch-value-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 640px) {
-  .ch-value-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.ch-value-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  text-align: left;
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  transition: transform var(--duration-base) var(--ease-standard), border-color var(--duration-base);
-}
-
-.ch-value-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--border-strong);
-}
-
-.ch-value-card__icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 1.4rem;
-  margin-bottom: var(--space-2);
-}
-
-/* A touch of the celebration palette's variety across value-prop icons —
-   not every card reads as the same solid brand-color block. */
-.ch-value-card__icon--gold {
-  background: var(--color-accent-gold-soft);
-  color: var(--color-gold-600);
-}
-.ch-value-card__icon--mint {
-  background: rgba(34, 197, 94, 0.14);
-  color: var(--color-green-600);
 }
 
 /* ---------- Journey (how it works) ---------- */
@@ -637,7 +37,7 @@
 .ch-journey-card {
   text-align: left;
   padding: var(--space-6);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-sm);
@@ -665,98 +65,153 @@
   margin-top: var(--space-10);
 }
 
-/* ---------- Template teaser grid ---------- */
-.ch-template-teaser-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-5);
-}
-
-@media (max-width: 960px) {
-  .ch-template-teaser-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 480px) {
-  .ch-template-teaser-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.ch-template-teaser-card {
-  text-align: left;
-  padding: var(--space-4);
-}
-
-.ch-template-teaser-card__swatch {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 1.6rem;
-  margin-bottom: var(--space-4);
-  overflow: hidden;
-  background: var(--accent-gradient);
-}
-.ch-template-teaser-card__swatch img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform var(--duration-slow) var(--ease-out);
-}
-.ch-template-teaser-card:hover .ch-template-teaser-card__swatch img {
-  transform: scale(1.06);
-}
-
-/* ---------- Card gallery (landing sample cards + full catalogue) ----------
-   The image opens a full-screen preview. A compact View · Share ·
-   Download row sits under the name. Two columns on phones; labels
-   collapse to icons only when a card is too narrow for them (container
-   query, so it follows the card's width, not the viewport's). */
-.ch-template-teaser-card--gallery,
-.ch-template-card--gallery {
+/* ---------- Gallery card (TemplateCard gallery mode) ----------
+   Shared by the landing showcase and the public catalogue: full-bleed
+   image in an 8px frame, 4px category badge, hairline footer with
+   View · Share · Download (+ conversion Buy Now on the catalogue).
+   Labels collapse to icons when a card is too narrow for them — a
+   container query, so it follows the card's width, not the viewport. */
+.ch-gallery-card {
   container-type: inline-size;
-  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  min-width: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard),
+    transform var(--duration-base) var(--ease-standard);
 }
-.ch-template-teaser-card--gallery {
-  padding: var(--space-3);
+.ch-gallery-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
 }
-.ch-template-teaser-card--gallery .ch-template-teaser-card__swatch,
-.ch-template-card--gallery .ch-template-card__swatch {
-  margin-bottom: 0;
-  border-radius: 6px;
-}
-.ch-template-teaser-card__media,
-.ch-template-card__media-btn {
+
+.ch-gallery-card__media {
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
   border: 0;
-  background: none;
+  border-bottom: 1px solid var(--border);
+  /* Top corners follow the card (surface) so the focus ring matches its shape. */
+  border-radius: var(--radius-surface) var(--radius-surface) 0 0;
+  background: var(--bg-secondary);
   cursor: zoom-in;
-  border-radius: 6px;
 }
-.ch-template-teaser-card__media:focus-visible,
-.ch-template-card__media-btn:focus-visible {
-  outline: 2px solid var(--color-royal-500);
-  outline-offset: 2px;
+.ch-gallery-card__media:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: -2px;
 }
-.ch-template-teaser-card__text {
+
+.ch-gallery-card__image {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.6rem;
+}
+.ch-gallery-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 500ms var(--ease-out);
+}
+.ch-gallery-card:hover .ch-gallery-card__image img {
+  transform: scale(1.03);
+}
+
+.ch-gallery-card__zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+}
+.ch-gallery-card__media:hover .ch-gallery-card__zoom,
+.ch-gallery-card__media:focus-visible .ch-gallery-card__zoom {
+  opacity: 1;
+  transform: none;
+}
+
+.ch-gallery-card__body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+  padding: var(--space-4) var(--space-4) var(--space-3);
   min-width: 0;
 }
-.ch-template-teaser-card__text .ch-h4,
-.ch-template-card--gallery .ch-h4 {
+
+.ch-gallery-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.ch-gallery-card__badge {
+  display: inline-flex;
+  padding: 3px 7px;
+  border-radius: var(--radius-micro);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ch-gallery-card__price {
+  color: var(--text-primary);
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ch-gallery-card__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
+}
+
+.ch-gallery-card__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+}
+
+.ch-gallery-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .ch-card-tools {
@@ -764,37 +219,37 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
-  margin-top: auto;
 }
 .ch-card-tool {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 36px;
   padding: 6px 4px;
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--bg-elevated);
-  color: var(--color-navy-800);
+  color: var(--text-primary);
   font: inherit;
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 .ch-card-tool svg {
   flex-shrink: 0;
   font-size: 0.95rem;
 }
 .ch-card-tool:hover {
-  border-color: var(--color-royal-400);
-  color: var(--color-royal-600);
+  background: var(--surface);
+  border-color: var(--text-muted);
 }
 .ch-card-tool:focus-visible {
-  outline: 2px solid var(--color-royal-500);
+  outline: 2px solid var(--focus-color);
   outline-offset: 1px;
 }
+
 @container (max-width: 230px) {
   .ch-card-tool span {
     position: absolute;
@@ -804,32 +259,14 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
-  .ch-template-card--gallery .ch-body-sm {
+  .ch-gallery-card__description {
     display: none;
   }
-}
-
-.ch-template-card--gallery .ch-template-card__actions {
-  margin-top: 0;
-}
-.ch-template-card--gallery .ch-template-card__actions .ch-btn {
-  margin-top: 0;
-  border-radius: 8px;
-}
-
-@media (min-width: 360px) and (max-width: 480px) {
-  .ch-template-teaser-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-3);
+  .ch-gallery-card__body {
+    padding: var(--space-3) var(--space-3) var(--space-2);
   }
-}
-@media (min-width: 400px) and (max-width: 640px) {
-  .ch-templates-grid:has(.ch-template-card--gallery) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-3);
-  }
-  .ch-template-card--gallery {
-    padding: var(--space-3);
+  .ch-gallery-card__footer {
+    padding: var(--space-2) var(--space-3) var(--space-3);
   }
 }
 
@@ -855,7 +292,7 @@
   width: 44px;
   height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: rgba(5, 11, 20, 0.6);
   color: #fff;
   font-size: 1.3rem;
@@ -880,7 +317,7 @@
   justify-content: center;
   color: rgba(255, 255, 255, 0.6);
   font-size: 2rem;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 .ch-lightbox__image img {
   display: block;
@@ -889,7 +326,7 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 .ch-lightbox__bar {
@@ -927,7 +364,7 @@
   gap: var(--space-2);
 }
 .ch-lightbox__actions .ch-btn {
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 .ch-lightbox__actions .ch-btn--secondary {
   background: rgba(255, 255, 255, 0.08);
@@ -943,7 +380,7 @@
   gap: 6px;
   padding: 8px 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: #fff;
   font: inherit;
@@ -971,22 +408,6 @@
   }
 }
 
-/* ---------- CTA ---------- */
-.ch-cta__card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-4);
-  padding: var(--space-12);
-}
-
-@media (max-width: 640px) {
-  .ch-cta__card {
-    padding: var(--space-8) var(--space-5);
-  }
-}
-
 /* ---------- Templates page ---------- */
 .ch-templates-page__toolbar {
   display: flex;
@@ -1002,24 +423,163 @@
 }
 
 .ch-chip {
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--radius-micro);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   font-size: var(--fs-caption);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
   cursor: pointer;
   transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
 }
 .ch-chip:hover {
   color: var(--text-primary);
-  border-color: var(--border-strong);
+  border-color: var(--text-muted);
 }
-.ch-chip--active {
-  background: var(--accent-gradient);
-  color: var(--text-on-accent);
-  border-color: transparent;
+.ch-chip--active,
+.ch-chip--active:hover {
+  background: var(--action-bg);
+  color: var(--action-fg);
+  border-color: var(--action-bg);
+}
+
+/* ---------- Public catalogue (TemplatesPage.jsx) ----------
+   Intro band → filter bar surface → gallery grid of .ch-gallery-card.
+   Scoped to .ch-catalogue so the shared .ch-templates-grid / chips used
+   by the event wizard are unaffected. */
+.ch-catalogue__intro {
+  padding: var(--space-8) 0 var(--space-6);
+}
+.ch-catalogue__intro-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5) var(--space-10);
+}
+.ch-catalogue__intro-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 44rem;
+}
+.ch-catalogue__eyebrow {
+  font-size: 0.75rem;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ch-catalogue__title {
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.ch-catalogue__lead {
+  color: var(--text-secondary);
+  font-size: var(--fs-body-lg);
+  line-height: 1.6;
+}
+.ch-catalogue__count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
+}
+.ch-catalogue__count strong {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 900px) {
+  .ch-catalogue__intro {
+    padding: var(--space-12) 0 var(--space-8);
+  }
+}
+
+.ch-catalogue__body {
+  padding-bottom: var(--section-y);
+}
+
+/* Filter bar: one 8px surface; search left, chips right; chips scroll sideways on phones. */
+.ch-catalogue__toolbar {
+  position: sticky;
+  top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
+  z-index: 5;
+  margin-bottom: var(--space-6);
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-sm);
+}
+.ch-catalogue__toolbar .ch-templates-page__toolbar {
+  gap: var(--space-3);
+  margin: 0;
+}
+.ch-catalogue__toolbar .ch-templates-page__categories {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(var(--space-3) * -1);
+  padding: 0 var(--space-3);
+  scroll-padding-inline: var(--space-3);
+}
+.ch-catalogue__toolbar .ch-templates-page__categories::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 900px) {
+  .ch-catalogue__toolbar .ch-templates-page__toolbar {
+    flex-direction: row;
+    align-items: center;
+  }
+  .ch-catalogue__toolbar .ch-field {
+    flex: 0 0 320px;
+  }
+  .ch-catalogue__toolbar .ch-templates-page__categories {
+    flex: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.ch-catalogue__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+@media (min-width: 640px) {
+  .ch-catalogue__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+@media (min-width: 1100px) {
+  .ch-catalogue__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+}
+@media (max-width: 359px) {
+  .ch-catalogue__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .ch-templates-grid {
@@ -1050,7 +610,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1088,7 +648,7 @@
   right: var(--space-3);
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
   background: var(--accent-gradient);
   color: var(--text-on-accent);
   display: flex;
@@ -1109,7 +669,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-6);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--glass-bg);
 }
@@ -1125,7 +685,7 @@
   width: 100%;
   max-width: 280px;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1237,7 +797,7 @@
 
 .ch-about-page__card {
   padding: var(--space-6);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
 }
@@ -1339,7 +899,7 @@
 
 .ch-settings-page__tab {
   padding: 10px var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: var(--fs-body-sm);
   font-weight: var(--fw-medium);
@@ -1358,7 +918,7 @@
 .ch-settings-page__panel {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   padding: var(--space-8);
 }
 @media (max-width: 480px) {
@@ -1412,7 +972,7 @@
   width: 100%;
   text-align: left;
   padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;
@@ -1424,7 +984,7 @@
 .ch-notification-row__dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--accent);
   margin-top: 8px;
   flex-shrink: 0;
@@ -1492,7 +1052,7 @@
 .ch-invite-status__spinner {
   width: 28px;
   height: 28px;
-  border-radius: 999px;
+  border-radius: 50%;
   border: 2.5px solid var(--border);
   border-top-color: var(--accent);
   animation: ch-spin 0.7s linear infinite;
@@ -1515,7 +1075,7 @@
   grid-template-columns: 1fr 1.4fr;
   gap: var(--space-8);
   padding: var(--space-6);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
   margin-bottom: var(--space-8);
@@ -1543,7 +1103,7 @@
 
 .ch-usage-bar__track {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
   background: var(--surface-active);
   overflow: hidden;
 }
@@ -1551,7 +1111,7 @@
 .ch-usage-bar__fill {
   height: 100%;
   background: var(--accent-gradient);
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
 }
 
 .ch-billing-page__section-title {
@@ -1637,7 +1197,7 @@
   flex-direction: column;
   gap: 6px;
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
 }
@@ -1740,51 +1300,13 @@
   justify-content: center;
 }
 
-/* ---------- Per-card price (catalogue + teaser cards) ---------- */
+/* ---------- Per-card price (catalogue) ---------- */
 .ch-template-card__price,
 .ch-templates-page__preview-price {
   font-size: var(--fs-body-lg);
   font-weight: var(--fw-bold);
   color: var(--accent);
   margin: 0;
-}
-
-.ch-template-teaser-link {
-  text-decoration: none;
-  display: block;
-}
-
-/* ---------- Landing pricing preview ---------- */
-.ch-landing-pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-  max-width: 720px;
-  margin: 0 auto;
-}
-@media (max-width: 720px) {
-  .ch-landing-pricing-grid {
-    grid-template-columns: 1fr;
-    max-width: 360px;
-  }
-}
-.ch-landing-pricing-card {
-  text-align: center;
-  gap: var(--space-2);
-}
-.ch-landing-pricing-card__price {
-  font-size: var(--fs-h3);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-}
-.ch-cta__icon {
-  width: 48px;
-  height: 48px;
-  padding: var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-sizing: content-box;
 }
 
 /* ---------- Try Our Service ---------- */
@@ -1797,7 +1319,7 @@
 }
 .ch-try-page__step {
   padding: 6px 14px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-control);
   border: 1px solid var(--border);
   font-size: var(--fs-caption);
   color: var(--text-muted);
@@ -1848,7 +1370,7 @@
   gap: 4px;
   text-align: left;
   padding: var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   border: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;
@@ -1866,7 +1388,7 @@
 .ch-try-page__template-swatch {
   width: 100%;
   height: 64px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-micro);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1884,7 +1406,7 @@
 .ch-try-page__preview-swatch {
   width: 100%;
   height: 160px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2070,7 +1592,7 @@
   gap: var(--space-5);
   padding: var(--space-6);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   background: var(--surface);
   margin-bottom: var(--space-6);
 }
@@ -2124,7 +1646,7 @@
 .ch-order-card-page__thumb {
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -2177,7 +1699,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   border: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;
@@ -2263,7 +1785,7 @@
   gap: var(--space-2);
 }
 .ch-order-card-page__qr img {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-micro);
   background: #fff;
   padding: var(--space-2);
 }
@@ -2276,7 +1798,7 @@
 
 .ch-checkout-page__loading {
   height: 280px;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   background: var(--surface-active);
   animation: ch-skeleton-pulse 1.4s ease-in-out infinite;
 }
@@ -2323,7 +1845,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   border: 1px solid var(--border-accent);
   background: var(--accent-soft);
   font-weight: var(--fw-medium);
@@ -2349,7 +1871,7 @@
 .ch-checkout-page__summary-thumb {
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   overflow: hidden;
 }
 .ch-checkout-page__summary-thumb img {

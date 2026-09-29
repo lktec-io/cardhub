@@ -54,6 +54,7 @@ export const TRANSLATIONS = {
   'catalogue.buyNow': { en: 'Buy Now', sw: 'Nunua Sasa' },
   'catalogue.buildFullInvitation': { en: 'Build full invitation', sw: 'Tengeneza Mwaliko Kamili' },
   'catalogue.close': { en: 'Close', sw: 'Funga' },
+  'catalogue.designs': { en: 'designs', sw: 'miundo' },
 
   // Template/event categories
   'category.wedding': { en: 'Wedding', sw: 'Harusi' },
@@ -994,6 +995,25 @@ export const TRANSLATIONS = {
   'hero.ctaCreate': { en: 'Create Invitation', sw: 'Tengeneza Mwaliko' },
   'hero.ctaTickets': { en: 'Buy Tickets', sw: 'Nunua Tiketi' },
   'hero.support': { en: 'Support', sw: 'Msaada' },
+  'hero.proof.price': { en: 'Cards from {price}', sw: 'Kadi kuanzia {price}' },
+  'hero.proof.tickets': { en: 'QR ticket for every guest', sw: 'Tiketi ya QR kwa kila mgeni' },
+  'hero.proof.rsvp': { en: 'RSVP & guest lists', sw: 'RSVP na orodha za wageni' },
+  'hero.builtFor': { en: 'Built for', sw: 'Kwa ajili ya' },
+
+  // Landing — ticket showcase
+  'landing.tickets.eyebrow': { en: 'CardHub Tickets', sw: 'Tiketi za CardHub' },
+  'landing.tickets.title': { en: 'Sell tickets. Scan at the door.', sw: 'Uza tiketi. Skani mlangoni.' },
+  'landing.tickets.description': {
+    en: 'Publish ticket types and prices, let guests pay by mobile money, and give every guest a QR ticket that is verified at the entrance.',
+    sw: 'Weka aina za tiketi na bei, ruhusu wageni kulipa kwa pesa za simu, na mpe kila mgeni tiketi ya QR inayothibitishwa mlangoni.',
+  },
+  'landing.tickets.point1': { en: 'Regular, VIP and VVIP ticket types', sw: 'Aina za tiketi: Kawaida, VIP na VVIP' },
+  'landing.tickets.point2': { en: 'Mobile money checkout, held for 15 minutes', sw: 'Malipo kwa pesa za simu, zinashikiliwa dakika 15' },
+  'landing.tickets.point3': { en: 'A unique QR code on every ticket', sw: 'Msimbo wa QR wa kipekee kwenye kila tiketi' },
+  'landing.tickets.cta': { en: 'Browse events', sw: 'Tazama matukio' },
+  'landing.tickets.empty': { en: 'New events are coming soon.', sw: 'Matukio mapya yanakuja hivi karibuni.' },
+  'landing.film.label': { en: 'CardHub in action', sw: 'CardHub ikifanya kazi' },
+  'landing.pricing.perCard': { en: 'per card', sw: 'kwa kadi' },
 
   // Catalogue gallery actions
   'catalogue.view': { en: 'View', sw: 'Tazama' },

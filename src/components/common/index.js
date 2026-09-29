@@ -4,8 +4,6 @@ export { Container } from './Container';
 export { PageHeader } from './PageHeader';
 export { SectionHeader } from './SectionHeader';
 export { Seo } from './Seo';
-export { InvitationPreview } from './InvitationPreview';
 export { Pagination } from './Pagination';
-export { RotatingHeadline } from './RotatingHeadline';
 export { SuccessConfetti } from './SuccessConfetti';
 export { HeroSlideshow } from './HeroSlideshow';

@@ -329,7 +329,7 @@
 .ch-builder-canvas__frame {
   flex-shrink: 0;
   transform-origin: center center;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-surface);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);

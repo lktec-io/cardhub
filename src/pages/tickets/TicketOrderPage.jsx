@@ -342,7 +342,7 @@ export function TicketOrderPage() {
                 {t('tix.order.checkPhoneDescription')}
               </Alert>
             ) : (
-              <Button type="submit" variant="brand" size="lg" fullWidth isLoading={phase === 'starting'} disabled={busy}>
+              <Button type="submit" variant="conversion" size="lg" fullWidth isLoading={phase === 'starting'} disabled={busy}>
                 {t('tix.order.pay', { amount: formatTzs(order.totalTzs) })}
               </Button>
             )}

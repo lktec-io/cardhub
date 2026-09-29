@@ -98,7 +98,7 @@ export function RegisterPage() {
             autoComplete="new-password"
           />
 
-          <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
+          <Button type="submit" variant="conversion" fullWidth isLoading={isSubmitting}>
             {t('register.submit')}
           </Button>
         </form>

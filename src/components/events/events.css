@@ -17,7 +17,7 @@
 .ch-step-indicator__dot {
   width: 30px;
   height: 30px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,7 +83,7 @@
   gap: var(--space-2);
   text-align: left;
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
   cursor: pointer;
@@ -103,7 +103,7 @@
 .ch-event-type-card__icon {
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,7 +223,7 @@
 
 .ch-event-card__swatch {
   height: 120px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: var(--accent-gradient);
 }
 
@@ -345,7 +345,7 @@
   padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
 }
 .ch-event-overview__share-row {
   display: flex;
@@ -400,7 +400,7 @@
   flex-direction: column;
   gap: 6px;
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
 }
@@ -436,14 +436,14 @@
 
 .ch-analytics-bar__track {
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
   background: var(--surface-active);
   overflow: hidden;
 }
 
 .ch-analytics-bar__fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
 }
 .ch-analytics-bar__fill--success {
   background: var(--color-green-500);

@@ -46,6 +46,8 @@ export function Navbar() {
 
   const ctaTarget = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.TEMPLATES;
   const ctaLabel = isAuthenticated ? t('nav.goToDashboard') : t('nav.createYourCard');
+  // Emerald only for the create action; returning users just get navy navigation.
+  const ctaVariant = isAuthenticated ? 'ch-btn--primary' : 'ch-btn--conversion';
 
   return (
     <>
@@ -70,7 +72,7 @@ export function Navbar() {
                 {t('nav.login')}
               </NavLink>
             )}
-            <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--sm">
+            <Link to={ctaTarget} className={`ch-btn ${ctaVariant} ch-btn--sm`}>
               {ctaLabel}
             </Link>
           </div>
@@ -119,7 +121,7 @@ export function Navbar() {
         </nav>
         <div className="ch-navbar__sidebar-actions">
           {!isAuthenticated && <Link to={ROUTES.LOGIN}>{t('nav.login')}</Link>}
-          <Link to={ctaTarget} className="ch-btn ch-btn--primary ch-btn--full">
+          <Link to={ctaTarget} className={`ch-btn ${ctaVariant} ch-btn--full`}>
             {ctaLabel}
           </Link>
         </div>

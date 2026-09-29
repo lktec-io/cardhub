@@ -95,12 +95,36 @@
   --accent-hover: var(--color-green-400);
   --accent-active: var(--color-green-600);
   --accent-soft: rgba(34, 197, 94, 0.14);
-  --accent-gradient: linear-gradient(135deg, var(--color-green-400) 0%, var(--color-green-600) 100%);
+  /* Flat, not a gradient: kept under its historical name so every
+     existing reference (checked checkboxes, switches, avatars, selected
+     states) picks up the solid action colour. */
+  --accent-gradient: var(--action-bg);
   /* Readable text color for content sitting on --accent-soft (e.g. Badge's
      "accent" variant) — kept separate from --accent itself since a soft
      tinted background often needs a lighter/different shade than the
      solid accent color to stay readable. */
   --accent-contrast-text: var(--color-green-400);
+
+  /* Primary action — the one colour for conversion buttons and selected
+     states. Dark app: CardHub green with near-black text (13:1). The
+     public theme below swaps it for deep navy with white text. */
+  --action-bg: var(--color-green-500);
+  --action-bg-hover: var(--color-green-400);
+  --action-fg: #04140c;
+
+  /* Conversion accent — reserved for the money/creation actions only
+     (Create Invitation, Buy Ticket, Pay, Buy Now, Sign in). Solid dark
+     emerald with white text (#047857 on #fff text = 5.5:1), identical on
+     both themes so the "do it" button is always recognisable. */
+  --conversion-bg: #047857;
+  --conversion-bg-hover: #065f46;
+  --conversion-fg: #ffffff;
+
+  /* Form fields and focus */
+  --field-bg: var(--surface);
+  --field-border: var(--border-strong);
+  --focus-color: var(--color-green-400);
+  --focus-ring: 0 0 0 3px rgba(34, 197, 94, 0.22);
 
   /* Status */
   --success: var(--color-success-500);
@@ -116,11 +140,25 @@
   --gradient-hero: radial-gradient(120% 120% at 15% 0%, var(--color-navy-700) 0%, var(--color-navy-950) 55%),
     radial-gradient(80% 60% at 100% 100%, rgba(34, 197, 94, 0.12) 0%, transparent 60%);
 
-  /* ---- Radius ---- */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* ---- Radius ----
+     Three semantic steps, used by role rather than by size:
+       micro   4px  badges, chips, tags, checkboxes, tiny indicators
+       control 6px  buttons, inputs, selects, textareas, icon buttons,
+                    and media/blocks nested inside a surface
+       surface 8px  navbar, sidebars, cards, panels, modals, toasts,
+                    alerts, tables, dropdown menus
+     Nothing in the platform UI is pill-shaped. Genuine circles (avatars,
+     radio buttons, spinners) use 50% directly. The legacy sm/md/lg/xl
+     names are kept as aliases so existing references (including
+     Skeleton's `radius` prop in JSX) resolve onto the same scale.
+     --radius-full is kept only for the scrollbar thumb. */
+  --radius-micro: 4px;
+  --radius-control: 6px;
+  --radius-surface: 8px;
+  --radius-sm: var(--radius-micro);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-surface);
+  --radius-xl: var(--radius-surface);
   --radius-full: 999px;
 
   /* ---- Shadows ---- */
@@ -128,6 +166,10 @@
   --shadow-md: 0 8px 24px rgba(2, 6, 16, 0.35);
   --shadow-lg: 0 20px 48px rgba(2, 6, 16, 0.45);
   --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(34, 197, 94, 0.18);
+
+  /* ---- Layout rhythm ---- */
+  --gutter: 16px; /* page side padding; grows at tablet/desktop below */
+  --section-y: 56px; /* vertical padding of a page section */
 
   /* ---- Spacing scale ---- */
   --space-1: 4px;
@@ -166,6 +208,19 @@
   color-scheme: dark;
 }
 
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+    --section-y: 72px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+    --section-y: 96px;
+  }
+}
+
 /* ==========================================================================
    PUBLIC / MARKETING THEME OVERRIDE
    Applied via a single wrapper class (PublicLayout — landing, catalogue,
@@ -181,228 +236,62 @@
 .ch-public-theme {
   color-scheme: light;
 
-  --bg-primary: var(--color-cream-50);
-  --bg-secondary: var(--color-blue-mist-50);
+  /* Cool, neutral light surfaces: white cards on a near-white page.
+     The earlier cream/gold "celebration" tint is retired in favour of a
+     clean, high-contrast base; gold stays available via --color-gold-*
+     for small deliberate touches only. */
+  --bg-primary: #f6f8fb;
+  --bg-secondary: #eef2f8;
   --bg-elevated: var(--color-white);
-  --surface: rgba(22, 32, 61, 0.045);
-  --surface-hover: rgba(22, 32, 61, 0.075);
-  --surface-active: rgba(22, 32, 61, 0.11);
+  --surface: rgba(15, 23, 42, 0.04);
+  --surface-hover: rgba(15, 23, 42, 0.07);
+  --surface-active: rgba(15, 23, 42, 0.1);
 
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-bg-strong: rgba(255, 255, 255, 0.78);
-  --glass-border: rgba(22, 32, 61, 0.08);
-  --glass-blur: 16px;
+  /* GlassCard renders as a solid card here: no translucency or blur. */
+  --glass-bg: var(--color-white);
+  --glass-bg-strong: var(--color-white);
+  --glass-border: rgba(15, 23, 42, 0.09);
+  --glass-blur: 0px;
 
-  --text-primary: var(--color-navy-950);
-  --text-secondary: #4b5468;
-  --text-muted: #6d7690;
+  --text-primary: #0b1424;
+  --text-secondary: #46526a;
+  --text-muted: #5f6b82;
   --text-on-accent: #ffffff;
   --text-inverse: var(--color-white);
 
-  --border: rgba(22, 32, 61, 0.09);
-  --border-strong: rgba(22, 32, 61, 0.16);
-  /* Green, not gold — the public site's primary accent is CardHub green
-     (see --accent below); gold stays available separately via
-     --color-gold-* for deliberate secondary/decorative touches only
-     (featured-tier ribbons, the hero photo's gradient backdrop, etc.). */
-  --border-accent: rgba(22, 163, 74, 0.4);
+  --border: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-accent: rgba(21, 128, 61, 0.35);
 
-  --accent: var(--color-green-500);
-  --accent-hover: var(--color-green-400);
-  --accent-active: var(--color-green-600);
-  --accent-soft: rgba(34, 197, 94, 0.12);
-  --accent-gradient: linear-gradient(135deg, var(--color-green-400) 0%, var(--color-green-600) 100%);
-  --accent-contrast-text: var(--color-green-600);
+  /* Green as a text/icon accent only, at a shade that reads on white
+     (#15803d on #fff = 5.0:1). The old #22c55e with white text was 2.3:1. */
+  --accent: #15803d;
+  --accent-hover: #166534;
+  --accent-active: #14532d;
+  --accent-soft: rgba(21, 128, 61, 0.09);
+  --accent-contrast-text: #15803d;
 
-  --gradient-hero: radial-gradient(120% 100% at 18% 0%, var(--color-blue-mist-100) 0%, var(--color-cream-50) 55%),
-    radial-gradient(70% 55% at 100% 8%, var(--color-accent-gold-soft) 0%, transparent 62%);
+  /* Primary action = CardHub deep navy with white text (15:1). */
+  --action-bg: var(--color-navy-800);
+  --action-bg-hover: var(--color-royal-600);
+  --action-fg: #ffffff;
 
-  --shadow-sm: 0 1px 2px rgba(22, 32, 61, 0.06);
-  --shadow-md: 0 8px 24px rgba(22, 32, 61, 0.08);
-  --shadow-lg: 0 20px 48px rgba(22, 32, 61, 0.14);
-  --shadow-glow: 0 0 0 1px var(--border-accent), 0 12px 32px rgba(22, 163, 74, 0.2);
+  --field-bg: var(--color-white);
+  --field-border: rgba(15, 23, 42, 0.18);
+  --focus-color: var(--color-royal-500);
+  --focus-ring: 0 0 0 3px rgba(42, 68, 199, 0.18);
 
-  position: relative;
-  isolation: isolate;
+  --gradient-hero: linear-gradient(180deg, #eaf0f9 0%, rgba(246, 248, 251, 0) 520px);
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 2px 6px rgba(15, 23, 42, 0.05), 0 18px 44px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 0 3px rgba(42, 68, 199, 0.12);
+
   display: flex;
   flex-direction: column;
   min-height: 100svh;
   background: var(--bg-primary);
   background-image: var(--gradient-hero);
-  background-attachment: fixed;
   background-repeat: no-repeat;
-}
-
-/* ---------- Ambient background motion (public theme only) ----------
-   Two large, softly blurred gradient blobs drifting very slowly behind
-   the content — CSS-only (no JS animation loop), a lightweight way to
-   keep the marketing surface from reading as flat/static white without
-   turning it into a distracting effect. `isolation: isolate` above gives
-   this element its own stacking context so z-index:0 here can never leak
-   above the fixed navbar (z-index: var(--z-sticky)) or below the page's
-   own background. */
-.ch-public-theme::before,
-.ch-public-theme::after {
-  content: '';
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(90px);
-  will-change: transform;
-}
-
-.ch-public-theme::before {
-  top: -12%;
-  left: -12%;
-  width: 52vw;
-  height: 52vw;
-  max-width: 620px;
-  max-height: 620px;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.22) 0%, rgba(34, 197, 94, 0) 70%);
-  animation: ch-ambient-drift-1 28s ease-in-out infinite;
-}
-
-.ch-public-theme::after {
-  bottom: -16%;
-  right: -12%;
-  width: 48vw;
-  height: 48vw;
-  max-width: 560px;
-  max-height: 560px;
-  background: radial-gradient(circle, rgba(16, 37, 107, 0.08) 0%, rgba(201, 154, 69, 0.1) 45%, rgba(201, 154, 69, 0) 75%);
-  animation: ch-ambient-drift-2 34s ease-in-out infinite;
-}
-
-@keyframes ch-ambient-drift-1 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(4%, 6%) scale(1.08);
-  }
-}
-@keyframes ch-ambient-drift-2 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-5%, -4%) scale(1.05);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ch-public-theme::before,
-  .ch-public-theme::after {
-    animation: none;
-  }
-}
-
-/* Six small blurred green dots that slowly pop in, drift up, and fade —
-   distinct from the two large ambient blobs above, giving the page a
-   gentle "alive" feeling rather than just a static gradient. Fixed
-   (viewport-relative) so they stay visible while scrolling, same
-   reasoning as the blobs. Pre-set positions/delays/durations per dot
-   (not randomized at runtime) so this is pure CSS, no JS loop. */
-.ch-ambient-particles {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.ch-ambient-particles span {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--color-green-400);
-  filter: blur(3px);
-  opacity: 0;
-  animation: ch-particle-float 17s ease-in-out infinite;
-}
-.ch-ambient-particles span:nth-child(1) {
-  left: 8%;
-  top: 24%;
-  width: 10px;
-  height: 10px;
-  animation-delay: 0s;
-  animation-duration: 16s;
-}
-.ch-ambient-particles span:nth-child(2) {
-  left: 84%;
-  top: 16%;
-  width: 7px;
-  height: 7px;
-  animation-delay: 3s;
-  animation-duration: 19s;
-}
-.ch-ambient-particles span:nth-child(3) {
-  left: 22%;
-  top: 70%;
-  width: 9px;
-  height: 9px;
-  animation-delay: 6s;
-  animation-duration: 15s;
-}
-.ch-ambient-particles span:nth-child(4) {
-  left: 68%;
-  top: 60%;
-  width: 6px;
-  height: 6px;
-  animation-delay: 2s;
-  animation-duration: 21s;
-}
-.ch-ambient-particles span:nth-child(5) {
-  left: 46%;
-  top: 38%;
-  width: 8px;
-  height: 8px;
-  animation-delay: 8s;
-  animation-duration: 18s;
-}
-.ch-ambient-particles span:nth-child(6) {
-  left: 92%;
-  top: 80%;
-  width: 7px;
-  height: 7px;
-  animation-delay: 5s;
-  animation-duration: 20s;
-}
-
-@keyframes ch-particle-float {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(0.9);
-  }
-  15% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.55;
-    transform: translateY(-40px) scale(1.1);
-  }
-  85% {
-    opacity: 0.15;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-90px) scale(0.9);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ch-ambient-particles span {
-    animation: none;
-    opacity: 0.12;
-  }
-}
-
-/* Routed page content and the footer paint above the ambient blobs — the
-   navbar doesn't need this, it's already position:fixed with its own
-   much higher z-index (--z-sticky) in layout.css. */
-.ch-public-main,
-.ch-footer {
-  position: relative;
-  z-index: 1;
 }

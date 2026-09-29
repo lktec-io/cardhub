@@ -203,7 +203,7 @@ export function CheckoutPage() {
                 <dd>{formatCardPrice(template.priceTzs)}</dd>
               </div>
             </dl>
-            <Button type="submit" variant="primary" fullWidth isLoading={submitStatus === 'submitting'}>
+            <Button type="submit" variant="conversion" fullWidth isLoading={submitStatus === 'submitting'}>
               {t('checkout.payNow')} <FiArrowRight aria-hidden="true" />
             </Button>
           </GlassCard>

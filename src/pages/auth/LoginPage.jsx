@@ -86,7 +86,7 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
+          <Button type="submit" variant="conversion" fullWidth isLoading={isSubmitting}>
             {t('login.submit')}
           </Button>
         </form>

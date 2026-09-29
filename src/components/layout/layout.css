@@ -1,21 +1,20 @@
 /* ==========================================================================
    CARDHUB LAYOUT PRIMITIVES — Navbar, Footer, Sidebar, Topbar
+   Radius by role: surfaces 8px, controls 6px, micro elements 4px.
    ========================================================================== */
 
 /* ---------- Navbar (public) ----------
-   A floating glass pill, not a full-width bar — fixed + inset from the
-   viewport edges with its own rounded shape, so it reads as "premium
-   floating navigation" rather than a dashboard header. --navbar-* below
-   are deliberately local to this file (not the shared --topbar-height,
-   which the authenticated dashboard/admin Topbar owns) so this can't
-   ripple into those unrelated layouts. */
+   A floating 8px bar inset from the viewport edges: near-solid white with
+   a hairline border and a soft shadow, aligned to the content container.
+   --navbar-* are local to this file (the dashboard/admin Topbar owns
+   --topbar-height), so they cannot ripple into those layouts. */
 :root {
-  --navbar-gap: 14px;
-  --navbar-height: 60px;
+  --navbar-gap: 12px;
+  --navbar-height: 64px;
 }
 @media (max-width: 640px) {
   :root {
-    --navbar-gap: 10px;
+    --navbar-gap: 8px;
     --navbar-height: 56px;
   }
 }
@@ -28,80 +27,95 @@
   z-index: var(--z-sticky);
   max-width: calc(var(--container-max) + var(--space-6) * 2);
   margin: 0 auto;
-  border-radius: var(--radius-full);
-  /* Frosted-glass privacy panel: heavy blur + a high-opacity soft
-     mint/champagne tint so content scrolling behind it is genuinely
-     obscured (not just softened) — not a plain-white nor a solid panel,
-     but well past "see-through". Soft green-tinted border + a refined
-     two-layer shadow (depth + a faint brand glow) underneath. */
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  background: linear-gradient(135deg, rgba(236, 253, 245, 0.92) 0%, rgba(250, 247, 237, 0.9) 100%);
-  backdrop-filter: blur(34px) saturate(150%);
-  -webkit-backdrop-filter: blur(34px) saturate(150%);
-  box-shadow: var(--shadow-md), 0 0 22px rgba(34, 197, 94, 0.1);
-  transition: box-shadow var(--duration-base) var(--ease-standard), background var(--duration-base) var(--ease-standard);
+  border-radius: var(--radius-surface);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  box-shadow: var(--shadow-md);
 }
 
 .ch-navbar__inner {
   height: var(--navbar-height);
-  padding: 0 var(--space-3) 0 var(--space-5);
+  padding: 0 10px 0 var(--space-5);
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
-/* Pushes page content below the floating navbar (fixed = out of normal
-   flow, so this offset has to be added back explicitly). */
+/* Pushes page content below the fixed navbar. */
 .ch-public-main {
   padding-top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
 }
 
 .ch-navbar__brand {
-  font-size: var(--fs-h4);
-  font-weight: var(--fw-bold);
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .ch-navbar__links--desktop {
   display: flex;
-  gap: var(--space-6);
+  align-items: center;
+  gap: 2px;
   flex: 1;
+  min-width: 0;
 }
 
 .ch-navbar__links--desktop a {
+  padding: 8px 10px;
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: var(--fs-body-sm);
-  transition: color var(--duration-fast);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: color var(--duration-fast), background var(--duration-fast);
 }
 .ch-navbar__links--desktop a:hover {
   color: var(--text-primary);
+  background: var(--surface);
 }
 .ch-navbar__links--desktop a.active {
   color: var(--text-primary);
+  font-weight: var(--fw-bold);
+  background: var(--surface);
 }
 
 .ch-navbar__actions--desktop {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .ch-navbar__login {
-  color: var(--text-secondary);
+  padding: 8px 10px;
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
   font-size: var(--fs-body-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
 }
 .ch-navbar__login:hover {
-  color: var(--text-primary);
+  background: var(--surface);
 }
 
-/* ---------- Language toggle (EN / SW) ---------- */
+@media (max-width: 1080px) {
+  .ch-navbar__links--desktop a {
+    padding: 8px 7px;
+  }
+  .ch-navbar__inner {
+    gap: var(--space-3);
+  }
+}
+
+/* ---------- Language toggle (EN / SW): a 6px segmented control ---------- */
 .ch-lang-toggle {
   display: inline-flex;
   align-items: center;
   padding: 3px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-control);
   background: var(--surface);
   border: 1px solid var(--border);
   gap: 2px;
@@ -111,34 +125,32 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.02em;
-  padding: 5px 11px;
-  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  min-width: 32px;
+  padding: 5px 8px;
+  border-radius: var(--radius-micro);
   cursor: pointer;
-  transition: background var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard),
-    box-shadow var(--duration-base) var(--ease-standard);
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 }
 
 .ch-lang-toggle__option:hover {
   color: var(--text-primary);
 }
 
-.ch-lang-toggle__option--active {
-  background: var(--accent-gradient);
-  color: var(--text-on-accent);
-  box-shadow: var(--shadow-sm);
-}
+.ch-lang-toggle__option--active,
 .ch-lang-toggle__option--active:hover {
-  color: var(--text-on-accent);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
 }
 
-/* ---------- Mobile bar (language toggle + hamburger, far right) ---------- */
+/* ---------- Mobile bar (language toggle + menu button, far right) ---------- */
 .ch-navbar__mobile-bar {
   display: none;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin-left: auto;
 }
 
@@ -146,19 +158,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
   color: var(--text-primary);
   cursor: pointer;
   padding: 0;
-  transition: background var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
+  transition: background var(--duration-fast) var(--ease-standard);
 }
 .ch-navbar__toggle:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
+  background: var(--surface);
 }
 
 .ch-navbar__toggle-icon {
@@ -192,19 +203,16 @@
   transform: rotate(0deg) scale(1);
 }
 
-/* ---------- Mobile off-canvas menu ----------
-   Both start below the navbar's own height (not inset:0) so the navbar —
-   and the hamburger/close toggle inside it — always stays visible and
-   clickable above the panel, never covered by it. */
+/* ---------- Mobile menu ----------
+   Opens below the navbar (never covering it, so the close toggle stays
+   reachable), inset to the same gutter, as an 8px panel. */
 .ch-navbar-overlay {
   position: fixed;
   top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(15, 23, 42, 0.32);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(11, 20, 36, 0.28);
   z-index: calc(var(--z-sticky) - 1);
   opacity: 0;
   visibility: hidden;
@@ -222,19 +230,19 @@
 .ch-navbar__sidebar {
   position: fixed;
   top: calc(var(--navbar-height) + var(--navbar-gap) * 2);
-  right: 0;
-  bottom: 0;
-  width: min(320px, 84vw);
+  right: var(--navbar-gap);
+  bottom: var(--navbar-gap);
+  width: min(320px, calc(100vw - var(--navbar-gap) * 2));
   background: var(--bg-elevated);
-  border-left: 1px solid var(--border);
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-surface);
   box-shadow: var(--shadow-lg);
   z-index: var(--z-sticky);
-  padding: var(--space-5);
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  transform: translateX(100%);
+  gap: var(--space-3);
+  transform: translateX(calc(100% + var(--navbar-gap)));
   opacity: 0;
   transition: transform var(--duration-slow) var(--ease-out), opacity var(--duration-slow) var(--ease-standard);
   overflow-y: auto;
@@ -252,16 +260,18 @@
 }
 
 .ch-navbar__sidebar-nav a {
-  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
   font-size: var(--fs-body);
-  font-weight: var(--fw-medium);
-  padding: var(--space-2);
-  border-radius: var(--radius-md);
-  transition: background var(--duration-fast), color var(--duration-fast);
+  font-weight: var(--fw-semibold);
+  transition: background var(--duration-fast);
 }
 .ch-navbar__sidebar-nav a:hover {
   background: var(--surface);
-  color: var(--text-primary);
 }
 
 .ch-navbar__sidebar-actions {
@@ -273,11 +283,15 @@
   margin-top: auto;
 }
 
-.ch-navbar__sidebar-actions a:first-child {
-  text-align: center;
-  padding: var(--space-2) 0;
-  color: var(--text-secondary);
-  font-weight: var(--fw-medium);
+.ch-navbar__sidebar-actions a:first-child:not(.ch-btn) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
 }
 
 @media (max-width: 860px) {
@@ -287,6 +301,10 @@
   }
   .ch-navbar__mobile-bar {
     display: flex;
+  }
+  .ch-navbar__inner {
+    padding-left: var(--space-4);
+    padding-right: 8px;
   }
 }
 
@@ -299,50 +317,54 @@
 
 /* ---------- Footer ---------- */
 .ch-footer {
-  border-top: 1px solid var(--border);
-  padding: var(--space-16) 0 0;
   margin-top: auto;
+  padding: var(--space-16) 0 0;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
 }
 
 .ch-footer__inner {
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 var(--gutter);
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: var(--space-8);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-10);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .ch-footer__inner {
-    grid-template-columns: 1fr;
-    gap: var(--space-8);
-    text-align: left;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-6);
+  }
+  .ch-footer__brand-col {
+    grid-column: 1 / -1;
   }
 }
 
 .ch-footer__brand {
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-h4);
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   margin: 0;
 }
 
 .ch-footer__tagline {
-  color: var(--text-muted);
-  font-size: var(--fs-caption);
-  margin: 2px 0 var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--fs-body-sm);
+  margin: var(--space-2) 0 var(--space-5);
 }
 
 .ch-footer__social {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 .ch-footer__social a {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-strong);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -351,15 +373,15 @@
 }
 .ch-footer__social a:hover {
   color: var(--text-primary);
-  border-color: var(--border-strong);
+  border-color: var(--text-primary);
 }
 
 .ch-footer__col-heading {
   color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
+  font-size: 0.75rem;
+  font-weight: var(--fw-bold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   margin: 0 0 var(--space-4);
 }
 
@@ -371,16 +393,17 @@
 .ch-footer__col nav a {
   color: var(--text-secondary);
   font-size: var(--fs-body-sm);
+  transition: color var(--duration-fast);
 }
 .ch-footer__col nav a:hover {
   color: var(--text-primary);
 }
 
 .ch-footer__bottom {
-  margin-top: var(--space-12);
+  max-width: var(--container-max);
+  margin: var(--space-12) auto 0;
   border-top: 1px solid var(--border);
-  padding: var(--space-6);
-  text-align: center;
+  padding: var(--space-6) var(--gutter);
 }
 
 .ch-footer__copyright {
@@ -422,7 +445,7 @@
   display: inline-block;
   margin-left: 6px;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-micro);
   background: var(--accent-soft);
   color: var(--color-green-400);
   font-size: 10px;
@@ -448,7 +471,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: 11px var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: var(--fs-body-sm);
   font-weight: var(--fw-medium);
@@ -485,7 +508,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 2px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-micro);
   background: var(--surface-active);
   color: var(--text-muted);
 }
@@ -542,7 +565,7 @@
   display: none;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text-primary);
   padding: var(--space-2);
   cursor: pointer;
@@ -566,6 +589,7 @@
   background: transparent;
   border: none;
   padding: 0;
+  border-radius: var(--radius-control);
   cursor: pointer;
   display: inline-flex;
 }
@@ -577,7 +601,7 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   color: var(--text-secondary);
   font-size: 1.15rem;
   margin-right: var(--space-3);
@@ -594,7 +618,7 @@
   min-width: 16px;
   height: 16px;
   padding: 0 3px;
-  border-radius: 999px;
+  border-radius: var(--radius-micro);
   background: var(--color-danger-600);
   color: white;
   font-size: 10px;

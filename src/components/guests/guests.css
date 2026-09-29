@@ -13,7 +13,7 @@
 
 .ch-guest-stats__tile {
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
   display: flex;
@@ -73,7 +73,7 @@
   padding: var(--space-3) var(--space-4);
   background: var(--accent-soft);
   border: 1px solid var(--border-accent);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
   margin-bottom: var(--space-4);
   font-size: var(--fs-body-sm);
 }
@@ -82,7 +82,7 @@
 .ch-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
 }
 
 .ch-table {
@@ -132,7 +132,7 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   display: inline-flex;
 }
 .ch-table__icon-btn:hover {
@@ -149,7 +149,7 @@
 
 .ch-guest-card {
   padding: var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-surface);
   border: 1px solid var(--border);
   background: var(--surface);
   display: flex;
@@ -202,7 +202,7 @@
   overflow-y: auto;
   overflow-x: auto;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-surface);
 }
 
 .ch-bulk-import__actions {

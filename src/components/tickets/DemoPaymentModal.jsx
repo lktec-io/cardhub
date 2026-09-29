@@ -104,7 +104,7 @@ export function DemoPaymentModal({ isOpen, amountTzs, payerPhone, onCancel, onCo
           <Button type="button" variant="ghost" onClick={close} disabled={isConfirming}>
             {t('tix.cancel')}
           </Button>
-          <Button type="submit" variant="brand" isLoading={isConfirming} disabled={pin.length !== 4}>
+          <Button type="submit" variant="conversion" isLoading={isConfirming} disabled={pin.length !== 4}>
             {t('tix.demo.confirm')}
           </Button>
         </div>
