@@ -31,4 +31,12 @@ export const eventsService = {
   analytics(id) {
     return api.get(`/events/${id}/analytics`);
   },
+  /** Event Workspace → Tickets: settings, tiers and sales stats for one owned event. */
+  getTickets(id) {
+    return api.get(`/events/${id}/tickets`);
+  },
+  /** Saves the whole ticket setup at once; the server validates and applies it in one transaction. */
+  saveTickets(id, payload) {
+    return api.put(`/events/${id}/tickets`, payload);
+  },
 };

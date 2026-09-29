@@ -172,6 +172,16 @@ export const eventRepository = {
     return this.findByIdAndUserId(id, userId);
   },
 
+  /** Ticket-sales settings (Event Workspace → Tickets). Owner-scoped like every other write in this file. */
+  async updateTicketSettingsByIdAndUserId(id, userId, { ticketSalesEnabled, coverImage, organizerContact, endTime }, db = pool) {
+    await db.query(
+      `UPDATE events
+       SET ticket_sales_enabled = ?, cover_image = ?, organizer_contact = ?, end_time = ?
+       WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
+      [ticketSalesEnabled ? 1 : 0, coverImage ?? null, organizerContact ?? null, endTime ?? null, id, userId]
+    );
+  },
+
   async incrementViewCount(id) {
     await pool.query('UPDATE events SET view_count = view_count + 1 WHERE id = ?', [id]);
   },

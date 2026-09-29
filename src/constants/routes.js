@@ -34,6 +34,8 @@ export const ROUTES = {
   eventDetail: (id) => `/dashboard/events/${id}`,
   DASHBOARD_EVENT_SETTINGS: '/dashboard/events/:id/settings',
   eventSettings: (id) => `/dashboard/events/${id}/settings`,
+  DASHBOARD_EVENT_TICKETS: '/dashboard/events/:id/tickets',
+  eventTickets: (id) => `/dashboard/events/${id}/tickets`,
   DASHBOARD_EVENT_BUILDER: '/dashboard/events/:id/builder',
   eventBuilder: (id) => `/dashboard/events/${id}/builder`,
   DASHBOARD_EVENT_GUESTS: '/dashboard/events/:id/guests',

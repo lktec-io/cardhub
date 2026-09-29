@@ -41,6 +41,7 @@ import { EventSettingsPage } from '../pages/dashboard/events/EventSettingsPage';
 import { InvitationBuilderPage } from '../pages/dashboard/events/builder/InvitationBuilderPage';
 import { GuestsPage } from '../pages/dashboard/events/guests/GuestsPage';
 import { EventAnalyticsPage } from '../pages/dashboard/events/EventAnalyticsPage';
+import { EventTicketsPage } from '../pages/dashboard/events/tickets/EventTicketsPage';
 
 import { TicketMarketplacePage } from '../pages/tickets/TicketMarketplacePage';
 import { TicketEventPage } from '../pages/tickets/TicketEventPage';
@@ -111,6 +112,7 @@ export function AppRoutes() {
           <Route path={ROUTES.DASHBOARD_EVENT_DETAIL} element={<EventWorkspaceLayout />}>
             <Route index element={<EventOverviewPage />} />
             <Route path="guests" element={<GuestsPage />} />
+            <Route path="tickets" element={<EventTicketsPage />} />
             <Route path="analytics" element={<EventAnalyticsPage />} />
             <Route path="settings" element={<EventSettingsPage />} />
           </Route>

@@ -66,6 +66,19 @@ export const ticketOrderRepository = {
     return this.findById(id, db);
   },
 
+  /** Paid sales for one event. Demo-mode revenue is kept separate so it is never reported as real money. */
+  async getEventSalesStats(eventId, db = pool) {
+    const [rows] = await db.query(
+      `SELECT
+         COALESCE(SUM(status = 'paid'), 0) AS paid_orders,
+         COALESCE(SUM(CASE WHEN status = 'paid' AND is_demo = 0 THEN total_tzs ELSE 0 END), 0) AS revenue_tzs,
+         COALESCE(SUM(CASE WHEN status = 'paid' AND is_demo = 1 THEN total_tzs ELSE 0 END), 0) AS demo_revenue_tzs
+       FROM ticket_orders WHERE event_id = ?`,
+      [eventId]
+    );
+    return rows[0];
+  },
+
   /**
    * Open orders whose reservation has lapsed, locked for expiry.
    * SKIP LOCKED lets concurrent sweeps (several requests at once) each

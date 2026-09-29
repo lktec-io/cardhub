@@ -10,6 +10,7 @@ import { ROUTES } from '../../../constants/routes';
 const TABS = [
   { label: 'Overview', to: (id) => ROUTES.eventDetail(id), end: true, enabled: true },
   { label: 'Guests', to: (id) => ROUTES.eventGuests(id), enabled: true },
+  { label: 'Tickets', to: (id) => ROUTES.eventTickets(id), enabled: true },
   { label: 'Messages', enabled: false },
   { label: 'Analytics', to: (id) => ROUTES.eventAnalytics(id), enabled: true },
   { label: 'Settings', to: (id) => ROUTES.eventSettings(id), enabled: true },

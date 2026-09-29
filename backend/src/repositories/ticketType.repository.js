@@ -34,6 +34,59 @@ export const ticketTypeRepository = {
     return rows[0] || null;
   },
 
+  // ---------- Organizer management (Event Workspace → Tickets) ----------
+
+  /** Every tier of an event, including paused ones, with how many orders reference it (a referenced tier can't be deleted). */
+  async findAllForManagement(eventId, db = pool) {
+    const [rows] = await db.query(
+      `SELECT tt.*,
+              GREATEST(CAST(tt.quantity_available AS SIGNED) - tt.quantity_sold - tt.quantity_reserved, 0) AS remaining,
+              (SELECT COUNT(*) FROM ticket_orders o WHERE o.ticket_type_id = tt.id) AS order_count
+       FROM ticket_types tt
+       WHERE tt.event_id = ?
+       ORDER BY tt.sort_order ASC, tt.id ASC`,
+      [eventId]
+    );
+    return rows;
+  },
+
+  /** Row-locks an event's tiers for the rest of the transaction, so a concurrent checkout can't change sold/reserved counts mid-edit. */
+  async lockAllForEvent(eventId, db) {
+    const [rows] = await db.query(
+      `SELECT tt.*, (SELECT COUNT(*) FROM ticket_orders o WHERE o.ticket_type_id = tt.id) AS order_count
+       FROM ticket_types tt WHERE tt.event_id = ? FOR UPDATE`,
+      [eventId]
+    );
+    return rows;
+  },
+
+  async insert({ eventId, name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder }, db) {
+    const [result] = await db.query(
+      `INSERT INTO ticket_types (event_id, name, description, price_tzs, quantity_available, max_per_order, status, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [eventId, name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder]
+    );
+    return result.insertId;
+  },
+
+  async updateForEvent(id, eventId, { name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder }, db) {
+    await db.query(
+      `UPDATE ticket_types
+       SET name = ?, description = ?, price_tzs = ?, quantity_available = ?, max_per_order = ?, status = ?, sort_order = ?
+       WHERE id = ? AND event_id = ?`,
+      [name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, id, eventId]
+    );
+  },
+
+  async setStatusForEvent(id, eventId, status, db) {
+    await db.query('UPDATE ticket_types SET status = ? WHERE id = ? AND event_id = ?', [status, id, eventId]);
+  },
+
+  /** Only ever called for a tier with no orders (FK RESTRICT would refuse otherwise). */
+  async deleteForEvent(id, eventId, db) {
+    await db.query('DELETE FROM ticket_types WHERE id = ? AND event_id = ?', [id, eventId]);
+  },
+
   /** Holds `quantity` tickets for a pending checkout. Returns false when there aren't enough left or sales aren't open. */
   async reserve(id, quantity, db = pool) {
     const [result] = await db.query(
