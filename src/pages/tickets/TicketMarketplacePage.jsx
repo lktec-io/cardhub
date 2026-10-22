@@ -89,56 +89,82 @@ export function TicketMarketplacePage() {
     <div className="ch-tix ch-tix-market">
       <Seo title="Event Tickets" description="Buy tickets for upcoming events in Tanzania on CardHub. Browse events, choose your ticket and get a QR ticket on your phone." />
 
-      <section className="ch-tix-market__intro">
+      {/* Booking-style hero: a labelled search panel, like a travel booking form. */}
+      <section className="ch-tix-market__intro ch-tix-hero">
         <Container>
-          <p className="ch-tix-eyebrow">{t('tix.market.eyebrow')}</p>
-          <h1 className="ch-tix-market__title">{t('tix.market.title')}</h1>
-          <p className="ch-tix-market__lead">{t('tix.market.lead')}</p>
+          <div className="ch-tix-hero__copy">
+            <p className="ch-tix-eyebrow">{t('tix.market.eyebrow')}</p>
+            <h1 className="ch-tix-market__title">{t('tix.market.heroTitle')}</h1>
+            <p className="ch-tix-market__lead">{t('tix.market.lead')}</p>
+          </div>
+
+          <form
+            className="ch-tix-search"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              updateParams({ search: searchInput.trim(), location: locationInput.trim() });
+              document.getElementById('ch-tix-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          >
+            <Input
+              className="ch-tix-search__what"
+              label={t('tix.search.what')}
+              icon={<FiSearch aria-hidden="true" />}
+              placeholder={t('tix.filters.searchPlaceholder')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              maxLength={100}
+              type="search"
+            />
+            <Input
+              label={t('tix.filters.location')}
+              icon={<FiMapPin aria-hidden="true" />}
+              placeholder={t('tix.search.wherePlaceholder')}
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              maxLength={100}
+            />
+            <Select label={t('tix.filters.dateLabel')} options={dateOptions} value={query.date} onChange={(e) => updateParams({ date: e.target.value })} />
+            <Select label={t('tix.filters.category')} options={categoryOptions} value={query.category} onChange={(e) => updateParams({ category: e.target.value })} />
+            <Select label={t('tix.filters.price')} options={priceOptions} value={query.maxPrice} onChange={(e) => updateParams({ maxPrice: e.target.value })} />
+            <Button type="submit" variant="conversion" className="ch-tix-search__submit" leftIcon={<FiSearch aria-hidden="true" />}>
+              {t('tix.search.submit')}
+            </Button>
+          </form>
+
+          <div className="ch-tix-hero__below">
+            <div className="ch-tix-quickdates" role="group" aria-label={t('tix.filters.dateLabel')}>
+              {['', ...TICKET_DATE_FILTERS].map((value) => (
+                <button
+                  key={value || 'any'}
+                  type="button"
+                  className={`ch-tix-quickdates__chip ${query.date === value ? 'ch-tix-quickdates__chip--active' : ''}`}
+                  aria-pressed={query.date === value}
+                  onClick={() => updateParams({ date: value })}
+                >
+                  {value ? t(`tix.filters.date.${value}`) : t('tix.filters.anyDate')}
+                </button>
+              ))}
+            </div>
+            {hasFilters && (
+              <button type="button" className="ch-tix-linkbtn ch-tix-filters__clear" onClick={clearFilters}>
+                <FiX aria-hidden="true" />
+                {t('tix.filters.clear')}
+              </button>
+            )}
+          </div>
+
           {paymentMode === 'demo' && (
             <p className="ch-tix-demo-note ch-tix-market__demo">
               <FiInfo aria-hidden="true" />
               {t('tix.event.demoNote')}
             </p>
           )}
-
-          <div className="ch-tix-filters" role="search">
-            <Input
-              className="ch-tix-filters__search"
-              icon={<FiSearch aria-hidden="true" />}
-              placeholder={t('tix.filters.searchPlaceholder')}
-              aria-label={t('tix.filters.searchPlaceholder')}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              maxLength={100}
-              type="search"
-            />
-            <Select
-              aria-label={t('tix.filters.category')}
-              options={categoryOptions}
-              value={query.category}
-              onChange={(e) => updateParams({ category: e.target.value })}
-            />
-            <Select aria-label={t('tix.filters.dateLabel')} options={dateOptions} value={query.date} onChange={(e) => updateParams({ date: e.target.value })} />
-            <Input
-              icon={<FiMapPin aria-hidden="true" />}
-              placeholder={t('tix.filters.location')}
-              aria-label={t('tix.filters.location')}
-              value={locationInput}
-              onChange={(e) => setLocationInput(e.target.value)}
-              maxLength={100}
-            />
-            <Select aria-label={t('tix.filters.price')} options={priceOptions} value={query.maxPrice} onChange={(e) => updateParams({ maxPrice: e.target.value })} />
-          </div>
-          {hasFilters && (
-            <button type="button" className="ch-tix-linkbtn ch-tix-filters__clear" onClick={clearFilters}>
-              <FiX aria-hidden="true" />
-              {t('tix.filters.clear')}
-            </button>
-          )}
         </Container>
       </section>
 
-      <section className="ch-tix-market__results" aria-live="polite" aria-busy={isLoading || undefined}>
+      <section className="ch-tix-market__results" id="ch-tix-results" aria-live="polite" aria-busy={isLoading || undefined}>
         <Container>
           {isLoading && (
             <div className="ch-tix-grid">
@@ -186,6 +212,7 @@ export function TicketMarketplacePage() {
 
           {!isLoading && state.status === 'success' && (
             <>
+              <h2 className="ch-tix-market__results-title">{t('tix.market.title')}</h2>
               <p className="ch-tix-market__count">{t(state.pagination.total === 1 ? 'tix.market.countOne' : 'tix.market.count', { count: state.pagination.total })}</p>
               <div className="ch-tix-grid">
                 {state.events.map((event) => (

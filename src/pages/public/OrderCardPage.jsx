@@ -216,8 +216,8 @@ export function OrderCardPage() {
             <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--secondary">
               {t('try.browseMore')}
             </Link>
-            <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--primary">
-              {t('card.createAccount')} <FiArrowRight aria-hidden="true" />
+            <Link to={ROUTES.TRY} className="ch-btn ch-btn--primary">
+              {t('card.createAnother')} <FiArrowRight aria-hidden="true" />
             </Link>
           </div>
         </div>

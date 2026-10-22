@@ -15,14 +15,26 @@ import './tickets-manager.css';
 const formatTzs = (value) => `TSh ${new Intl.NumberFormat('en-TZ').format(value)}`;
 const formatNumber = (value) => new Intl.NumberFormat('en-TZ').format(value);
 
+/** Organizer adapter: the customer-dashboard ticket endpoints. */
+const ORGANIZER_API = {
+  load: (id) => eventsService.getTickets(id).then((res) => res.data.data),
+  save: (id, payload) => eventsService.saveTickets(id, payload).then((res) => res.data.data),
+  publish: (id) => eventsService.publish(id),
+};
+
+export function EventTicketsPage() {
+  const { event, reload } = useOutletContext();
+  return <TicketsManager event={event} reload={reload} api={ORGANIZER_API} />;
+}
+
 /**
- * Event Workspace → Tickets. The organizer switches ticket sales on,
+ * Event Workspace → Tickets, and Admin → Events & tickets through `api`
+ * ({ load, save, publish }). The organizer switches ticket sales on,
  * manages ticket tiers and prices, and sets the event cover. Everything is
  * saved together (PUT /events/:id/tickets) and applied by the server in
  * one transaction; what's already sold is protected server-side.
  */
-export function EventTicketsPage() {
-  const { event, reload } = useOutletContext();
+export function TicketsManager({ event, reload, api, showCover = true }) {
   const toast = useToast();
   const [data, setData] = useState(null);
   const [form, setForm] = useState(null);
@@ -41,14 +53,14 @@ export function EventTicketsPage() {
   }, []);
 
   const fetchTickets = useCallback(() => {
-    eventsService
-      .getTickets(event.id)
-      .then((res) => {
-        apply(res.data.data);
+    api
+      .load(event.id)
+      .then((next) => {
+        apply(next);
         setLoadState('success');
       })
       .catch(() => setLoadState('error'));
-  }, [event.id, apply]);
+  }, [api, event.id, apply]);
 
   function load() {
     setLoadState('loading');
@@ -119,6 +131,7 @@ export function EventTicketsPage() {
 
   async function handleSave() {
     const clientErrors = validateForm(form);
+    if (!showCover) delete clientErrors.coverImage; // not editable here, and not sent
     setErrors(clientErrors);
     if (Object.keys(clientErrors).length) {
       setFormError('Please fix the highlighted fields.');
@@ -127,8 +140,10 @@ export function EventTicketsPage() {
     setSaving(true);
     setFormError('');
     try {
-      const res = await eventsService.saveTickets(event.id, toPayload(form));
-      apply(res.data.data);
+      const payload = toPayload(form);
+      // Without the cover panel the server keeps the stored poster (an omitted coverImage means "unchanged").
+      if (!showCover) delete payload.coverImage;
+      apply(await api.save(event.id, payload));
       setErrors({});
       toast.success('Ticket settings saved.');
     } catch (error) {
@@ -143,11 +158,11 @@ export function EventTicketsPage() {
   async function handlePublish() {
     setPublishing(true);
     try {
-      await eventsService.publish(event.id);
+      await api.publish(event.id);
       toast.success('Event published.');
       reload();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'This event isn’t ready to publish yet. Check the Overview tab.'));
+      toast.error(getErrorMessage(error, 'This event isn’t ready to publish yet. Check the event details.'));
     } finally {
       setPublishing(false);
     }
@@ -304,6 +319,7 @@ export function EventTicketsPage() {
           </section>
 
           {/* ---------- Cover ---------- */}
+          {showCover && (
           <section className="ch-tm-panel" aria-labelledby="ch-tm-cover">
             <div className="ch-tm-panel__head">
               <div>
@@ -315,6 +331,7 @@ export function EventTicketsPage() {
             </div>
             <CoverDropzone
               value={form.coverImage}
+              previewUrl={form.coverImage === data.event.coverImage ? data.event.coverImageUrl : undefined}
               onChange={(url) => {
                 update({ coverImage: url });
                 setErrors((prev) => ({ ...prev, coverImage: undefined }));
@@ -324,6 +341,7 @@ export function EventTicketsPage() {
               disabled={saving}
             />
           </section>
+          )}
         </div>
 
         {/* ---------- Overview ---------- */}

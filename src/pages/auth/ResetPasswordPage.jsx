@@ -53,7 +53,7 @@ export function ResetPasswordPage() {
           <Alert variant="success" title={t('resetPassword.successTitle')}>
             {t('resetPassword.successBody')}
           </Alert>
-          <Button variant="primary" fullWidth onClick={() => navigate(ROUTES.LOGIN, { replace: true })}>
+          <Button variant="primary" fullWidth onClick={() => navigate(ROUTES.ADMIN_LOGIN, { replace: true })}>
             {t('resetPassword.goToLogin')}
           </Button>
         </div>
@@ -95,7 +95,7 @@ export function ResetPasswordPage() {
         </form>
 
         <p className="ch-auth-form__footer">
-          <Link to={ROUTES.LOGIN}>{t('resetPassword.backToLogin')}</Link>
+          <Link to={ROUTES.ADMIN_LOGIN}>{t('resetPassword.backToLogin')}</Link>
         </p>
       </div>
     </>

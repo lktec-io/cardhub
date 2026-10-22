@@ -3,8 +3,14 @@ import { useAuth } from '../hooks/useAuth';
 import { Spinner } from '../components/ui';
 import { ROUTES } from '../constants/routes';
 
+/**
+ * The organizer workspace (/dashboard: invitation builder, guests, event
+ * tickets) is now staff-only: public customer accounts were retired in
+ * favour of the guest Try/Checkout flow. The data and API stay intact;
+ * the server still authorizes every call.
+ */
 export function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -16,7 +22,11 @@ export function ProtectedRoute() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
+    return <Navigate to={ROUTES.ADMIN_LOGIN} state={{ from: location }} replace />;
+  }
+
+  if (user?.role !== 'admin') {
+    return <Navigate to={ROUTES.HOME} replace />;
   }
 
   return <Outlet />;

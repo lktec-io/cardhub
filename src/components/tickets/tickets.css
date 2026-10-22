@@ -178,12 +178,25 @@
 .ch-tix-market__intro {
   padding: var(--space-6) 0 var(--space-6);
 }
+
+/* Booking-style hero: soft navy wash with the search panel as the focal point. */
+.ch-tix-hero {
+  background:
+    radial-gradient(1200px 320px at 85% -10%, rgba(18, 48, 95, 0.1), transparent 70%),
+    linear-gradient(180deg, #e8eef8 0%, var(--tix-soft) 70%, rgba(244, 247, 252, 0) 100%);
+  border-bottom: 1px solid var(--tix-line);
+  padding: var(--space-8) 0 var(--space-6);
+}
+.ch-tix-hero__copy {
+  max-width: 720px;
+}
 .ch-tix-market__title {
   margin-top: var(--space-2);
   font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.75rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  color: var(--tix-navy);
 }
 .ch-tix-market__lead {
   margin-top: var(--space-3);
@@ -192,44 +205,108 @@
   font-size: var(--fs-body-lg);
 }
 
-.ch-tix-filters {
+.ch-tix-search {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
   margin-top: var(--space-6);
-  padding: var(--space-3);
+  padding: var(--space-4);
   background: var(--tix-surface);
   border: 1px solid var(--tix-line);
+  border-top: 3px solid var(--tix-navy);
   border-radius: var(--radius-surface);
-  box-shadow: var(--tix-shadow);
+  box-shadow: var(--tix-shadow-hover);
 }
-.ch-tix-filters__search {
+.ch-tix-search .ch-field {
+  min-width: 0;
+  margin: 0;
+}
+.ch-tix-search__what,
+.ch-tix-search__submit {
   grid-column: 1 / -1;
 }
-.ch-tix-filters .ch-field {
-  min-width: 0;
+.ch-tix-search__submit {
+  min-height: 48px;
 }
 @media (max-width: 374px) {
-  .ch-tix-filters {
+  .ch-tix-search {
     grid-template-columns: 1fr;
+    padding: var(--space-3);
   }
 }
-.ch-tix-filters__clear {
-  margin-top: var(--space-3);
-  font-size: var(--fs-body-sm);
-}
 @media (min-width: 768px) {
-  .ch-tix-filters {
+  .ch-tix-search {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 @media (min-width: 1100px) {
-  .ch-tix-filters {
-    grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
+  .ch-tix-search {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr) repeat(3, minmax(0, 1fr)) auto;
+    align-items: end;
+    padding: var(--space-4) var(--space-5);
   }
-  .ch-tix-filters__search {
+  .ch-tix-search__what,
+  .ch-tix-search__submit {
     grid-column: auto;
   }
+  .ch-tix-search__submit {
+    min-height: 44px;
+  }
+}
+
+.ch-tix-hero__below {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.ch-tix-quickdates {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+.ch-tix-quickdates::-webkit-scrollbar {
+  display: none;
+}
+.ch-tix-quickdates__chip {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--tix-line-strong);
+  border-radius: var(--radius-micro);
+  background: var(--tix-surface);
+  color: var(--tix-text);
+  font: inherit;
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+.ch-tix-quickdates__chip:hover {
+  border-color: var(--tix-navy);
+  color: var(--tix-navy);
+}
+.ch-tix-quickdates__chip--active,
+.ch-tix-quickdates__chip--active:hover {
+  background: var(--selected-bg);
+  border-color: var(--selected-bg);
+  color: var(--selected-fg);
+}
+.ch-tix-filters__clear {
+  font-size: var(--fs-body-sm);
+}
+
+.ch-tix-market__results-title {
+  margin-bottom: var(--space-1);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--tix-navy);
+}
+#ch-tix-results {
+  scroll-margin-top: 80px;
 }
 
 .ch-tix-market__results {
@@ -390,6 +467,17 @@
   margin-top: auto;
   padding-top: var(--space-3);
   border-top: 1px solid var(--tix-line);
+}
+.ch-tix-card__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-auto-flow: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.ch-tix-card__actions .ch-btn {
+  min-height: 44px;
+  justify-content: center;
 }
 .ch-tix-card__price {
   display: flex;

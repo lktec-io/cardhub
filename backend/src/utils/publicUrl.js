@@ -1,4 +1,5 @@
 import { env } from '../config/env.js';
+import { mediaStorage } from '../services/providers/mediaStorage.js';
 
 /**
  * Resolves the absolute, public HTTPS URLs the delivery providers (SMS,
@@ -39,8 +40,12 @@ export function getTicketVerifyUrl(ticketToken) {
  * Cloudinary credential.
  */
 export function getPublicCardImageUrl(template) {
-  if (template.previewImage) {
-    return toAbsoluteUrl(template.previewImage);
+  // Callers pass either the template DTO (previewImage) or the raw DB row (preview_image).
+  const previewImage = template.previewImage || template.preview_image;
+  if (previewImage) {
+    // Admin-uploaded card images are stored as media keys (mediaStorage.js).
+    if (mediaStorage.isMediaKey(previewImage)) return mediaStorage.urlFor(previewImage);
+    return toAbsoluteUrl(previewImage);
   }
   if (template.slug) {
     return `${env.frontendUrl}/cards/${template.slug}.jpg`;

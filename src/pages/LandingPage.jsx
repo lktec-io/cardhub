@@ -21,6 +21,7 @@ import { TicketEventCard } from '../components/tickets';
 import { ROUTES } from '../constants/routes';
 import { templatesService } from '../services/templatesService';
 import { ticketsService } from '../services/ticketsService';
+import { publicService } from '../services/publicService';
 import { PRICING_TIER_LIST } from '../constants/pricingTiers';
 import { useLanguage } from '../hooks/useLanguage';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -88,7 +89,11 @@ export function LandingPage() {
   const [status, setStatus] = useState('loading');
   const [events, setEvents] = useState([]);
   const [eventsStatus, setEventsStatus] = useState('loading');
+  // Admin-published event videos; the built-in film is the fallback when there are none.
+  const [videos, setVideos] = useState([]);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const showHeroVideo = !reducedMotion && !heroVideoFailed;
+  const activeVideo = videos[activeVideoIndex] || videos[0] || null;
   const activeSlideContent = HERO_SLIDE_CONTENT[activeSlideIndex] || HERO_SLIDE_CONTENT[0];
   // Same title/description text as the desktop floating selector below,
   // handed to HeroSlideshow so it can render an in-image caption for
@@ -107,6 +112,13 @@ export function LandingPage() {
         setStatus(list.length === 0 ? 'empty' : 'success');
       })
       .catch(() => setStatus('error'));
+  }, []);
+
+  useEffect(() => {
+    publicService
+      .listVideos()
+      .then((res) => setVideos(res.data.data.videos))
+      .catch(() => setVideos([]));
   }, []);
 
   // Read-only showcase of what's on sale. Hidden entirely when there's nothing to show.
@@ -140,7 +152,7 @@ export function LandingPage() {
             <p className="ch-landing-hero__lead">{t('hero.supporting')}</p>
 
             <div className="ch-landing-hero__actions">
-              <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--conversion ch-btn--lg">
+              <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--lg">
                 {t('hero.ctaCreate')}
                 <FiArrowRight aria-hidden="true" />
               </Link>
@@ -234,7 +246,14 @@ export function LandingPage() {
           {status === 'success' && (
             <div className="ch-landing-gallery">
               {templates.map((template) => (
-                <TemplateCard key={template.id} template={template} onPreview={setPreviewTemplate} onShare={share} onDownload={download} />
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onPreview={setPreviewTemplate}
+                  onUse={(card) => navigate(`${ROUTES.TRY}?templateId=${card.id}`)}
+                  onShare={share}
+                  onDownload={download}
+                />
               ))}
             </div>
           )}
@@ -323,7 +342,21 @@ export function LandingPage() {
           </div>
 
           <figure className="ch-landing-film">
-            {showHeroVideo ? (
+            {activeVideo ? (
+              <video
+                key={activeVideo.id}
+                className="ch-landing-film__video"
+                src={activeVideo.url}
+                poster={activeVideo.posterUrl || undefined}
+                autoPlay={!reducedMotion}
+                muted
+                loop
+                playsInline
+                controls
+                preload="metadata"
+                aria-label={activeVideo.title}
+              />
+            ) : showHeroVideo ? (
               <video
                 className="ch-landing-film__video"
                 src={HERO_VIDEO_SRC}
@@ -340,7 +373,22 @@ export function LandingPage() {
                 <FiFilm aria-hidden="true" />
               </div>
             )}
-            <figcaption className="ch-landing-film__caption">{t('landing.film.label')}</figcaption>
+            <figcaption className="ch-landing-film__caption">{activeVideo ? activeVideo.title : t('landing.film.label')}</figcaption>
+            {videos.length > 1 && (
+              <div className="ch-landing-film__picker" role="group" aria-label={t('landing.film.pick')}>
+                {videos.map((video, index) => (
+                  <button
+                    key={video.id}
+                    type="button"
+                    className={`ch-landing-film__pick ${index === activeVideoIndex ? 'ch-landing-film__pick--active' : ''}`}
+                    aria-pressed={index === activeVideoIndex}
+                    onClick={() => setActiveVideoIndex(index)}
+                  >
+                    {video.title}
+                  </button>
+                ))}
+              </div>
+            )}
           </figure>
         </Container>
       </section>
@@ -398,12 +446,12 @@ export function LandingPage() {
               <p className="ch-landing-cta__text">{t('landing.ctaCreateDescription')}</p>
             </div>
             <div className="ch-landing-cta__actions">
-              <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--conversion ch-btn--lg">
-                {t('landing.createYourCard')}
+              <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--lg">
+                {t('landing.tryOurService')}
                 <FiArrowRight aria-hidden="true" />
               </Link>
-              <Link to={ROUTES.TRY} className="ch-btn ch-btn--lg ch-landing-cta__secondary">
-                {t('landing.tryOurService')}
+              <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--lg ch-landing-cta__secondary">
+                {t('landing.browseFullCatalogue')}
               </Link>
               <p className="ch-landing-cta__note">{t('landing.ctaTryDescription')}</p>
             </div>

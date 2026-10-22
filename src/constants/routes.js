@@ -59,6 +59,12 @@ export const ROUTES = {
   DASHBOARD_SETTINGS_LANGUAGE: '/dashboard/settings/language',
 
   ADMIN: '/admin',
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_CARDS: '/admin/cards',
+  ADMIN_MEDIA: '/admin/media',
+  ADMIN_TICKET_EVENTS: '/admin/ticket-events',
+  ADMIN_TICKET_EVENT: '/admin/ticket-events/:id',
+  adminTicketEvent: (id) => `/admin/ticket-events/${id}`,
   ADMIN_CUSTOMERS: '/admin/customers',
   ADMIN_CUSTOMER_DETAIL: '/admin/customers/:id',
   adminCustomerDetail: (id) => `/admin/customers/${id}`,

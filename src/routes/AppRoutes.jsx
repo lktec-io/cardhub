@@ -18,7 +18,6 @@ import { FaqPage } from '../pages/public/FaqPage';
 import { TermsPage } from '../pages/public/TermsPage';
 import { PrivacyPage } from '../pages/public/PrivacyPage';
 
-import { RegisterPage } from '../pages/auth/RegisterPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
@@ -57,7 +56,10 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
 import { AdminCustomerDetailPage } from '../pages/admin/AdminCustomerDetailPage';
 import { AdminEventsPage } from '../pages/admin/AdminEventsPage';
-import { AdminTemplatesPage } from '../pages/admin/AdminTemplatesPage';
+import { AdminCardsPage } from '../pages/admin/AdminCardsPage';
+import { AdminMediaPage } from '../pages/admin/AdminMediaPage';
+import { AdminTicketEventsPage } from '../pages/admin/AdminTicketEventsPage';
+import { AdminTicketEventPage } from '../pages/admin/AdminTicketEventPage';
 import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage';
 import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
@@ -95,9 +97,14 @@ export function AppRoutes() {
       {/* Where a ticket QR points — chrome-free VALID/INVALID screen for door staff */}
       <Route path={ROUTES.TICKET_VERIFY} element={<TicketVerifyPage />} />
 
+      {/* Public customer accounts are retired: old sign-in/sign-up links land on the
+          staff sign-in and the guest Try flow. The auth API itself is unchanged. */}
+      <Route path={ROUTES.LOGIN} element={<Navigate to={ROUTES.ADMIN_LOGIN} replace />} />
+      <Route path={ROUTES.REGISTER} element={<Navigate to={ROUTES.TRY} replace />} />
+      <Route path="/create" element={<Navigate to={ROUTES.TRY} replace />} />
+
       <Route element={<AuthLayout />}>
-        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+        <Route path={ROUTES.ADMIN_LOGIN} element={<LoginPage />} />
         <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
         <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
       </Route>
@@ -140,7 +147,11 @@ export function AppRoutes() {
           <Route path={ROUTES.ADMIN_CUSTOMERS} element={<AdminCustomersPage />} />
           <Route path={ROUTES.ADMIN_CUSTOMER_DETAIL} element={<AdminCustomerDetailPage />} />
           <Route path={ROUTES.ADMIN_EVENTS} element={<AdminEventsPage />} />
-          <Route path={ROUTES.ADMIN_TEMPLATES} element={<AdminTemplatesPage />} />
+          <Route path={ROUTES.ADMIN_TEMPLATES} element={<Navigate to={ROUTES.ADMIN_CARDS} replace />} />
+          <Route path={ROUTES.ADMIN_CARDS} element={<AdminCardsPage />} />
+          <Route path={ROUTES.ADMIN_MEDIA} element={<AdminMediaPage />} />
+          <Route path={ROUTES.ADMIN_TICKET_EVENTS} element={<AdminTicketEventsPage />} />
+          <Route path={ROUTES.ADMIN_TICKET_EVENT} element={<AdminTicketEventPage />} />
           <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrdersPage />} />
           <Route path={ROUTES.ADMIN_PAYMENTS} element={<AdminPaymentsPage />} />
           <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<AdminAuditLogsPage />} />

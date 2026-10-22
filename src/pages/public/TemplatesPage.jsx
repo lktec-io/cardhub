@@ -6,7 +6,6 @@ import { Button, EmptyState, Skeleton, Alert } from '../../components/ui';
 import { CardLightbox, TemplateCard, TemplateFilters } from '../../components/templates';
 import { useTemplateCatalog } from '../../hooks/useTemplateCatalog';
 import { useCardActions } from '../../hooks/useCardActions';
-import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useToast } from '../../hooks/useToast';
 import { templatesService } from '../../services/templatesService';
@@ -18,7 +17,6 @@ export function TemplatesPage() {
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const toast = useToast();
   const { share, download } = useCardActions();
@@ -69,11 +67,6 @@ export function TemplatesPage() {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
-
-  function handleUseTemplate() {
-    setPreviewTemplate(null);
-    navigate(isAuthenticated ? ROUTES.DASHBOARD_CREATE_EVENT : ROUTES.REGISTER);
-  }
 
   function handleUseCard(template) {
     navigate(`${ROUTES.TRY}?templateId=${template.id}`);
@@ -151,6 +144,7 @@ export function TemplatesPage() {
                   onPreview={openPreview}
                   onShare={share}
                   onDownload={download}
+                  onUse={handleUseCard}
                   onBuy={handleBuyNow}
                 />
               ))}
@@ -170,9 +164,6 @@ export function TemplatesPage() {
             <>
               <Button variant="secondary" size="sm" onClick={() => handleUseCard(previewTemplate)}>
                 {t('catalogue.useThisCard')}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={handleUseTemplate}>
-                {t('catalogue.buildFullInvitation')}
               </Button>
               <Button variant="primary" size="sm" onClick={() => handleBuyNow(previewTemplate)}>
                 {t('catalogue.buyNow')}

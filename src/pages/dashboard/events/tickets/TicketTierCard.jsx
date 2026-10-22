@@ -78,6 +78,26 @@ export function TicketTierCard({ tier, index, total, errors, onChange, onRemove,
           maxLength={255}
           disabled={disabled}
         />
+        <Input
+          className="ch-tm-tier__field--window"
+          label="Sales open (optional)"
+          type="datetime-local"
+          value={tier.salesStart}
+          onChange={set('salesStart')}
+          error={err('salesStart')}
+          hint={!err('salesStart') ? 'East Africa Time. Empty = on sale now.' : undefined}
+          disabled={disabled}
+        />
+        <Input
+          className="ch-tm-tier__field--window"
+          label="Sales close (optional)"
+          type="datetime-local"
+          value={tier.salesEnd}
+          onChange={set('salesEnd')}
+          error={err('salesEnd')}
+          hint={!err('salesEnd') ? 'Empty = until the event or sell-out.' : undefined}
+          disabled={disabled}
+        />
       </div>
 
       <footer className="ch-tm-tier__foot">

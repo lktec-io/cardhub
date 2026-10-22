@@ -68,6 +68,64 @@ cd backend && npm run smoke:tickets -- https://cardhub.co.tz/api/v1
 - Rollback: `npm run migrate:down` five times (025 → 021). This drops only the
   ticket tables and columns, so export ticket data first if any real sales exist.
 
+### Deploying the admin portal and media uploads (migration 026)
+
+Additive only: migration 026 creates `media_assets` (event videos). Card
+images reuse `event_templates.preview_image`; event posters reuse
+`events.cover_image`. Uploaded files live on the VPS disk, not in the
+database and not in Git.
+
+```bash
+# 0. Back up first
+mysqldump -u <user> -p cardhub | gzip > ~/cardhub-before-026-$(date +%Y%m%d).sql.gz
+
+# 1. Persistent media folder OUTSIDE the deploy directory (survives redeploys)
+sudo mkdir -p /var/lib/cardhub/media
+sudo chown <node-user>:<node-user> /var/lib/cardhub/media
+#    add to backend/.env:  MEDIA_ROOT=/var/lib/cardhub/media
+#    check backend/.env:   API_URL is the public API base, e.g. https://cardhub.co.tz/api/v1
+#                          (uploaded file URLs are built from it)
+
+# 2. API
+cd backend && npm install --omit=dev
+npm run migrate                 # applies 026 only ("Applied migration: 026_create_media_assets_table")
+pm2 restart cardhub-api --update-env
+
+# 3. Nginx: allow video uploads (up to 200 MB) on the admin media route only
+#    inside the server block, before `location /api/`:
+#      location /api/v1/admin/media/videos {
+#          client_max_body_size 210m;
+#          proxy_request_buffering off;
+#          proxy_read_timeout 300s;
+#          proxy_pass http://127.0.0.1:4006;
+#          proxy_set_header Host $host;
+#          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#          proxy_set_header X-Forwarded-Proto $scheme;
+#      }
+#    and in `location /api/` set client_max_body_size 10m; (card images/posters, 8 MB max)
+sudo nginx -t && sudo systemctl reload nginx
+
+# 4. Frontend
+npm install && npm run build    # publish dist/ as usual
+```
+
+- **Admin access:** `https://cardhub.co.tz/admin/login`. There is no admin
+  sign-up and no default password. To make an existing account an admin,
+  run once in MySQL: `UPDATE users SET role = 'admin' WHERE email = '<email>';`
+  Every `/api/v1/admin/*` route is checked server-side (`authenticate` +
+  `authorize('admin')`), and admin changes are written to the audit log.
+- **Retired public pages:** `/login` → `/admin/login`, `/register` and
+  `/create` → `/try`; `/dashboard/*` is admin-only. The backend auth API,
+  customer rows and their events are untouched.
+- **Backups:** include `MEDIA_ROOT` in the nightly backup (e.g.
+  `tar czf ~/backups/media-$(date +%F).tgz -C /var/lib/cardhub media`).
+  Without it, a DB restore would point at files that no longer exist.
+- Files are served at `/api/v1/media/...` with a 30-day immutable cache.
+  The file type is decided from the file's own bytes (JPG/PNG/WEBP up to 8 MB,
+  MP4/WEBM up to 200 MB) and every file gets a random server-generated name.
+- Rollback: `npm run migrate:down` once (drops `media_assets` only). Card
+  images and posters already uploaded keep working while `MEDIA_ROOT` stays.
+
 Nginx should terminate TLS for `cardhub.co.tz`, proxy `/api/` to
 `http://127.0.0.1:4006` (the PM2-managed Node process — `127.0.0.1` here
 is the loopback address Nginx uses to reach a same-host process, not a

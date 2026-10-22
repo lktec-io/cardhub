@@ -261,7 +261,8 @@
   gap: var(--space-3) var(--space-4);
 }
 .ch-tm-tier__field--name,
-.ch-tm-tier__field--wide {
+.ch-tm-tier__field--wide,
+.ch-tm-tier__field--window {
   grid-column: 1 / -1;
 }
 @media (min-width: 760px) {
@@ -270,6 +271,9 @@
   }
   .ch-tm-tier__field--name {
     grid-column: auto;
+  }
+  .ch-tm-tier__field--window {
+    grid-column: span 2;
   }
 }
 

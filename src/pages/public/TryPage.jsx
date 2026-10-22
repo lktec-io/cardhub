@@ -173,8 +173,8 @@ export function TryPage() {
               <Link to={ROUTES.TEMPLATES} className="ch-btn ch-btn--primary ch-btn--full">
                 {t('try.browseMore')}
               </Link>
-              <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--secondary ch-btn--full">
-                {t('try.createAccount')}
+              <Link to={ROUTES.TICKETS} className="ch-btn ch-btn--secondary ch-btn--full">
+                {t('try.browseTickets')}
               </Link>
             </div>
           </div>

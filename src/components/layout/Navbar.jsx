@@ -18,7 +18,7 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -44,10 +44,9 @@ export function Navbar() {
     };
   }, [isOpen]);
 
-  const ctaTarget = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.TEMPLATES;
-  const ctaLabel = isAuthenticated ? t('nav.goToDashboard') : t('nav.createYourCard');
-  // Emerald only for the create action; returning users just get navy navigation.
-  const ctaVariant = isAuthenticated ? 'ch-btn--primary' : 'ch-btn--conversion';
+  // No public customer accounts: the CTA always starts the guest Try flow. Signed-in
+  // staff get a quiet link back to the admin portal instead of a public "Log in".
+  const isStaff = isAuthenticated && user?.role === 'admin';
 
   return (
     <>
@@ -67,13 +66,13 @@ export function Navbar() {
 
           <div className="ch-navbar__actions ch-navbar__actions--desktop">
             <LanguageToggle />
-            {!isAuthenticated && (
-              <NavLink to={ROUTES.LOGIN} className="ch-navbar__login">
-                {t('nav.login')}
+            {isStaff && (
+              <NavLink to={ROUTES.ADMIN} className="ch-navbar__login">
+                {t('nav.admin')}
               </NavLink>
             )}
-            <Link to={ctaTarget} className={`ch-btn ${ctaVariant} ch-btn--sm`}>
-              {ctaLabel}
+            <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--sm">
+              {t('nav.tryService')}
             </Link>
           </div>
 
@@ -120,9 +119,9 @@ export function Navbar() {
           ))}
         </nav>
         <div className="ch-navbar__sidebar-actions">
-          {!isAuthenticated && <Link to={ROUTES.LOGIN}>{t('nav.login')}</Link>}
-          <Link to={ctaTarget} className={`ch-btn ${ctaVariant} ch-btn--full`}>
-            {ctaLabel}
+          {isStaff && <Link to={ROUTES.ADMIN}>{t('nav.admin')}</Link>}
+          <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--full">
+            {t('nav.tryService')}
           </Link>
         </div>
       </aside>

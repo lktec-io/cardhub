@@ -1,10 +1,12 @@
 import { pool } from '../config/db.js';
 
+// Sale windows (sales_start/sales_end) are stored in UTC and compared with UTC_TIMESTAMP(),
+// so they are correct whatever time zone the MySQL server runs in (see utils/eatTime.js).
 const SELECT_WITH_FLAGS = `
   SELECT tt.*,
          GREATEST(CAST(tt.quantity_available AS SIGNED) - tt.quantity_sold - tt.quantity_reserved, 0) AS remaining,
-         (tt.sales_start IS NULL OR tt.sales_start <= NOW()) AS sales_started,
-         (tt.sales_end IS NULL OR tt.sales_end >= NOW()) AS sales_not_ended
+         (tt.sales_start IS NULL OR tt.sales_start <= UTC_TIMESTAMP()) AS sales_started,
+         (tt.sales_end IS NULL OR tt.sales_end >= UTC_TIMESTAMP()) AS sales_not_ended
   FROM ticket_types tt`;
 
 /**
@@ -60,21 +62,23 @@ export const ticketTypeRepository = {
     return rows;
   },
 
-  async insert({ eventId, name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder }, db) {
+  async insert({ eventId, name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, salesStart, salesEnd }, db) {
     const [result] = await db.query(
-      `INSERT INTO ticket_types (event_id, name, description, price_tzs, quantity_available, max_per_order, status, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [eventId, name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder]
+      `INSERT INTO ticket_types (event_id, name, description, price_tzs, quantity_available, max_per_order, status, sort_order, sales_start, sales_end)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [eventId, name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, salesStart ?? null, salesEnd ?? null]
     );
     return result.insertId;
   },
 
-  async updateForEvent(id, eventId, { name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder }, db) {
+  /** salesStart/salesEnd are UTC SQL datetimes (or null). The caller passes the existing values through when the form didn't send them. */
+  async updateForEvent(id, eventId, { name, description, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, salesStart, salesEnd }, db) {
     await db.query(
       `UPDATE ticket_types
-       SET name = ?, description = ?, price_tzs = ?, quantity_available = ?, max_per_order = ?, status = ?, sort_order = ?
+       SET name = ?, description = ?, price_tzs = ?, quantity_available = ?, max_per_order = ?, status = ?, sort_order = ?,
+           sales_start = ?, sales_end = ?
        WHERE id = ? AND event_id = ?`,
-      [name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, id, eventId]
+      [name, description ?? null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder, salesStart ?? null, salesEnd ?? null, id, eventId]
     );
   },
 
@@ -93,8 +97,8 @@ export const ticketTypeRepository = {
       `UPDATE ticket_types
        SET quantity_reserved = quantity_reserved + ?
        WHERE id = ? AND status = 'active'
-         AND (sales_start IS NULL OR sales_start <= NOW())
-         AND (sales_end IS NULL OR sales_end >= NOW())
+         AND (sales_start IS NULL OR sales_start <= UTC_TIMESTAMP())
+         AND (sales_end IS NULL OR sales_end >= UTC_TIMESTAMP())
          AND quantity_sold + quantity_reserved + ? <= quantity_available`,
       [quantity, id, quantity]
     );

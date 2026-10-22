@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -132,6 +134,14 @@ export const env = {
   // operator explicitly sets TICKET_PAYMENT_MODE=demo.
   tickets: {
     paymentMode: (trimmed(process.env.TICKET_PAYMENT_MODE) || (isProd ? 'live' : 'demo')).toLowerCase(),
+  },
+
+  // Admin-managed media (card images, event posters, videos) stored on this
+  // server's own disk — see services/providers/mediaStorage.js. Must be a
+  // persistent directory outside the deploy folder in production so a
+  // redeploy never wipes uploads. Defaults to backend/storage/media locally.
+  media: {
+    root: path.resolve(trimmed(process.env.MEDIA_ROOT) || path.join(path.dirname(fileURLToPath(import.meta.url)), '../../storage/media')),
   },
 
   frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,

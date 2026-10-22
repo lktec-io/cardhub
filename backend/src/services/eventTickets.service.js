@@ -1,10 +1,12 @@
 import { ApiError } from '../utils/ApiError.js';
 import { withTransaction } from '../utils/withTransaction.js';
+import { utcSqlToEatLocal } from '../utils/eatTime.js';
 import { eventRepository } from '../repositories/event.repository.js';
 import { ticketTypeRepository } from '../repositories/ticketType.repository.js';
 import { ticketOrderRepository } from '../repositories/ticketOrder.repository.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { imageStorageProvider } from './providers/imageStorageProvider.js';
+import { resolveMediaUrl } from './providers/mediaStorage.js';
 import { TICKET_TYPE_STATUS } from '../constants/ticketStatus.js';
 import { EVENT_STATUS } from '../constants/eventStatus.js';
 
@@ -26,6 +28,9 @@ function toTierDTO(row) {
     remaining: Math.max(Number(row.quantity_available) - sold - reserved, 0),
     maxPerOrder: Number(row.max_per_order),
     status: row.status,
+    // East Africa Time wall clock, for datetime-local inputs.
+    salesStart: utcSqlToEatLocal(row.sales_start),
+    salesEnd: utcSqlToEatLocal(row.sales_end),
     // A tier with orders can be paused but never deleted: its tickets must stay valid.
     hasOrders: Number(row.order_count) > 0,
   };
@@ -37,7 +42,13 @@ async function getOwnedEventOrThrow(userId, eventId) {
   return event;
 }
 
-async function buildManagementDTO(event) {
+async function getAnyEventOrThrow(eventId) {
+  const event = await eventRepository.findByIdAny(eventId);
+  if (!event) throw ApiError.notFound('Event not found');
+  return event;
+}
+
+async function buildManagementDTO(event, { imageUploadsAvailable = imageStorageProvider.isConfigured } = {}) {
   const [tierRows, salesRow] = await Promise.all([
     ticketTypeRepository.findAllForManagement(event.id),
     ticketOrderRepository.getEventSalesStats(event.id),
@@ -54,7 +65,9 @@ async function buildManagementDTO(event) {
       eventDate: event.event_date,
       startTime: toHHMM(event.event_time),
       endTime: toHHMM(event.end_time),
+      // Raw stored reference (media key, app path or URL) for the form, plus a loadable URL for previews.
       coverImage: event.cover_image,
+      coverImageUrl: resolveMediaUrl(event.cover_image),
       organizerContact: event.organizer_contact,
       ticketSalesEnabled: Boolean(Number(event.ticket_sales_enabled)),
       isLive: Boolean(Number(event.ticket_sales_enabled)) && event.status === EVENT_STATUS.PUBLISHED,
@@ -70,109 +83,134 @@ async function buildManagementDTO(event) {
       demoRevenueTzs: Number(salesRow.demo_revenue_tzs),
     },
     // Lets the form say honestly whether direct image upload works on this server.
-    imageUploadsAvailable: imageStorageProvider.isConfigured,
+    imageUploadsAvailable,
   };
 }
 
 /**
- * Event Workspace → Tickets. Organizer-owned management of one event's
- * ticket setup. Every read and write is scoped to the authenticated
- * owner (findByIdAndUserId), exactly like the rest of /events.
+ * Applies a whole ticket setup to one event in one transaction, with the
+ * event's tiers row-locked so a checkout happening at the same moment
+ * can't move sold/reserved counts underneath the validation:
+ *   - a tier's quantity can never drop below what's sold + held
+ *   - a removed tier with orders is paused (hidden from sale), not deleted
+ *   - sales can only be switched on with at least one active tier and an event date
+ * Shared by the owner workspace and the admin portal; callers decide who may reach which event.
  */
-export const eventTicketsService = {
-  async getForOwner(userId, eventId) {
-    const event = await getOwnedEventOrThrow(userId, eventId);
-    return buildManagementDTO(event);
-  },
+async function saveTicketsForEvent(event, input, actorUserId, requestMeta, auditAction) {
+  const activeTiers = input.tiers.filter((tier) => tier.status === TICKET_TYPE_STATUS.ACTIVE);
+  if (input.ticketSalesEnabled) {
+    const details = [];
+    if (!activeTiers.length) details.push({ field: 'tiers', message: 'Add at least one active ticket tier before switching sales on' });
+    if (!event.event_date) details.push({ field: 'ticketSalesEnabled', message: 'Set the event date before switching sales on' });
+    if (details.length) throw ApiError.validation(details, 'Ticket sales can’t be switched on yet');
+  }
 
-  /**
-   * Applies the whole ticket setup in one transaction, with the event's
-   * tiers row-locked so a checkout happening at the same moment can't
-   * move sold/reserved counts underneath the validation:
-   *   - a tier's quantity can never drop below what's sold + held
-   *   - a removed tier with orders is paused (hidden from sale), not deleted
-   *   - sales can only be switched on with at least one active tier and an event date
-   */
-  async saveForOwner(userId, eventId, input, requestMeta) {
-    const event = await getOwnedEventOrThrow(userId, eventId);
-
-    const activeTiers = input.tiers.filter((tier) => tier.status === TICKET_TYPE_STATUS.ACTIVE);
-    if (input.ticketSalesEnabled) {
+  try {
+    await withTransaction(async (conn) => {
+      const existing = await ticketTypeRepository.lockAllForEvent(event.id, conn);
+      const byId = new Map(existing.map((row) => [row.id, row]));
+      const keptIds = new Set();
       const details = [];
-      if (!activeTiers.length) details.push({ field: 'tiers', message: 'Add at least one active ticket tier before switching sales on' });
-      if (!event.event_date) details.push({ field: 'ticketSalesEnabled', message: 'Set the event date in Settings before switching sales on' });
-      if (details.length) throw ApiError.validation(details, 'Ticket sales can’t be switched on yet');
-    }
 
-    try {
-      await withTransaction(async (conn) => {
-        const existing = await ticketTypeRepository.lockAllForEvent(event.id, conn);
-        const byId = new Map(existing.map((row) => [row.id, row]));
-        const keptIds = new Set();
-        const details = [];
-
-        input.tiers.forEach((tier, index) => {
-          if (tier.id === null) return;
-          const current = byId.get(tier.id);
-          if (!current) {
-            details.push({ field: `tiers.${index}.id`, message: 'This tier no longer exists. Refresh the page.' });
-            return;
-          }
-          keptIds.add(tier.id);
-          const committed = Number(current.quantity_sold) + Number(current.quantity_reserved);
-          if (tier.quantityAvailable < committed) {
-            details.push({
-              field: `tiers.${index}.quantityAvailable`,
-              message: `At least ${committed} — that many are already sold or being paid for`,
-            });
-          }
-        });
-        if (details.length) throw ApiError.validation(details);
-
-        // Removed tiers first (frees their names for re-use), then updates, then new tiers.
-        for (const row of existing) {
-          if (keptIds.has(row.id)) continue;
-          if (Number(row.order_count) > 0) await ticketTypeRepository.setStatusForEvent(row.id, event.id, TICKET_TYPE_STATUS.INACTIVE, conn);
-          else await ticketTypeRepository.deleteForEvent(row.id, event.id, conn);
+      input.tiers.forEach((tier, index) => {
+        if (tier.id === null) return;
+        const current = byId.get(tier.id);
+        if (!current) {
+          details.push({ field: `tiers.${index}.id`, message: 'This tier no longer exists. Refresh the page.' });
+          return;
         }
-        for (const tier of input.tiers) {
-          if (tier.id !== null) await ticketTypeRepository.updateForEvent(tier.id, event.id, tier, conn);
+        keptIds.add(tier.id);
+        const committed = Number(current.quantity_sold) + Number(current.quantity_reserved);
+        if (tier.quantityAvailable < committed) {
+          details.push({
+            field: `tiers.${index}.quantityAvailable`,
+            message: `At least ${committed} — that many are already sold or being paid for`,
+          });
         }
-        for (const tier of input.tiers) {
-          if (tier.id === null) await ticketTypeRepository.insert({ ...tier, eventId: event.id }, conn);
-        }
+      });
+      if (details.length) throw ApiError.validation(details);
 
-        await eventRepository.updateTicketSettingsByIdAndUserId(
+      // Removed tiers first (frees their names for re-use), then updates, then new tiers.
+      for (const row of existing) {
+        if (keptIds.has(row.id)) continue;
+        if (Number(row.order_count) > 0) await ticketTypeRepository.setStatusForEvent(row.id, event.id, TICKET_TYPE_STATUS.INACTIVE, conn);
+        else await ticketTypeRepository.deleteForEvent(row.id, event.id, conn);
+      }
+      for (const tier of input.tiers) {
+        if (tier.id === null) continue;
+        const current = byId.get(tier.id);
+        // A form that doesn't send sale windows (undefined) keeps the stored ones.
+        await ticketTypeRepository.updateForEvent(
+          tier.id,
           event.id,
-          userId,
           {
-            ticketSalesEnabled: input.ticketSalesEnabled,
-            coverImage: input.coverImage,
-            organizerContact: input.organizerContact,
-            endTime: input.endTime,
+            ...tier,
+            salesStart: tier.salesStart === undefined ? current.sales_start : tier.salesStart,
+            salesEnd: tier.salesEnd === undefined ? current.sales_end : tier.salesEnd,
           },
           conn
         );
-      });
-    } catch (error) {
-      // A paused tier with orders still owns its name (unique per event).
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw ApiError.conflict('Another tier (possibly a paused one with past orders) already uses one of these names. Choose a different name.');
       }
-      throw error;
-    }
+      for (const tier of input.tiers) {
+        if (tier.id === null) await ticketTypeRepository.insert({ ...tier, eventId: event.id }, conn);
+      }
 
-    await auditLogRepository.record({
-      userId,
-      action: 'event.tickets_updated',
-      entityType: 'event',
-      entityId: event.id,
-      metadata: { ticketSalesEnabled: input.ticketSalesEnabled, tiers: input.tiers.length, activeTiers: activeTiers.length },
-      ipAddress: requestMeta?.ipAddress,
-      userAgent: requestMeta?.userAgent,
+      await eventRepository.updateTicketSettingsByIdAndUserId(
+        event.id,
+        event.user_id,
+        {
+          ticketSalesEnabled: input.ticketSalesEnabled,
+          coverImage: input.coverImage === undefined ? event.cover_image : input.coverImage,
+          organizerContact: input.organizerContact,
+          endTime: input.endTime,
+        },
+        conn
+      );
     });
+  } catch (error) {
+    // A paused tier with orders still owns its name (unique per event).
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw ApiError.conflict('Another tier (possibly a paused one with past orders) already uses one of these names. Choose a different name.');
+    }
+    throw error;
+  }
 
-    const updated = await getOwnedEventOrThrow(userId, eventId);
-    return buildManagementDTO(updated);
+  await auditLogRepository.record({
+    userId: actorUserId,
+    action: auditAction,
+    entityType: 'event',
+    entityId: event.id,
+    metadata: { ticketSalesEnabled: input.ticketSalesEnabled, tiers: input.tiers.length, activeTiers: activeTiers.length },
+    ipAddress: requestMeta?.ipAddress,
+    userAgent: requestMeta?.userAgent,
+  });
+}
+
+/**
+ * Ticket setup management. Owner entry points are scoped to the
+ * authenticated owner (findByIdAndUserId), exactly like the rest of
+ * /events; admin entry points reach any event and are only mounted behind
+ * authenticate + authorize('admin').
+ */
+export const eventTicketsService = {
+  async getForOwner(userId, eventId) {
+    return buildManagementDTO(await getOwnedEventOrThrow(userId, eventId));
+  },
+
+  async saveForOwner(userId, eventId, input, requestMeta) {
+    const event = await getOwnedEventOrThrow(userId, eventId);
+    await saveTicketsForEvent(event, input, userId, requestMeta, 'event.tickets_updated');
+    return buildManagementDTO(await getOwnedEventOrThrow(userId, eventId));
+  },
+
+  /** Admin uploads go to the server's own media storage, which is always available. */
+  async getForAdmin(eventId) {
+    return buildManagementDTO(await getAnyEventOrThrow(eventId), { imageUploadsAvailable: true });
+  },
+
+  async saveForAdmin(adminUserId, eventId, input, requestMeta) {
+    const event = await getAnyEventOrThrow(eventId);
+    await saveTicketsForEvent(event, input, adminUserId, requestMeta, 'admin.event_tickets_updated');
+    return buildManagementDTO(await getAnyEventOrThrow(eventId), { imageUploadsAvailable: true });
   },
 };

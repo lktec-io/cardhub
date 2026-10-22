@@ -61,10 +61,17 @@ export function TicketEventCard({ event }) {
               </>
             )}
           </p>
-          <Link to={to} className="ch-btn ch-btn--brand ch-btn--sm">
+        </div>
+        <div className="ch-tix-card__actions">
+          <Link to={to} className="ch-btn ch-btn--secondary ch-btn--sm">
             {t('tix.viewEvent')}
-            <FiArrowRight aria-hidden="true" />
           </Link>
+          {!event.soldOut && (
+            <Link to={`${to}#tickets`} className="ch-btn ch-btn--conversion ch-btn--sm">
+              {t('tix.buyTicket')}
+              <FiArrowRight aria-hidden="true" />
+            </Link>
+          )}
         </div>
       </div>
     </article>

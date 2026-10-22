@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   FiBarChart2,
+  FiCalendar,
   FiCreditCard,
   FiFileText,
   FiGrid,
@@ -10,17 +11,20 @@ import {
   FiSettings,
   FiShoppingBag,
   FiUsers,
+  FiVideo,
 } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
 import { useLanguage } from '../../hooks/useLanguage';
 
 const NAV_ITEMS = [
   { key: 'sidebar.dashboard', to: ROUTES.ADMIN, icon: FiGrid, enabled: true, end: true },
-  { key: 'sidebar.admin.customers', to: ROUTES.ADMIN_CUSTOMERS, icon: FiUsers, enabled: true },
-  { key: 'sidebar.admin.templates', to: ROUTES.ADMIN_TEMPLATES, icon: FiLayers, enabled: true },
+  { key: 'sidebar.admin.ticketEvents', to: ROUTES.ADMIN_TICKET_EVENTS, icon: FiCalendar, enabled: true },
+  { key: 'sidebar.admin.cards', to: ROUTES.ADMIN_CARDS, icon: FiLayers, enabled: true },
+  { key: 'sidebar.admin.videos', to: ROUTES.ADMIN_MEDIA, icon: FiVideo, enabled: true },
   { key: 'sidebar.orders', to: ROUTES.ADMIN_ORDERS, icon: FiShoppingBag, enabled: true },
   { key: 'sidebar.admin.payments', to: ROUTES.ADMIN_PAYMENTS, icon: FiCreditCard, enabled: true },
-  { key: 'sidebar.admin.events', to: ROUTES.ADMIN_EVENTS, icon: FiImage, enabled: true },
+  { key: 'sidebar.admin.customers', to: ROUTES.ADMIN_CUSTOMERS, icon: FiUsers, enabled: true },
+  { key: 'sidebar.admin.invitationEvents', to: ROUTES.ADMIN_EVENTS, icon: FiImage, enabled: true },
   { key: 'sidebar.messages', icon: FiMessageSquare, enabled: false },
   { key: 'sidebar.analytics', icon: FiBarChart2, enabled: false },
   { key: 'sidebar.admin.auditLogs', to: ROUTES.ADMIN_AUDIT_LOGS, icon: FiFileText, enabled: true },
@@ -59,8 +63,8 @@ export function AdminSidebar({ isMobileOpen = false, onClose }) {
             )
           )}
         </nav>
-        <NavLink to={ROUTES.DASHBOARD} className="ch-sidebar__link ch-sidebar__back-link">
-          &larr; {t('sidebar.admin.backToCardHub')}
+        <NavLink to={ROUTES.HOME} className="ch-sidebar__link ch-sidebar__back-link">
+          &larr; {t('sidebar.admin.viewSite')}
         </NavLink>
       </aside>
     </>

@@ -1,4 +1,5 @@
 import { getPricingTier } from '../constants/pricingTiers.js';
+import { resolveMediaUrl } from '../services/providers/mediaStorage.js';
 
 function safeParseConfig(config) {
   if (!config) return null;
@@ -51,7 +52,7 @@ export function toPublicTemplate(row) {
     description: row.description,
     category: row.category,
     status: row.status,
-    previewImage: row.preview_image,
+    previewImage: resolveMediaUrl(row.preview_image),
     // Always computed here from the template's assigned tier — never a
     // client-supplied or hardcoded-in-a-component number. See
     // constants/pricingTiers.js.

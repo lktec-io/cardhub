@@ -71,10 +71,19 @@ export function TemplateCard({ template, onPreview, onSelect, onUse, onBuy, onSh
               </button>
             )}
           </div>
-          {onBuy && (
-            <Button variant="conversion" size="sm" fullWidth onClick={() => onBuy(template)}>
-              {t('catalogue.buyNow')}
-            </Button>
+          {(onUse || onBuy) && (
+            <div className="ch-gallery-card__ctas">
+              {onUse && (
+                <Button variant={onBuy ? 'secondary' : 'conversion'} size="sm" fullWidth onClick={() => onUse(template)}>
+                  {t('catalogue.tryThisCard')}
+                </Button>
+              )}
+              {onBuy && (
+                <Button variant="conversion" size="sm" fullWidth onClick={() => onBuy(template)}>
+                  {t('catalogue.buyNow')}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </article>

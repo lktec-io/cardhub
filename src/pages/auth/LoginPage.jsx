@@ -1,23 +1,31 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Input, PasswordField, Button, Alert, Divider } from '../../components/ui';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { FiLock } from 'react-icons/fi';
+import { Input, PasswordField, Button, Alert } from '../../components/ui';
 import { Seo } from '../../components/common';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { ROUTES } from '../../constants/routes';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 
+/**
+ * CardHub staff sign-in (/admin/login). Uses the normal auth API; an
+ * account without the admin role is signed straight back out. This is UX
+ * only: every /api/v1/admin/* call is authorized server-side, and there is
+ * no way to register an account from here.
+ */
 export function LoginPage() {
   const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, logout, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectTo = location.state?.from?.pathname || ROUTES.DASHBOARD;
+  const from = location.state?.from?.pathname;
+  const redirectTo = from && (from.startsWith(ROUTES.ADMIN) || from.startsWith(ROUTES.DASHBOARD)) ? from : ROUTES.ADMIN;
 
   function handleChange(field) {
     return (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -38,7 +46,12 @@ export function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await login(form);
+      const signedIn = await login(form);
+      if (signedIn?.role !== 'admin') {
+        await logout().catch(() => {});
+        setFormError(t('adminLogin.notAdmin'));
+        return;
+      }
       navigate(redirectTo, { replace: true });
     } catch (error) {
       if (error.response?.status === 429) {
@@ -51,16 +64,21 @@ export function LoginPage() {
     }
   }
 
+  if (!isLoading && user?.role === 'admin') return <Navigate to={redirectTo} replace />;
+
   return (
     <>
-      <Seo title="Log in" description="Log in to your CardHub account." />
+      <Seo title="Admin sign in" description="CardHub staff sign-in." noIndex />
       <div className="ch-auth-form">
-        <h1 className="ch-h3">{t('login.welcomeBack')}</h1>
-        <p className="ch-body-sm">{t('login.subtitle')}</p>
+        <p className="ch-auth-form__eyebrow">
+          <FiLock aria-hidden="true" /> {t('adminLogin.eyebrow')}
+        </p>
+        <h1 className="ch-h3">{t('adminLogin.title')}</h1>
+        <p className="ch-body-sm">{t('adminLogin.subtitle')}</p>
 
-        {formError && (
+        {(formError || (user && user.role !== 'admin')) && (
           <Alert variant="danger" className="ch-auth-form__alert">
-            {formError}
+            {formError || t('adminLogin.notAdmin')}
           </Alert>
         )}
 
@@ -71,7 +89,7 @@ export function LoginPage() {
             value={form.email}
             onChange={handleChange('email')}
             error={errors.email}
-            autoComplete="email"
+            autoComplete="username"
           />
           <PasswordField
             label={t('auth.passwordLabel')}
@@ -86,15 +104,13 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" variant="conversion" fullWidth isLoading={isSubmitting}>
-            {t('login.submit')}
+          <Button type="submit" variant="brand" fullWidth isLoading={isSubmitting}>
+            {t('adminLogin.submit')}
           </Button>
         </form>
 
-        <Divider />
-
         <p className="ch-auth-form__footer">
-          {t('login.noAccount')} <Link to={ROUTES.REGISTER}>{t('login.createOne')}</Link>
+          <Link to={ROUTES.HOME}>{t('adminLogin.backToSite')}</Link>
         </p>
       </div>
     </>

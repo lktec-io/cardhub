@@ -603,12 +603,48 @@
   color: var(--text-muted);
   font-size: 2rem;
 }
+/* Uploaded event videos keep their whole frame (they can be any shape). */
+.ch-landing-film__video[controls] {
+  object-fit: contain;
+}
 .ch-landing-film__caption {
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border);
   color: var(--text-secondary);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
+}
+.ch-landing-film__picker {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ch-landing-film__picker::-webkit-scrollbar {
+  display: none;
+}
+.ch-landing-film__pick {
+  flex: 0 0 auto;
+  min-height: 44px;
+  max-width: 220px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-micro);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.ch-landing-film__pick--active {
+  background: var(--selected-bg);
+  border-color: var(--selected-bg);
+  color: var(--selected-fg);
 }
 
 /* ---------- Why CardHub: bento ---------- */

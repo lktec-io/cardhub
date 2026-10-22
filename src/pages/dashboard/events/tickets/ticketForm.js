@@ -11,6 +11,8 @@ export const TIER_PRESETS = ['Early Bird', 'Regular', 'VIP', 'VVIP'];
 
 const COVER_URL_RE = /^https?:\/\/[^\s]+\.(jpe?g|png|webp)(\?[^\s]*)?$/i;
 const APP_ASSET_RE = /^\/(?!\/)(?!.*\.\.)[A-Za-z0-9_\-./]+\.(jpe?g|png|webp|svg)$/i;
+// A poster uploaded through the admin portal, stored on the CardHub server (backend mediaStorage key).
+const MEDIA_KEY_RE = /^media\/(cards|posters)\/\d{4}\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
 
 let keySeed = 0;
 const nextKey = () => `tier-${Date.now()}-${keySeed++}`;
@@ -24,6 +26,8 @@ export function blankTier(name = '') {
     priceTzs: '',
     quantityAvailable: '',
     maxPerOrder: '10',
+    salesStart: '',
+    salesEnd: '',
     status: 'active',
     quantitySold: 0,
     quantityReserved: 0,
@@ -46,6 +50,8 @@ export function toForm(data) {
       priceTzs: String(tier.priceTzs),
       quantityAvailable: String(tier.quantityAvailable),
       maxPerOrder: String(tier.maxPerOrder),
+      salesStart: tier.salesStart || '',
+      salesEnd: tier.salesEnd || '',
       status: tier.status,
       quantitySold: tier.quantitySold,
       quantityReserved: tier.quantityReserved,
@@ -70,6 +76,8 @@ export function toPayload(form) {
       priceTzs: Number(digits(tier.priceTzs)),
       quantityAvailable: Number(digits(tier.quantityAvailable)),
       maxPerOrder: Number(digits(tier.maxPerOrder)) || 10,
+      salesStart: tier.salesStart || null,
+      salesEnd: tier.salesEnd || null,
       status: tier.status,
     })),
   };
@@ -82,7 +90,7 @@ export function snapshot(form) {
 
 export function isValidCover(value) {
   const v = value.trim();
-  return !v || COVER_URL_RE.test(v) || APP_ASSET_RE.test(v);
+  return !v || COVER_URL_RE.test(v) || APP_ASSET_RE.test(v) || MEDIA_KEY_RE.test(v);
 }
 
 /** Returns { field: message } using the same keys as the API (`tiers.<i>.<field>`). */
@@ -105,6 +113,9 @@ export function validateForm(form) {
 
     const perOrder = Number(digits(tier.maxPerOrder));
     if (!perOrder || perOrder > TIER_LIMITS.maxPerOrderMax) errors[`tiers.${i}.maxPerOrder`] = `1–${TIER_LIMITS.maxPerOrderMax}`;
+
+    // datetime-local values (YYYY-MM-DDTHH:MM, East Africa Time) compare correctly as strings.
+    if (tier.salesStart && tier.salesEnd && tier.salesEnd <= tier.salesStart) errors[`tiers.${i}.salesEnd`] = 'Must be after sales open';
   });
   if (form.ticketSalesEnabled && !form.tiers.some((tier) => tier.status === 'active')) {
     errors.tiers = 'Add at least one ticket tier that is on sale before switching sales on';

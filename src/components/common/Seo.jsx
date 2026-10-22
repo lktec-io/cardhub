@@ -8,7 +8,7 @@ const CANONICAL_ORIGIN = 'https://cardhub.co.tz';
  * <head> automatically — no react-helmet or similar dependency needed for
  * this level of SEO foundation.
  */
-export function Seo({ title, description }) {
+export function Seo({ title, description, noIndex = false }) {
   const fullTitle = title ? `${title} — CardHub` : 'CardHub — Digital Cards Made Simple';
   const canonicalUrl = `${CANONICAL_ORIGIN}${typeof window !== 'undefined' ? window.location.pathname : ''}`;
 
@@ -22,6 +22,7 @@ export function Seo({ title, description }) {
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="CardHub" />
       <meta property="og:url" content={canonicalUrl} />
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
     </>
   );
 }

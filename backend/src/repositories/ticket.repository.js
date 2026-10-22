@@ -35,6 +35,30 @@ export const ticketRepository = {
     return rows;
   },
 
+  /** Admin: one event's issued tickets (tokens are never returned — only codes). */
+  async findByEventForAdmin(eventId, { search, limit, offset }) {
+    const conditions = ['t.event_id = ?'];
+    const params = [eventId];
+    if (search) {
+      conditions.push("(t.ticket_code LIKE ? ESCAPE '\\\\' OR t.holder_name LIKE ? ESCAPE '\\\\' OR t.holder_phone LIKE ? ESCAPE '\\\\')");
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    const where = conditions.join(' AND ');
+    const [rows] = await pool.query(
+      `SELECT t.id, t.ticket_code, t.holder_name, t.holder_phone, t.price_tzs, t.status, t.checked_in_at, t.created_at,
+              tt.name AS ticket_type_name, o.is_demo, o.status AS order_status
+       FROM tickets t
+       JOIN ticket_types tt ON tt.id = t.ticket_type_id
+       JOIN ticket_orders o ON o.id = t.ticket_order_id
+       WHERE ${where}
+       ORDER BY t.id DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM tickets t WHERE ${where}`, params);
+    return { rows, total: countRows[0].total };
+  },
+
   async findByTokenWithContext(token) {
     const [rows] = await pool.query(`${SELECT_TICKET_WITH_CONTEXT} WHERE t.token = ? LIMIT 1`, [token]);
     return rows[0] || null;

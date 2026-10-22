@@ -1,4 +1,5 @@
 import { getPublicTicketUrl, getTicketVerifyUrl } from './publicUrl.js';
+import { resolveMediaUrl } from '../services/providers/mediaStorage.js';
 
 /**
  * Public DTOs for the ticket marketplace. Like serializeEvent.js#toPublicInvitationDTO,
@@ -18,9 +19,7 @@ function toHHMM(time) {
 
 /** Cover images are only ever a root-relative app asset or an http(s) URL — never a data:/javascript: URI. */
 function safeCover(value) {
-  if (typeof value !== 'string' || !value) return null;
-  if (value.startsWith('/') && !value.startsWith('//')) return value;
-  return /^https?:\/\//i.test(value) ? value : null;
+  return resolveMediaUrl(value);
 }
 
 /** '+255794987520' -> '0794 *** 520'. A shared ticket link must not reveal the buyer's full number. */

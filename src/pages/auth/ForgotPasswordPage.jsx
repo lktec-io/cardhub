@@ -75,7 +75,7 @@ export function ForgotPasswordPage() {
         <Divider />
 
         <p className="ch-auth-form__footer">
-          {t('forgotPassword.remembered')} <Link to={ROUTES.LOGIN}>{t('login.submit')}</Link>
+          {t('forgotPassword.remembered')} <Link to={ROUTES.ADMIN_LOGIN}>{t('login.submit')}</Link>
         </p>
       </div>
     </>

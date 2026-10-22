@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FiAlertCircle, FiArrowLeft, FiArrowRight, FiCalendar, FiCheck, FiClock, FiInfo, FiMapPin, FiPhone, FiUser } from 'react-icons/fi';
 import { Container, Seo } from '../../components/common';
 import { Alert, Button, Input, Spinner } from '../../components/ui';
@@ -20,6 +20,7 @@ export function TicketEventPage() {
   const { t } = useLanguage();
   const checkoutRef = useRef(null);
   const ticketsRef = useRef(null);
+  const location = useLocation();
 
   const [state, setState] = useState({ status: 'loading', event: null, paymentMode: null, slug: null });
   const [pendingOrder, setPendingOrder] = useState(null);
@@ -41,6 +42,12 @@ export function TicketEventPage() {
       active = false;
     };
   }, [slug, reloadToken]);
+
+  // "Buy Ticket" on a marketplace card links to #tickets: jump to the ticket picker once loaded.
+  const isLoaded = state.status === 'success';
+  useEffect(() => {
+    if (isLoaded && location.hash === '#tickets') ticketsRef.current?.scrollIntoView({ block: 'start' });
+  }, [isLoaded, location.hash]);
 
   // An order this tab already opened for this event (e.g. the buyer refreshed or came back).
   useEffect(() => {
@@ -258,7 +265,7 @@ export function TicketEventPage() {
           </div>
 
           <aside className="ch-tix-event__aside">
-            <section className="ch-tix-panel" ref={ticketsRef} aria-labelledby="ch-tix-tickets-title">
+            <section className="ch-tix-panel ch-tix-event__tickets" id="tickets" ref={ticketsRef} aria-labelledby="ch-tix-tickets-title">
               <h2 className="ch-tix-panel__title" id="ch-tix-tickets-title">
                 {t('tix.event.tickets')}
               </h2>

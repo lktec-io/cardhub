@@ -66,6 +66,31 @@ export const ticketOrderRepository = {
     return this.findById(id, db);
   },
 
+  /** Admin: one event's orders with tier and latest payment, newest first. */
+  async findByEventForAdmin(eventId, { status, limit, offset }) {
+    const conditions = ['o.event_id = ?'];
+    const params = [eventId];
+    if (status) {
+      conditions.push('o.status = ?');
+      params.push(status);
+    }
+    const where = conditions.join(' AND ');
+    const [rows] = await pool.query(
+      `SELECT o.id, o.status, o.is_demo, o.buyer_name, o.buyer_phone, o.buyer_email, o.quantity, o.unit_price_tzs, o.total_tzs,
+              o.created_at, o.paid_at, tt.name AS ticket_type_name,
+              p.status AS payment_status, p.provider AS payment_provider, p.provider_reference
+       FROM ticket_orders o
+       JOIN ticket_types tt ON tt.id = o.ticket_type_id
+       LEFT JOIN payments p ON p.id = (SELECT MAX(p2.id) FROM payments p2 WHERE p2.ticket_order_id = o.id)
+       WHERE ${where}
+       ORDER BY o.id DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM ticket_orders o WHERE ${where}`, params);
+    return { rows, total: countRows[0].total };
+  },
+
   /** Paid sales for one event. Demo-mode revenue is kept separate so it is never reported as real money. */
   async getEventSalesStats(eventId, db = pool) {
     const [rows] = await db.query(

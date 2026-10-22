@@ -1,3 +1,4 @@
+import { resolveMediaUrl } from '../services/providers/mediaStorage.js';
 import { getPublicOrderUrl } from './publicUrl.js';
 
 /**
@@ -16,7 +17,7 @@ export function toOrderDTO(row) {
     id: row.id,
     invitationNumber: toInvitationNumber(row.id),
     template: row.template_id
-      ? { id: row.template_id, name: row.template_name, slug: row.template_slug, previewImage: row.template_preview_image }
+      ? { id: row.template_id, name: row.template_name, slug: row.template_slug, previewImage: resolveMediaUrl(row.template_preview_image) }
       : null,
     pricingTier: row.pricing_tier,
     unitPriceTzs: row.unit_price_tzs,
@@ -78,7 +79,7 @@ export function toPublicOrderCardDTO(row) {
   return {
     invitationNumber: toInvitationNumber(row.id),
     template: row.template_id
-      ? { name: row.template_name, slug: row.template_slug, previewImage: row.template_preview_image }
+      ? { name: row.template_name, slug: row.template_slug, previewImage: resolveMediaUrl(row.template_preview_image) }
       : null,
     guestName: row.guest_name,
     pricingTier: row.pricing_tier,

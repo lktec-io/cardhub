@@ -43,4 +43,82 @@ export const adminService = {
   getPayment(id) {
     return api.get(`/admin/payments/${id}`);
   },
+
+  // ---- Invitation card catalogue (multipart: field "image") ----
+  listCards() {
+    return api.get('/admin/cards');
+  },
+  createCard(details, file) {
+    return api.post('/admin/cards', toForm(details, 'image', file), { timeout: UPLOAD_TIMEOUT });
+  },
+  updateCard(id, details) {
+    return api.put(`/admin/cards/${id}`, details);
+  },
+  replaceCardImage(id, file) {
+    return api.post(`/admin/cards/${id}/image`, toForm({}, 'image', file), { timeout: UPLOAD_TIMEOUT });
+  },
+  reorderCards(ids) {
+    return api.put('/admin/cards/order', { ids });
+  },
+  deleteCard(id) {
+    return api.delete(`/admin/cards/${id}`);
+  },
+
+  // ---- Promotional videos (multipart: field "file"; poster field "image") ----
+  listMedia(params) {
+    return api.get('/admin/media', { params });
+  },
+  uploadVideo(details, file, onUploadProgress) {
+    return api.post('/admin/media/videos', toForm(details, 'file', file), { timeout: 0, onUploadProgress });
+  },
+  updateMedia(id, details) {
+    return api.put(`/admin/media/${id}`, details);
+  },
+  replaceMediaPoster(id, file) {
+    return api.post(`/admin/media/${id}/poster`, toForm({}, 'image', file), { timeout: UPLOAD_TIMEOUT });
+  },
+  reorderMedia(ids) {
+    return api.put('/admin/media/order', { ids });
+  },
+  deleteMedia(id) {
+    return api.delete(`/admin/media/${id}`);
+  },
+
+  // ---- Events & tickets ----
+  listTicketEvents(params) {
+    return api.get('/admin/ticket-events', { params });
+  },
+  createTicketEvent(details) {
+    return api.post('/admin/ticket-events', details);
+  },
+  getTicketEvent(id) {
+    return api.get(`/admin/ticket-events/${id}`);
+  },
+  updateTicketEvent(id, details) {
+    return api.put(`/admin/ticket-events/${id}`, details);
+  },
+  uploadTicketEventPoster(id, file) {
+    return api.post(`/admin/ticket-events/${id}/poster`, toForm({}, 'image', file), { timeout: UPLOAD_TIMEOUT });
+  },
+  setTicketEventPublished(id, published) {
+    return api.post(`/admin/ticket-events/${id}/${published ? 'publish' : 'unpublish'}`);
+  },
+  saveTicketEventTickets(id, payload) {
+    return api.put(`/admin/ticket-events/${id}/tickets`, payload);
+  },
+  listTicketEventOrders(id, params) {
+    return api.get(`/admin/ticket-events/${id}/orders`, { params });
+  },
+  listTicketEventTickets(id, params) {
+    return api.get(`/admin/ticket-events/${id}/tickets`, { params });
+  },
 };
+
+const UPLOAD_TIMEOUT = 120000;
+
+function toForm(fields, fileField, file) {
+  const form = new FormData();
+  Object.entries(fields).forEach(([key, value]) => value !== undefined && value !== null && form.append(key, value));
+  if (file) form.append(fileField, file);
+  return form;
+}

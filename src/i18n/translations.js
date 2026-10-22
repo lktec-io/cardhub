@@ -22,6 +22,8 @@ export const TRANSLATIONS = {
   'nav.goToDashboard': { en: 'Go to dashboard', sw: 'Nenda Dashibodi' },
   'nav.createYourCard': { en: 'Create Your Card', sw: 'Tengeneza Kadi Yako' },
   'nav.tickets': { en: 'Tickets', sw: 'Tiketi' },
+  'nav.tryService': { en: 'Try Our Service', sw: 'Jaribu Huduma Yetu' },
+  'nav.admin': { en: 'Admin', sw: 'Msimamizi' },
 
   // Catalogue
   'catalogue.eyebrow': { en: 'Card Catalogue', sw: 'Orodha ya Kadi' },
@@ -51,6 +53,7 @@ export const TRANSLATIONS = {
   'catalogue.select': { en: 'Select', sw: 'Chagua' },
   'catalogue.selected': { en: 'Selected', sw: 'Imechaguliwa' },
   'catalogue.useThisCard': { en: 'Use This Card', sw: 'Tumia Kadi Hii' },
+  'catalogue.tryThisCard': { en: 'Try with this card', sw: 'Jaribu na kadi hii' },
   'catalogue.buyNow': { en: 'Buy Now', sw: 'Nunua Sasa' },
   'catalogue.buildFullInvitation': { en: 'Build full invitation', sw: 'Tengeneza Mwaliko Kamili' },
   'catalogue.close': { en: 'Close', sw: 'Funga' },
@@ -146,6 +149,7 @@ export const TRANSLATIONS = {
     sw: '"Imepokelewa"/"Imetumwa" ina maana huduma imekubali kutuma kadi yako — hatuwahi kuonyesha njia kama imefanikiwa isipokuwa imefanikiwa kweli.',
   },
   'try.browseMore': { en: 'Browse more cards', sw: 'Vinjari kadi zaidi' },
+  'try.browseTickets': { en: 'Browse event tickets', sw: 'Tazama tiketi za matukio' },
   'try.createAccount': { en: 'Create a full account', sw: 'Fungua akaunti kamili' },
   'try.viewCard': { en: 'View your card', sw: 'Ona kadi yako' },
 
@@ -207,6 +211,7 @@ export const TRANSLATIONS = {
     en: 'Show this QR code at the door to confirm your attendance.',
     sw: 'Onyesha QR Code hii mlangoni kuthibitisha uwepo wako.',
   },
+  'card.createAnother': { en: 'Create another card', sw: 'Tengeneza kadi nyingine' },
   'card.createAccount': { en: 'Create a full account', sw: 'Fungua akaunti kamili' },
 
   // Admin orders
@@ -572,6 +577,12 @@ export const TRANSLATIONS = {
   'auth.rateLimited': { en: 'Too many attempts. Please wait a few minutes before trying again.', sw: 'Majaribio mengi sana. Tafadhali subiri dakika chache kabla ya kujaribu tena.' },
 
   // Login
+  'adminLogin.eyebrow': { en: 'CardHub staff', sw: 'Wafanyakazi wa CardHub' },
+  'adminLogin.title': { en: 'Admin sign in', sw: 'Ingia kama msimamizi' },
+  'adminLogin.subtitle': { en: 'Manage invitation cards, videos, events and tickets.', sw: 'Simamia kadi za mialiko, video, matukio na tiketi.' },
+  'adminLogin.submit': { en: 'Sign in', sw: 'Ingia' },
+  'adminLogin.notAdmin': { en: 'This account does not have admin access.', sw: 'Akaunti hii haina ruhusa ya msimamizi.' },
+  'adminLogin.backToSite': { en: 'Back to the CardHub website', sw: 'Rudi kwenye tovuti ya CardHub' },
   'login.welcomeBack': { en: 'Welcome back', sw: 'Karibu tena' },
   'login.subtitle': { en: 'Log in to manage your CardHub invitations.', sw: 'Ingia kusimamia mialiko yako ya CardHub.' },
   'login.invalidCredentials': { en: 'Invalid email or password', sw: 'Barua pepe au nywila si sahihi' },
@@ -630,6 +641,11 @@ export const TRANSLATIONS = {
   'sidebar.admin.events': { en: 'Events', sw: 'Matukio' },
   'sidebar.admin.payments': { en: 'Payments', sw: 'Malipo' },
   'sidebar.admin.auditLogs': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
+  'sidebar.admin.cards': { en: 'Invitation cards', sw: 'Kadi za mialiko' },
+  'sidebar.admin.videos': { en: 'Videos', sw: 'Video' },
+  'sidebar.admin.ticketEvents': { en: 'Events & tickets', sw: 'Matukio na tiketi' },
+  'sidebar.admin.invitationEvents': { en: 'Invitation events', sw: 'Matukio ya mialiko' },
+  'sidebar.admin.viewSite': { en: 'View website', sw: 'Tazama tovuti' },
   'sidebar.admin.backToCardHub': { en: 'Back to CardHub', sw: 'Rudi CardHub' },
 
   // Topbar
@@ -1012,6 +1028,7 @@ export const TRANSLATIONS = {
   'landing.tickets.point3': { en: 'A unique QR code on every ticket', sw: 'Msimbo wa QR wa kipekee kwenye kila tiketi' },
   'landing.tickets.cta': { en: 'Browse events', sw: 'Tazama matukio' },
   'landing.tickets.empty': { en: 'New events are coming soon.', sw: 'Matukio mapya yanakuja hivi karibuni.' },
+  'landing.film.pick': { en: 'Choose a video', sw: 'Chagua video' },
   'landing.film.label': { en: 'CardHub in action', sw: 'CardHub ikifanya kazi' },
   'landing.pricing.perCard': { en: 'per card', sw: 'kwa kadi' },
 
@@ -1029,6 +1046,11 @@ export const TRANSLATIONS = {
   // Tickets — shared
   'tix.from': { en: 'From', sw: 'Kuanzia' },
   'tix.viewEvent': { en: 'View Event', sw: 'Tazama Tukio' },
+  'tix.buyTicket': { en: 'Buy Ticket', sw: 'Nunua Tiketi' },
+  'tix.market.heroTitle': { en: 'Book your ticket to the next big event', sw: 'Kata tiketi ya tukio lijalo' },
+  'tix.search.what': { en: 'Event', sw: 'Tukio' },
+  'tix.search.wherePlaceholder': { en: 'City or venue', sw: 'Mji au ukumbi' },
+  'tix.search.submit': { en: 'Search events', sw: 'Tafuta matukio' },
   'tix.soldOut': { en: 'Sold out', sw: 'Zimeisha' },
   'tix.date': { en: 'Date', sw: 'Tarehe' },
   'tix.time': { en: 'Time', sw: 'Muda' },

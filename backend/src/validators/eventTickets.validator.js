@@ -1,6 +1,8 @@
 import { ApiError } from '../utils/ApiError.js';
 import { TIME_RE } from '../utils/dateTime.js';
+import { eatLocalToUtcSql } from '../utils/eatTime.js';
 import { isSafeImageUrl } from '../utils/safeImageUrl.js';
+import { mediaStorage } from '../services/providers/mediaStorage.js';
 import { TICKET_MAX_QUANTITY_PER_ORDER, TICKET_TYPE_STATUS } from '../constants/ticketStatus.js';
 
 export const TICKET_TIER_LIMITS = {
@@ -17,7 +19,7 @@ const CONTACT_MAX = 190;
 const APP_ASSET_RE = /^\/(?!\/)(?!.*\.\.)[A-Za-z0-9_\-./]+\.(jpe?g|png|webp|svg)$/i;
 
 function isAllowedCover(value) {
-  return isSafeImageUrl(value) || APP_ASSET_RE.test(value);
+  return isSafeImageUrl(value) || APP_ASSET_RE.test(value) || mediaStorage.isMediaKey(value);
 }
 const STATUSES = Object.values(TICKET_TYPE_STATUS);
 
@@ -40,7 +42,8 @@ export function validateTicketSettingsPayload(body = {}) {
     details.push({ field: 'ticketSalesEnabled', message: 'Choose whether ticket sales are on or off' });
   }
 
-  let cover = null;
+  // undefined = keep the stored cover (the admin portal uploads posters separately); null/'' = clear it.
+  let cover = coverImage === undefined ? undefined : null;
   if (coverImage !== undefined && coverImage !== null && coverImage !== '') {
     cover = typeof coverImage === 'string' ? coverImage.trim() : '';
     if (!isAllowedCover(cover)) {
@@ -108,7 +111,19 @@ export function validateTicketSettingsPayload(body = {}) {
     const status = tier?.status === undefined ? TICKET_TYPE_STATUS.ACTIVE : tier.status;
     if (!STATUSES.includes(status)) details.push({ field: at('status'), message: 'Invalid tier status' });
 
-    return { id, name, description: description || null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder: index + 1 };
+    // Sale window, entered as East Africa Time 'YYYY-MM-DDTHH:MM'. undefined = keep the stored value; null/'' = no limit.
+    const window = (value, field, label) => {
+      if (value === undefined) return undefined;
+      if (value === null || value === '') return null;
+      const utc = typeof value === 'string' ? eatLocalToUtcSql(value) : null;
+      if (!utc) details.push({ field: at(field), message: `Enter a valid ${label} date and time` });
+      return utc;
+    };
+    const salesStart = window(tier?.salesStart, 'salesStart', 'sales start');
+    const salesEnd = window(tier?.salesEnd, 'salesEnd', 'sales end');
+    if (salesStart && salesEnd && salesEnd <= salesStart) details.push({ field: at('salesEnd'), message: 'Sales must end after they start' });
+
+    return { id, name, description: description || null, priceTzs, quantityAvailable, maxPerOrder, status, sortOrder: index + 1, salesStart, salesEnd };
   });
 
   if (details.length) throw ApiError.validation(details);

@@ -15,6 +15,24 @@ export const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
+// Admin-uploaded media (services/providers/mediaStorage.js), read-only.
+// Mounted before the JSON API's no-store/rate-limit middleware: these are
+// immutable, uniquely-named files (safe to cache for a long time), a page
+// can load dozens of them, and video needs HTTP range requests (handled by
+// express.static). dotfiles:'deny' keeps the .incoming temp folder private.
+app.use(
+  '/api/v1/media',
+  (req, res, next) => {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Public files fetched without credentials (card Download/Share uses fetch in CORS mode).
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('X-Content-Type-Options', 'nosniff');
+    next();
+  },
+  express.static(env.media.root, { index: false, dotfiles: 'deny', redirect: false, maxAge: '30d', immutable: true }),
+  (req, res) => res.status(404).end()
+);
+
 // This API serves dynamic JSON, never static assets — Express's default
 // ETag generation + a client's conditional GET (If-None-Match) can
 // legitimately produce a genuine 304 Not Modified here. axios's default

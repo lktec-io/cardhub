@@ -39,7 +39,7 @@ export function HowItWorksPage() {
         </div>
 
         <div className="ch-journey-cta">
-          <Link to={ROUTES.REGISTER} className="ch-btn ch-btn--primary ch-btn--lg">
+          <Link to={ROUTES.TRY} className="ch-btn ch-btn--primary ch-btn--lg">
             {t('howItWorks.startCta')}
             <FiArrowRight aria-hidden="true" />
           </Link>

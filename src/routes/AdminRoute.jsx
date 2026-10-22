@@ -22,11 +22,12 @@ export function AdminRoute() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
+    return <Navigate to={ROUTES.ADMIN_LOGIN} state={{ from: location }} replace />;
   }
 
+  // A signed-in customer sees the admin sign-in with an "no admin access" notice.
   if (user?.role !== 'admin') {
-    return <Navigate to={ROUTES.DASHBOARD} replace />;
+    return <Navigate to={ROUTES.ADMIN_LOGIN} replace />;
   }
 
   return <Outlet />;

@@ -172,6 +172,82 @@ export const eventRepository = {
     return this.findByIdAndUserId(id, userId);
   },
 
+  // ---------- Admin portal (mounted behind authorize('admin') only) ----------
+
+  /** Any non-deleted event, regardless of owner. */
+  async findByIdAny(id, db = pool) {
+    const [rows] = await db.query(
+      `SELECT e.*, t.name AS template_name, t.slug AS template_slug, t.category AS template_category,
+              t.config AS template_config, t.status AS template_status, u.name AS owner_name, u.email AS owner_email
+       FROM events e
+       JOIN event_templates t ON t.id = e.template_id
+       JOIN users u ON u.id = e.user_id
+       WHERE e.id = ? AND e.deleted_at IS NULL
+       LIMIT 1`,
+      [id]
+    );
+    return rows[0] || null;
+  },
+
+  async updateDetailsById(id, { title, eventType, eventDate, eventTime, endTime, venueName, venueAddress, description, hostName, organizerContact }) {
+    await pool.query(
+      `UPDATE events
+       SET title = ?, event_type = ?, event_date = ?, event_time = ?, end_time = ?, venue_name = ?, venue_address = ?,
+           description = ?, host_name = ?, organizer_contact = ?
+       WHERE id = ? AND deleted_at IS NULL`,
+      [title, eventType, eventDate, eventTime, endTime, venueName, venueAddress, description, hostName, organizerContact, id]
+    );
+    return this.findByIdAny(id);
+  },
+
+  async updateCoverById(id, coverImage) {
+    await pool.query('UPDATE events SET cover_image = ? WHERE id = ? AND deleted_at IS NULL', [coverImage, id]);
+    return this.findByIdAny(id);
+  },
+
+  async setPublishedById(id, published) {
+    await pool.query(
+      `UPDATE events SET status = ?, published_at = ${published ? 'COALESCE(published_at, NOW())' : 'NULL'} WHERE id = ? AND deleted_at IS NULL`,
+      [published ? 'published' : 'draft', id]
+    );
+    return this.findByIdAny(id);
+  },
+
+  /**
+   * Admin ticketing overview: every event that sells (or is set up to sell)
+   * tickets, with allocation, sales and revenue. `scope: 'all'` also lists
+   * events with no ticket setup yet, so an admin can add tickets to them.
+   * Demo-mode revenue is summed separately and never mixed into real revenue.
+   */
+  async findAllTicketingAdmin({ search, scope, limit, offset }) {
+    const conditions = ['e.deleted_at IS NULL'];
+    const params = [];
+    if (scope !== 'all') conditions.push('(e.ticket_sales_enabled = 1 OR EXISTS (SELECT 1 FROM ticket_types x WHERE x.event_id = e.id))');
+    if (search) {
+      conditions.push("(e.title LIKE ? ESCAPE '\\\\' OR e.venue_name LIKE ? ESCAPE '\\\\')");
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    const where = conditions.join(' AND ');
+    const [rows] = await pool.query(
+      `SELECT e.id, e.title, e.slug, e.status, e.event_type, e.event_date, e.event_time, e.venue_name, e.cover_image,
+              e.ticket_sales_enabled, e.created_at, u.name AS owner_name,
+              (SELECT COUNT(*) FROM ticket_types tt WHERE tt.event_id = e.id) AS tier_count,
+              (SELECT COALESCE(SUM(tt.quantity_available), 0) FROM ticket_types tt WHERE tt.event_id = e.id) AS allocated,
+              (SELECT COALESCE(SUM(tt.quantity_sold), 0) FROM ticket_types tt WHERE tt.event_id = e.id) AS sold,
+              (SELECT COALESCE(SUM(tt.quantity_reserved), 0) FROM ticket_types tt WHERE tt.event_id = e.id) AS reserved,
+              (SELECT COALESCE(SUM(o.total_tzs), 0) FROM ticket_orders o WHERE o.event_id = e.id AND o.status = 'paid' AND o.is_demo = 0) AS revenue_tzs,
+              (SELECT COALESCE(SUM(o.total_tzs), 0) FROM ticket_orders o WHERE o.event_id = e.id AND o.status = 'paid' AND o.is_demo = 1) AS demo_revenue_tzs
+       FROM events e
+       JOIN users u ON u.id = e.user_id
+       WHERE ${where}
+       ORDER BY e.event_date IS NULL, e.event_date DESC, e.id DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM events e WHERE ${where}`, params);
+    return { rows, total: countRows[0].total };
+  },
+
   /** Ticket-sales settings (Event Workspace → Tickets). Owner-scoped like every other write in this file. */
   async updateTicketSettingsByIdAndUserId(id, userId, { ticketSalesEnabled, coverImage, organizerContact, endTime }, db = pool) {
     await db.query(

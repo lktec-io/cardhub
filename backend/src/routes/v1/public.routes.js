@@ -3,6 +3,7 @@ import { publicController } from '../../controllers/public.controller.js';
 import { publicRsvpController } from '../../controllers/publicRsvp.controller.js';
 import { publicOrdersController } from '../../controllers/publicOrders.controller.js';
 import { checkoutController } from '../../controllers/checkout.controller.js';
+import { adminContentController } from '../../controllers/adminContent.controller.js';
 import { rsvpLimiter, tryServiceLimiter } from '../../middleware/rateLimiter.js';
 
 export const publicRouter = Router();
@@ -33,3 +34,6 @@ publicRouter.patch('/orders/:token/rsvp', rsvpLimiter, publicOrdersController.su
 // the actual webhook that can.
 publicRouter.post('/checkout', tryServiceLimiter, checkoutController.initiate);
 publicRouter.get('/checkout/:token/status', checkoutController.status);
+
+// Published event/promo videos for the public showcase (admin-managed, read-only here).
+publicRouter.get('/media/videos', adminContentController.listPublicVideos);

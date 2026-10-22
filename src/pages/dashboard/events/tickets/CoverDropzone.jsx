@@ -14,7 +14,8 @@ const MAX_BYTES = 5 * 1024 * 1024;
  * and the organizer can paste an image link instead. Nothing here ever
  * shows a cover as "uploaded" unless the server returned a real URL.
  */
-export function CoverDropzone({ value, onChange, uploadsAvailable, error, disabled }) {
+// `previewUrl` is the server-resolved address of the stored cover (a poster uploaded in the admin portal is stored as a key, not a URL).
+export function CoverDropzone({ value, previewUrl, onChange, uploadsAvailable, error, disabled }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(null); // { previewUrl, name }
@@ -73,7 +74,7 @@ export function CoverDropzone({ value, onChange, uploadsAvailable, error, disabl
               <span>This image link couldn’t be loaded. Check the address.</span>
             </div>
           ) : (
-            <img src={value} alt="Event cover" onError={() => setPreviewFailed(true)} onLoad={() => setPreviewFailed(false)} />
+            <img src={previewUrl || value} alt="Event cover" onError={() => setPreviewFailed(true)} onLoad={() => setPreviewFailed(false)} />
           )}
           <figcaption className="ch-tm-cover__actions">
             <Button variant="secondary" size="sm" leftIcon={<FiRefreshCw aria-hidden="true" />} onClick={() => inputRef.current?.click()} disabled={disabled}>
