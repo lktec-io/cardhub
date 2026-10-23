@@ -312,3 +312,36 @@ html.ch-theme-dark .ch-tix-cover--fallback {
   background: linear-gradient(135deg, #15233f 0%, #0a1426 100%);
   color: rgba(232, 201, 141, 0.6);
 }
+
+/* ---------- Display type ----------
+   Playfair Display (upright high-contrast serif, no italics) for headlines,
+   card design names and event names; Nunito stays for body, forms and UI. */
+html.ch-theme-dark {
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+html.ch-theme-dark .ch-public-main h1,
+html.ch-theme-dark .ch-public-main h2,
+html.ch-theme-dark .ch-h1,
+html.ch-theme-dark .ch-h2,
+html.ch-theme-dark .ch-lx-hero__title,
+html.ch-theme-dark .ch-lx-title,
+html.ch-theme-dark .ch-lx-final__title,
+html.ch-theme-dark .ch-lx-step__num,
+html.ch-theme-dark .ch-lx-tier__price,
+html.ch-theme-dark .ch-tix-stage__title,
+html.ch-theme-dark .ch-tix-market__results-title,
+html.ch-theme-dark .ch-gallery-card__title,
+html.ch-theme-dark .ch-tix-card__title,
+html.ch-theme-dark .ch-lightbox__title,
+html.ch-theme-dark .ch-modal__title {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+/* The tickets panel headings and form steps read better in the UI sans. */
+html.ch-theme-dark .ch-tix-panel__title,
+html.ch-theme-dark .ch-public-main .ch-tix-panel h2 {
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
