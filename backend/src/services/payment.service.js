@@ -10,7 +10,7 @@ import { deliveryService } from './delivery.service.js';
 import { getPricingTier, DEFAULT_PRICING_TIER } from '../constants/pricingTiers.js';
 import { ORDER_SOURCE, ORDER_STATUS, PAYMENT_STATUS as ORDER_PAYMENT_STATUS, DELIVERY_STATUS, DELIVERY_CHANNEL_VALUES } from '../constants/orderStatus.js';
 import { PAYMENT_STATUS, canTransition } from '../constants/paymentStatus.js';
-import { toOrderDTO } from '../utils/serializeOrder.js';
+import { toGuestFacingOrderDTO } from '../utils/serializeOrder.js';
 import { assertHasContact, generatePublicToken, createOrderWithUniqueRsvpCode, buildDeliveryMessage } from './orders.service.js';
 
 function toPaymentDTO(payment) {
@@ -116,7 +116,7 @@ export const paymentService = {
     }
 
     return {
-      order: toOrderDTO(order),
+      order: toGuestFacingOrderDTO(order),
       payment: toPaymentDTO(updatedPayment),
       checkoutUrl: providerResult.checkoutUrl,
       providerAvailable: providerResult.status === 'created',
@@ -132,7 +132,7 @@ export const paymentService = {
     const order = await orderRepository.findByPublicToken(token);
     if (!order) throw ApiError.notFound('Order not found');
     const payments = await paymentRepository.findByOrderId(order.id);
-    return { order: toOrderDTO(order), payment: toPaymentDTO(payments[0] || null) };
+    return { order: toGuestFacingOrderDTO(order), payment: toPaymentDTO(payments[0] || null) };
   },
 
   /**

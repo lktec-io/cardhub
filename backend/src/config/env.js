@@ -99,13 +99,28 @@ export const env = {
   // invented; leaving these unset keeps `isConfigured` false and every
   // send honestly "unavailable".
   whatsapp: {
-    provider: trimmed(process.env.WHATSAPP_PROVIDER) || '',
+    // BEEM_WHATSAPP_API_URL on its own also selects Beem (the template transport).
+    provider: trimmed(process.env.WHATSAPP_PROVIDER) || (trimmed(process.env.BEEM_WHATSAPP_API_URL) ? 'beem' : ''),
     beemFrom: trimmed(process.env.BEEM_WHATSAPP_FROM) || '',
+    // Beem approved-template sending (business-initiated invitations). The
+    // key pair falls back to the SMS pair when no WhatsApp-specific one is set.
+    beem: {
+      apiUrl: firstCleanUrl(process.env.BEEM_WHATSAPP_API_URL) || '',
+      apiKey: trimmed(process.env.BEEM_WHATSAPP_API_KEY) || trimmed(process.env.BEEM_API_KEY) || '',
+      apiSecret: trimmed(process.env.BEEM_WHATSAPP_API_SECRET) || trimmed(process.env.BEEM_SECRET_KEY) || '',
+      templateId: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_ID) || '',
+      templateLanguage: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_LANGUAGE) || '',
+      callbackUrl: firstCleanUrl(process.env.BEEM_WHATSAPP_CALLBACK_URL) || '',
+      callbackSecret: trimmed(process.env.BEEM_WHATSAPP_CALLBACK_SECRET) || '',
+      authMode: (trimmed(process.env.BEEM_WHATSAPP_AUTH_MODE) || 'basic').toLowerCase(),
+      ratePerSecond: Number(process.env.BEEM_WHATSAPP_RATE_PER_SECOND) || 5,
+      timeoutMs: Number(process.env.BEEM_WHATSAPP_TIMEOUT_MS) || 15000,
+    },
     accessToken: trimmed(process.env.WHATSAPP_ACCESS_TOKEN) || '',
     phoneNumberId: trimmed(process.env.WHATSAPP_PHONE_NUMBER_ID) || '',
     businessAccountId: trimmed(process.env.WHATSAPP_BUSINESS_ACCOUNT_ID) || '',
     apiVersion: trimmed(process.env.WHATSAPP_API_VERSION) || 'v21.0',
-       webhookVerifyToken: trimmed(process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) || 'mimi_ndio_cardhub_2026',
+    webhookVerifyToken: trimmed(process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) || '',
   },
 
   // Payments (Phase 3) — services/providers/paymentProvider.js. No

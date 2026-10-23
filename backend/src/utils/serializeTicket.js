@@ -33,6 +33,8 @@ export function maskPhone(phone) {
 function toEventSummary(row) {
   return {
     slug: row.event_slug ?? row.slug,
+    // Public event number buyers can search for and quote to support.
+    reference: row.id && !row.event_slug ? `EV-${row.id}` : row.event_id ? `EV-${row.event_id}` : null,
     title: row.event_title ?? row.title,
     category: row.event_type,
     date: row.event_date,

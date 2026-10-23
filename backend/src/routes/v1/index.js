@@ -16,6 +16,7 @@ import { billingRouter } from './billing.routes.js';
 import { adminRouter } from './admin.routes.js';
 import { affiliatesRouter } from './affiliates.routes.js';
 import { ticketsRouter } from './tickets.routes.js';
+import { webhooksRouter } from './webhooks.routes.js';
 
 export const v1Router = Router();
 
@@ -36,3 +37,5 @@ v1Router.use('/billing', billingRouter);
 v1Router.use('/admin', adminRouter);
 v1Router.use('/affiliates', affiliatesRouter);
 v1Router.use('/tickets', ticketsRouter);
+// Provider callbacks: authenticated by a shared secret, not a user token.
+v1Router.use('/webhooks', webhooksRouter);

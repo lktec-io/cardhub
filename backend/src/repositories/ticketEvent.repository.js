@@ -21,7 +21,7 @@ const PUBLIC_EVENT_COLUMNS = `
  * selected. user_id, invitation config and view counts never leave this file.
  */
 export const ticketEventRepository = {
-  async findAllPublic({ fromDate, toDate, search, category, location, maxPrice, limit, offset }) {
+  async findAllPublic({ fromDate, toDate, search, reference, category, location, maxPrice, limit, offset }) {
     const conditions = [...PUBLIC_EVENT_CONDITIONS, 'e.event_date >= ?'];
     const params = [fromDate];
 
@@ -33,12 +33,19 @@ export const ticketEventRepository = {
       conditions.push('e.event_type = ?');
       params.push(category);
     }
+    // One search box: event name, organizer, venue, category, an on-sale
+    // ticket type's name, or the event reference (EV-12 / 12, exact match).
     if (search) {
-      conditions.push(
-        "(e.title LIKE ? ESCAPE '\\\\' OR e.description LIKE ? ESCAPE '\\\\' OR e.host_name LIKE ? ESCAPE '\\\\' OR e.venue_name LIKE ? ESCAPE '\\\\')"
-      );
+      const fields = ['e.title', 'e.description', 'e.host_name', 'e.venue_name', 'e.venue_address', 'e.event_type'];
       const like = `%${search}%`;
-      params.push(like, like, like, like);
+      const clauses = fields.map((field) => `${field} LIKE ? ESCAPE '\\\\'`);
+      clauses.push("EXISTS (SELECT 1 FROM ticket_types st WHERE st.event_id = e.id AND st.status = 'active' AND st.name LIKE ? ESCAPE '\\\\')");
+      params.push(...fields.map(() => like), like);
+      if (reference) {
+        clauses.push('e.id = ?');
+        params.push(reference);
+      }
+      conditions.push(`(${clauses.join(' OR ')})`);
     }
     if (location) {
       conditions.push("(e.venue_name LIKE ? ESCAPE '\\\\' OR e.venue_address LIKE ? ESCAPE '\\\\')");

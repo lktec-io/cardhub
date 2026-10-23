@@ -2,7 +2,7 @@ import { smsProvider } from './providers/smsProvider.js';
 import { whatsappProvider } from './providers/whatsappProvider.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { getPublicOrderUrl, getPublicCardImageUrl } from '../utils/publicUrl.js';
-import { buildInvitationSms, buildInvitationWhatsapp } from '../utils/messageTemplates.js';
+import { buildInvitationSms, buildInvitationTemplateParams, buildInvitationWhatsapp } from '../utils/messageTemplates.js';
 import { DELIVERY_STATUS, CHANNEL_STATUS, DELIVERY_CHANNELS } from '../constants/orderStatus.js';
 import { logger } from '../utils/logger.js';
 
@@ -74,6 +74,8 @@ async function recordAttempt({ order, channel, result, requestMeta }) {
       channel,
       provider: result.provider ?? null,
       status: result.status,
+      httpStatus: result.httpStatus ?? null,
+      templateId: channel === DELIVERY_CHANNELS.WHATSAPP ? whatsappProvider.templateId : null,
       providerMessageId: result.providerMessageId ?? null,
       error: result.error ?? null,
     },
@@ -121,11 +123,16 @@ export const deliveryService = {
     if (channels.includes(DELIVERY_CHANNELS.WHATSAPP)) {
       let result;
       try {
-        const imageUrl = getPublicCardImageUrl(template);
-        const caption = buildInvitationWhatsapp({ ...fields, publicUrl });
-        result = imageUrl
-          ? await whatsappProvider.sendCardImage({ to: order.guest_phone, imageUrl, caption })
-          : await whatsappProvider.sendCardMessage({ to: order.guest_phone, message: caption });
+        if (whatsappProvider.usesTemplate) {
+          // First contact must be the approved template (Meta's 24h rule); see whatsappProvider.js.
+          result = await whatsappProvider.sendInvitationTemplate({ to: order.guest_phone, params: buildInvitationTemplateParams({ ...fields, publicUrl }) });
+        } else {
+          const imageUrl = getPublicCardImageUrl(template);
+          const caption = buildInvitationWhatsapp({ ...fields, publicUrl });
+          result = imageUrl
+            ? await whatsappProvider.sendCardImage({ to: order.guest_phone, imageUrl, caption })
+            : await whatsappProvider.sendCardMessage({ to: order.guest_phone, message: caption });
+        }
       } catch (error) {
         logger.error('WhatsApp delivery threw unexpectedly', { orderId: order.id, message: error.message });
         result = { status: 'failed', provider: whatsappProvider.providerName, providerMessageId: null, error: error.message };

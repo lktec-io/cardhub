@@ -148,6 +148,15 @@ export const orderRepository = {
     return this.findById(id);
   },
 
+  /** Applies a provider delivery report to the order whose WhatsApp send returned this message id. Returns rows changed. */
+  async updateWhatsappStatusByProviderId(providerMessageId, whatsappStatus, whatsappError) {
+    const [result] = await pool.query(
+      'UPDATE orders SET whatsapp_status = ?, whatsapp_error = ? WHERE whatsapp_provider_message_id = ?',
+      [whatsappStatus, whatsappError, providerMessageId]
+    );
+    return result.affectedRows;
+  },
+
   /** Persists a delivery.service.js result — the overall status plus each requested channel's independent state. */
   async updateDeliveryResult(
     id,

@@ -174,3 +174,26 @@ export function buildInvitationWhatsapp({ guestName, eventType, eventName, venue
 
   return lines.join('\n');
 }
+
+/**
+ * Variables for the approved Beem WhatsApp invitation template
+ * (BEEM_WHATSAPP_TEMPLATE_ID, documented as template 1850), in its
+ * approved order:
+ *   1 guest name, 2 event name, 3 event date, 4 event time, 5 venue, 6 invitation URL
+ * WhatsApp rejects empty template variables, so a missing optional value
+ * becomes a neutral placeholder instead of "".
+ */
+export function buildInvitationTemplateParams({ guestName, eventName, eventDate, eventTime, venue, publicUrl }) {
+  const clean = (value, fallback) => {
+    const text = typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+    return text || fallback;
+  };
+  return [
+    clean(guestName, 'Mgeni'),
+    clean(eventName, 'Tukio'),
+    clean(formatDateLong(eventDate), 'Itatangazwa'),
+    clean(formatTimePlain(eventTime), 'Itatangazwa'),
+    clean(venue, 'Itatangazwa'),
+    publicUrl,
+  ];
+}

@@ -161,6 +161,11 @@ export function TryPage() {
                   </Badge>
                 )}
               </div>
+              {(order.whatsapp?.status === 'failed' || order.whatsapp?.status === 'unavailable') && (
+                <p className="ch-caption ch-try-page__success-note" role="status">
+                  {t(order.whatsapp.status === 'failed' ? 'try.whatsappFailed' : 'try.whatsappUnavailable')}
+                </p>
+              )}
               {order.publicUrl && (
                 <a href={order.publicUrl} target="_blank" rel="noreferrer" className="ch-btn ch-btn--outline ch-btn--sm ch-try-page__view-card-btn">
                   {t('try.viewCard')} <FiArrowRight aria-hidden="true" />

@@ -13,7 +13,9 @@
     "migrate:down": "node src/database/migrate.js down",
     "seed": "node src/database/seeds/run.js",
     "seed:demo-tickets": "node src/database/seeds/003_demo_ticket_event.seed.js",
-    "smoke:tickets": "node scripts/smoke-tickets.js"
+    "smoke:tickets": "node scripts/smoke-tickets.js",
+    "admin:create": "node scripts/create-admin.js",
+    "whatsapp:test": "node scripts/whatsapp-test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

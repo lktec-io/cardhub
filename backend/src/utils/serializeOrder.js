@@ -98,3 +98,14 @@ export function toPublicOrderCardDTO(row) {
     createdAt: row.created_at,
   };
 }
+
+/**
+ * The same order as seen by the anonymous guest who placed it (Try /
+ * checkout / payment-status screens): delivery statuses only. Provider
+ * error text and message ids stay staff-only (admin order views), since
+ * they describe server configuration, not the customer's card.
+ */
+export function toGuestFacingOrderDTO(row) {
+  const dto = toOrderDTO(row);
+  return { ...dto, sms: { status: dto.sms.status }, whatsapp: { status: dto.whatsapp.status } };
+}

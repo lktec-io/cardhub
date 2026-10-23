@@ -149,6 +149,12 @@ async function buildOrderDTO(order) {
   return toTicketOrderDTO(order, { event, ticketType, payment, tickets, paymentMode: paymentMode() });
 }
 
+/** "EV-12", "ev12", "#12" or "12" -> 12 (the event reference shown on event pages); anything else -> null. */
+function eventReferenceId(search) {
+  const match = /^(?:ev-?|#)?(\d{1,9})$/i.exec(String(search || '').trim());
+  return match ? Number(match[1]) : null;
+}
+
 export const ticketsService = {
   getPaymentMode: paymentMode,
 
@@ -160,6 +166,7 @@ export const ticketsService = {
     const { rows, total } = await ticketEventRepository.findAllPublic({
       ...range,
       search: filters.search ? escapeLike(filters.search) : '',
+      reference: eventReferenceId(filters.search),
       location: filters.location ? escapeLike(filters.location) : '',
       category: filters.category,
       maxPrice: filters.maxPrice,

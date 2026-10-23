@@ -7,7 +7,7 @@ import { deliveryService } from './delivery.service.js';
 import { getPricingTier, DEFAULT_PRICING_TIER } from '../constants/pricingTiers.js';
 import { ORDER_SOURCE, DELIVERY_STATUS } from '../constants/orderStatus.js';
 import { RSVP_STATUS } from '../constants/rsvpStatus.js';
-import { toOrderDTO, toPublicOrderCardDTO } from '../utils/serializeOrder.js';
+import { toGuestFacingOrderDTO, toOrderDTO, toPublicOrderCardDTO } from '../utils/serializeOrder.js';
 import { parsePagination, buildPaginationMeta } from '../utils/pagination.js';
 import { generateRsvpCode } from '../utils/rsvpCode.js';
 
@@ -153,7 +153,7 @@ export const ordersService = {
     });
 
     return {
-      order: toOrderDTO(order),
+      order: toGuestFacingOrderDTO(order),
       deliveryMessage: buildDeliveryMessage({ overallStatus: deliveryResult.overallStatus, channels }),
     };
   },

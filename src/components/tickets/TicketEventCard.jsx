@@ -61,12 +61,17 @@ export function TicketEventCard({ event }) {
               </>
             )}
           </p>
+          {event.reference && <span className="ch-tix-card__ref">{t('tix.reference', { ref: event.reference })}</span>}
         </div>
         <div className="ch-tix-card__actions">
           <Link to={to} className="ch-btn ch-btn--secondary ch-btn--sm">
             {t('tix.viewEvent')}
           </Link>
-          {!event.soldOut && (
+          {event.soldOut ? (
+            <span className="ch-btn ch-btn--secondary ch-btn--sm ch-tix-card__soldbtn" aria-disabled="true">
+              {t('tix.soldOut.cta')}
+            </span>
+          ) : (
             <Link to={`${to}#tickets`} className="ch-btn ch-btn--conversion ch-btn--sm">
               {t('tix.buyTicket')}
               <FiArrowRight aria-hidden="true" />
