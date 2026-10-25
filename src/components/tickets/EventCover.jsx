@@ -3,8 +3,9 @@ import { FiCalendar } from 'react-icons/fi';
 
 /** Event cover image with a quiet navy fallback. Never shows a broken-image icon. */
 export function EventCover({ src, alt, className = '', eager = false }) {
-  const [failed, setFailed] = useState(false);
-  const showImage = Boolean(src) && !failed;
+  // Remember which src failed, so a replaced poster gets a fresh attempt.
+  const [failedSrc, setFailedSrc] = useState(null);
+  const showImage = Boolean(src) && failedSrc !== src;
 
   return (
     <div className={`ch-tix-cover ${showImage ? '' : 'ch-tix-cover--fallback'} ${className}`}>
@@ -14,7 +15,10 @@ export function EventCover({ src, alt, className = '', eager = false }) {
           alt={alt}
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
-          onError={() => setFailed(true)}
+          onError={() => {
+            console.warn('Event image failed to load:', src);
+            setFailedSrc(src);
+          }}
         />
       ) : (
         <FiCalendar aria-hidden="true" />

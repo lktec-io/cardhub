@@ -109,6 +109,13 @@ export const adminService = {
   listTicketEventOrders(id, params) {
     return api.get(`/admin/ticket-events/${id}/orders`, { params });
   },
+  /** Door scanner: the server decides and admits a ticket at most once. */
+  checkInTicket(payload) {
+    return api.post('/admin/tickets/check-in', payload);
+  },
+  checkInStats(eventId) {
+    return api.get(`/admin/ticket-events/${eventId}/check-in-stats`);
+  },
   listTicketEventTickets(id, params) {
     return api.get(`/admin/ticket-events/${id}/tickets`, { params });
   },

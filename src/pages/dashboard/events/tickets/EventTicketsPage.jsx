@@ -332,6 +332,7 @@ export function TicketsManager({ event, reload, api, showCover = true }) {
             <CoverDropzone
               value={form.coverImage}
               previewUrl={form.coverImage === data.event.coverImage ? data.event.coverImageUrl : undefined}
+              unsaved={form.coverImage !== (data.event.coverImage || '')}
               onChange={(url) => {
                 update({ coverImage: url });
                 setErrors((prev) => ({ ...prev, coverImage: undefined }));

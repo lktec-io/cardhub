@@ -651,6 +651,7 @@ export const TRANSLATIONS = {
   'sidebar.admin.auditLogs': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
   'sidebar.admin.cards': { en: 'Invitation cards', sw: 'Kadi za mialiko' },
   'sidebar.admin.videos': { en: 'Videos', sw: 'Video' },
+  'sidebar.admin.scan': { en: 'Scan & verify', sw: 'Skani na thibitisha' },
   'sidebar.admin.ticketEvents': { en: 'Events & tickets', sw: 'Matukio na tiketi' },
   'sidebar.admin.invitationEvents': { en: 'Invitation events', sw: 'Matukio ya mialiko' },
   'sidebar.admin.viewSite': { en: 'View website', sw: 'Tazama tovuti' },

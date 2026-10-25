@@ -15,7 +15,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
  * shows a cover as "uploaded" unless the server returned a real URL.
  */
 // `previewUrl` is the server-resolved address of the stored cover (a poster uploaded in the admin portal is stored as a key, not a URL).
-export function CoverDropzone({ value, previewUrl, onChange, uploadsAvailable, error, disabled }) {
+export function CoverDropzone({ value, previewUrl, onChange, uploadsAvailable, error, disabled, unsaved = false }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(null); // { previewUrl, name }
@@ -128,6 +128,8 @@ export function CoverDropzone({ value, previewUrl, onChange, uploadsAvailable, e
       />
 
       {uploadError && <Alert variant="warning">{uploadError}</Alert>}
+      {/* The file is stored, but the event only uses it once the ticket settings are saved. */}
+      {unsaved && value && !uploading && <Alert variant="info">Not saved yet. Press “Save Ticket Settings” to use this image on the ticket page.</Alert>}
 
       {showLink ? (
         <Input

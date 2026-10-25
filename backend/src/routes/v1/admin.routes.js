@@ -5,7 +5,7 @@ import { adminTicketEventsController } from '../../controllers/adminTicketEvents
 import { singleMediaUpload } from '../../middleware/mediaUpload.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
-import { writeLimiter } from '../../middleware/rateLimiter.js';
+import { checkInLimiter, writeLimiter } from '../../middleware/rateLimiter.js';
 import { ROLES } from '../../constants/roles.js';
 
 export const adminRouter = Router();
@@ -60,3 +60,7 @@ adminRouter.post('/ticket-events/:id/unpublish', writeLimiter, adminTicketEvents
 adminRouter.put('/ticket-events/:id/tickets', writeLimiter, adminTicketEventsController.saveTickets);
 adminRouter.get('/ticket-events/:id/orders', adminTicketEventsController.orders);
 adminRouter.get('/ticket-events/:id/tickets', adminTicketEventsController.tickets);
+adminRouter.get('/ticket-events/:id/check-in-stats', adminTicketEventsController.checkInStats);
+
+// ---- Door scanner (Scan & verify) ----
+adminRouter.post('/tickets/check-in', checkInLimiter, adminTicketEventsController.checkIn);

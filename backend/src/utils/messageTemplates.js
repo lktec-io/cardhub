@@ -175,11 +175,19 @@ export function buildInvitationWhatsapp({ guestName, eventType, eventName, venue
   return lines.join('\n');
 }
 
+/** The approved invitation template's variables, in placeholder order. */
+export const INVITATION_TEMPLATE_VARIABLES = ['guest name', 'event name', 'event date', 'event time', 'venue', 'invitation URL'];
+
 /**
  * Variables for the approved Beem WhatsApp invitation template
- * (BEEM_WHATSAPP_TEMPLATE_ID, documented as template 1850), in its
- * approved order:
- *   1 guest name, 2 event name, 3 event date, 4 event time, 5 venue, 6 invitation URL
+ * "KADI YA MWALIKO" (Beem id in BEEM_WHATSAPP_TEMPLATE_ID):
+ *
+ *   Habari {{0}}, Tunayofuraha kukualika/kuwaalika kuhudhuria:
+ *   💍 {{1}}  🗓️ Tarehe: {{2}}  🕒 Muda: {{3}}  📍 Mahali: {{4}}
+ *   Fungua mwaliko wako rasmi hapa: {{5}}   Karibu sana!
+ *
+ * Beem fills placeholders from `params` in the order they appear, so
+ * params[0] is the first placeholder whether Beem numbers it {{0}} or {{1}}.
  * WhatsApp rejects empty template variables, so a missing optional value
  * becomes a neutral placeholder instead of "".
  */

@@ -60,6 +60,7 @@ import { AdminCardsPage } from '../pages/admin/AdminCardsPage';
 import { AdminMediaPage } from '../pages/admin/AdminMediaPage';
 import { AdminTicketEventsPage } from '../pages/admin/AdminTicketEventsPage';
 import { AdminTicketEventPage } from '../pages/admin/AdminTicketEventPage';
+import { AdminScanPage } from '../pages/admin/AdminScanPage';
 import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage';
 import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
 import { AdminAuditLogsPage } from '../pages/admin/AdminAuditLogsPage';
@@ -152,6 +153,7 @@ export function AppRoutes() {
           <Route path={ROUTES.ADMIN_MEDIA} element={<AdminMediaPage />} />
           <Route path={ROUTES.ADMIN_TICKET_EVENTS} element={<AdminTicketEventsPage />} />
           <Route path={ROUTES.ADMIN_TICKET_EVENT} element={<AdminTicketEventPage />} />
+          <Route path={ROUTES.ADMIN_SCAN} element={<AdminScanPage />} />
           <Route path={ROUTES.ADMIN_ORDERS} element={<AdminOrdersPage />} />
           <Route path={ROUTES.ADMIN_PAYMENTS} element={<AdminPaymentsPage />} />
           <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<AdminAuditLogsPage />} />

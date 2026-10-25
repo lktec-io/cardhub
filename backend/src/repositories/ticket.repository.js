@@ -59,6 +59,53 @@ export const ticketRepository = {
     return { rows, total: countRows[0].total };
   },
 
+  /**
+   * Door check-in: the ticket row (plus what the door screen shows), locked
+   * FOR UPDATE inside the caller's transaction so two scanners can't both
+   * admit it. Looked up by QR token or by ticket code (manual entry).
+   */
+  async lockForCheckIn({ token, ticketCode }, conn) {
+    const [rows] = await conn.query(
+      `SELECT t.id, t.event_id, t.ticket_code, t.holder_name, t.holder_phone, t.status, t.checked_in_at, t.checked_in_by,
+              o.status AS order_status, o.is_demo, tt.name AS ticket_type_name,
+              e.title AS event_title, e.event_date, e.event_time, e.venue_name, u.name AS checked_in_by_name
+       FROM tickets t
+       JOIN ticket_orders o ON o.id = t.ticket_order_id
+       JOIN ticket_types tt ON tt.id = t.ticket_type_id
+       JOIN events e ON e.id = t.event_id
+       LEFT JOIN users u ON u.id = t.checked_in_by
+       WHERE ${token ? 't.token = ?' : 't.ticket_code = ?'}
+       LIMIT 1
+       FOR UPDATE OF t`,
+      [token || ticketCode]
+    );
+    return rows[0] || null;
+  },
+
+  /** Conditional, so only a still-valid ticket can be admitted. Returns true when this call admitted it. */
+  async markCheckedIn(id, userId, conn) {
+    const [result] = await conn.query(
+      "UPDATE tickets SET status = 'used', checked_in_at = UTC_TIMESTAMP(), checked_in_by = ? WHERE id = ? AND status = 'valid'",
+      [userId, id]
+    );
+    return result.affectedRows === 1;
+  },
+
+  async findCheckInTime(id, conn) {
+    const [rows] = await conn.query('SELECT checked_in_at FROM tickets WHERE id = ?', [id]);
+    return rows[0]?.checked_in_at ?? null;
+  },
+
+  async checkInStats(eventId) {
+    const [rows] = await pool.query(
+      `SELECT SUM(t.status = 'used') AS checked_in, SUM(t.status <> 'cancelled') AS admissible
+       FROM tickets t JOIN ticket_orders o ON o.id = t.ticket_order_id
+       WHERE t.event_id = ? AND o.status = 'paid'`,
+      [eventId]
+    );
+    return { checkedIn: Number(rows[0].checked_in || 0), total: Number(rows[0].admissible || 0) };
+  },
+
   async findByTokenWithContext(token) {
     const [rows] = await pool.query(`${SELECT_TICKET_WITH_CONTEXT} WHERE t.token = ? LIMIT 1`, [token]);
     return rows[0] || null;

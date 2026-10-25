@@ -115,6 +115,18 @@ npm install && npm run build    # publish dist/ as usual
   checked server-side (`authenticate` + `authorize('admin')`), and admin
   changes are written to the audit log.
 
+- **Retired public pages:** `/login` → `/admin/login`, `/register` and
+  `/create` → `/try`; `/dashboard/*` is admin-only. The backend auth API,
+  customer rows and their events are untouched.
+- **Backups:** include `MEDIA_ROOT` in the nightly backup (e.g.
+  `tar czf ~/backups/media-$(date +%F).tgz -C /var/lib/cardhub media`).
+  Without it, a DB restore would point at files that no longer exist.
+- Files are served at `/api/v1/media/...` with a 30-day immutable cache.
+  The file type is decided from the file's own bytes (JPG/PNG/WEBP up to 8 MB,
+  MP4/WEBM up to 200 MB) and every file gets a random server-generated name.
+- Rollback: `npm run migrate:down` once (drops `media_assets` only). Card
+  images and posters already uploaded keep working while `MEDIA_ROOT` stays.
+
 ### Owner admin account
 
 Run on the VPS, in an SSH session (it refuses non-interactive input):
@@ -136,42 +148,75 @@ Verify: open `https://cardhub.co.tz/admin/login`, sign in, and you should
 land in the admin portal. A non-admin account is refused at that screen and
 by the API (`403` on `/api/v1/admin/*`).
 
-### Beem WhatsApp invitations (template 1850)
+### Beem WhatsApp invitations (template "KADI YA MWALIKO")
 
 Invitations go out as Beem's approved WhatsApp **template** (a first
-contact can't be a free-form message). Variables, in order: guest name,
-event name, event date (e.g. "12 December 2026"), event time ("04:30 PM"),
-venue, invitation URL. Settings are the `BEEM_WHATSAPP_*` block in
-`backend/.env.example`; `BEEM_WHATSAPP_API_URL` must be the template-send
-endpoint from your Beem account (Beem's public sample omits it). If
-`WHATSAPP_PROVIDER` is present it must be `beem`.
+contact can't be a free-form message). CardHub sends six values in this
+order: guest name, event name, event date ("12 December 2026"), event time
+("04:30 PM"), venue, invitation URL. Beem fills the template's placeholders
+in the order they appear, so this matches "KADI YA MWALIKO" whether Beem
+shows them as `{{0}}…{{5}}` or `{{1}}…{{6}}`.
+
+Beem contract (docs.beem.africa, Moja): send =
+`POST https://apibroadcast.beem.africa/v1/broadcast/template/api-send`;
+template list = `GET https://apichatcore.beem.africa/v1/message-templates/list`.
+`BEEM_WHATSAPP_TEMPLATE_ID` must be **Beem's** template `id` (not Meta's
+`template_id`) and the template must belong to the WhatsApp sender in
+`BEEM_WHATSAPP_FROM`. Otherwise Beem answers HTTP 400 "Template id and
+channel do not match". Auth: `basic` (key:secret) or `token`
+(`Authorization: <token>`, no "Bearer").
 
 ```bash
 cd /path/to/cardhub/backend
-npm run whatsapp:test -- --to 07XXXXXXXX           # config check + preview, sends nothing
-npm run whatsapp:test -- --to 07XXXXXXXX --send    # ONE real template message to a consenting number
-pm2 restart cardhub-api --update-env               # after any .env change
+npm run whatsapp:test -- --templates                 # read-only: approved templates on your sender, with Beem ids
+# put the id of the enabled "KADI YA MWALIKO" template in BEEM_WHATSAPP_TEMPLATE_ID, then:
+pm2 restart cardhub-api --update-env
+npm run whatsapp:test -- --to 07XXXXXXXX             # verifies id/sender/status/6 placeholders + payload preview; sends nothing
+npm run whatsapp:test -- --to 07XXXXXXXX --send      # ONE real message, refused unless verification passed
 ```
 
-`--send` prints Beem's real HTTP status and (credential-scrubbed) response.
-"ACCEPTED" means Beem took the request; only the phone receiving it, or a
-delivery report, proves delivery. For delivery reports set Beem's callback
-to `<API_URL>/webhooks/beem/whatsapp?secret=<BEEM_WHATSAPP_CALLBACK_SECRET>`;
-reported "delivered/read" moves the order's WhatsApp status from `queued`
-to `sent`. Rejections (wrong keys, wrong URL, timeout) are stored on the
-order and shown to admins in Orders; customers only see a plain notice.
-SMS is unchanged and sent independently.
-- **Retired public pages:** `/login` → `/admin/login`, `/register` and
-  `/create` → `/try`; `/dashboard/*` is admin-only. The backend auth API,
-  customer rows and their events are untouched.
-- **Backups:** include `MEDIA_ROOT` in the nightly backup (e.g.
-  `tar czf ~/backups/media-$(date +%F).tgz -C /var/lib/cardhub media`).
-  Without it, a DB restore would point at files that no longer exist.
-- Files are served at `/api/v1/media/...` with a 30-day immutable cache.
-  The file type is decided from the file's own bytes (JPG/PNG/WEBP up to 8 MB,
-  MP4/WEBM up to 200 MB) and every file gets a random server-generated name.
-- Rollback: `npm run migrate:down` once (drops `media_assets` only). Card
-  images and posters already uploaded keep working while `MEDIA_ROOT` stays.
+"ACCEPTED" means Beem queued a broadcast job (`jobId`); only the phone
+receiving it, or a delivery report, proves delivery. Delivery reports: set
+the callback in Beem Engage → API Setup to
+`<API_URL>/webhooks/beem/whatsapp?secret=<BEEM_WHATSAPP_CALLBACK_SECRET>`;
+`delivered`/`read` move the order's WhatsApp status from `queued` to `sent`,
+`failed` to `failed` (matched on `broadcast_id` = jobId). Rejections are
+stored on the order and shown to admins in Orders; customers only see a
+plain notice. SMS is unchanged and sent independently.
+
+### Uploaded images (ticket posters, cards): checking a server
+
+API responses carry same-site media paths (`/api/v1/media/...`) which the
+browser resolves against the API it already uses, so images no longer
+depend on `API_URL` being right. To check a server end to end
+(settings → writable `MEDIA_ROOT` → DB references vs files → served by Node
+→ served through the public site):
+
+```bash
+cd /path/to/cardhub/backend && npm run media:check
+```
+
+If Node serves an image but the public site doesn't (404 or text/html),
+Nginx is not passing `/api/v1/media/*` to Node, usually because a regex
+static-file block (`location ~* \.(jpg|png|webp)$`) outranks `location /api/`.
+Change it to `location ^~ /api/ { ... }`, then `sudo nginx -t && sudo systemctl reload nginx`.
+
+### Door check-in (Admin → Scan & verify) — migration 027
+
+Additive: adds nullable `tickets.checked_in_by` (who admitted the ticket).
+
+```bash
+mysqldump -u <user> -p cardhub | gzip > ~/cardhub-before-027-$(date +%Y%m%d).sql.gz
+cd /path/to/cardhub/backend && npm run migrate      # "Applied migration: 027_add_checked_in_by_to_tickets.sql"
+pm2 restart cardhub-api --update-env
+```
+
+Open `/admin/scan` on the gate phone (HTTPS is required for the camera),
+pick the event, tap "Start scanning". The server admits each ticket once
+(row lock + conditional update); every later scan shows ALREADY USED with
+the time and the staff member. Ticket QR codes are plain black-on-white,
+error-correction level L, 4-module quiet zone, encoding only
+`/ticket/verify/<random token>`. Rollback: `npm run migrate:down` once.
 
 Nginx should terminate TLS for `cardhub.co.tz`, proxy `/api/` to
 `http://127.0.0.1:4006` (the PM2-managed Node process — `127.0.0.1` here

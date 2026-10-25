@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   FiBarChart2,
   FiCalendar,
+  FiCamera,
   FiCreditCard,
   FiFileText,
   FiGrid,
@@ -18,6 +19,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 
 const NAV_ITEMS = [
   { key: 'sidebar.dashboard', to: ROUTES.ADMIN, icon: FiGrid, enabled: true, end: true },
+  { key: 'sidebar.admin.scan', to: ROUTES.ADMIN_SCAN, icon: FiCamera, enabled: true },
   { key: 'sidebar.admin.ticketEvents', to: ROUTES.ADMIN_TICKET_EVENTS, icon: FiCalendar, enabled: true },
   { key: 'sidebar.admin.cards', to: ROUTES.ADMIN_CARDS, icon: FiLayers, enabled: true },
   { key: 'sidebar.admin.videos', to: ROUTES.ADMIN_MEDIA, icon: FiVideo, enabled: true },

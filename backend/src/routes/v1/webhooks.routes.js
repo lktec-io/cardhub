@@ -27,9 +27,11 @@ const FAILED = /^(failed|undelivered|rejected|expired)$/i;
  *
  * This is the only place a WhatsApp invitation can move from "queued"
  * (accepted) to "sent" (provider reports delivered/read) or "failed".
- * Beem's report format isn't published, so the handler reads the common
- * fields defensively, logs a sanitized summary, and only changes an order
- * when the report's message id matches one Beem returned at send time.
+ * Beem's documented template report: { broadcast_id, message_id, status:
+ * accepted|delivered|read|failed, destination, message, timestamp }.
+ * broadcast_id is the jobId Beem returned at send time, which is what the
+ * order stores; "accepted" changes nothing. Beem documents no signature,
+ * so the shared secret in the callback URL is the authentication.
  */
 webhooksRouter.post(
   '/beem/whatsapp',
@@ -40,14 +42,18 @@ webhooksRouter.post(
     const reports = Array.isArray(req.body) ? req.body : Array.isArray(req.body?.data) ? req.body.data : [req.body || {}];
     let updated = 0;
     for (const report of reports.slice(0, 100)) {
-      const messageId = report.id ?? report.message_id ?? report.messageId ?? report.request_id ?? null;
-      const status = String(report.status ?? report.state ?? report.delivery_status ?? '');
-      logger.info('Beem WhatsApp delivery report', { messageId, status, to: maskPhoneForLog(report.dest_addr ?? report.phoneNumber ?? report.to) });
-      if (!messageId) continue;
+      const ids = [report.broadcast_id, report.message_id, report.id].filter(Boolean).map(String);
+      const status = String(report.status ?? report.state ?? '');
+      logger.info('Beem WhatsApp delivery report', { broadcastId: report.broadcast_id ?? null, messageId: report.message_id ?? null, status, to: maskPhoneForLog(report.destination ?? report.phoneNumber ?? report.to) });
+      if (!ids.length) continue;
       const channelStatus = DELIVERED.test(status) ? CHANNEL_STATUS.SENT : FAILED.test(status) ? CHANNEL_STATUS.FAILED : null;
       if (!channelStatus) continue;
-      const error = channelStatus === CHANNEL_STATUS.FAILED ? String(report.reason ?? report.error ?? status).slice(0, 255) : null;
-      updated += await orderRepository.updateWhatsappStatusByProviderId(String(messageId), channelStatus, error);
+      const error = channelStatus === CHANNEL_STATUS.FAILED ? String(report.message ?? report.reason ?? status).slice(0, 255) : null;
+      for (const id of ids) {
+        const changed = await orderRepository.updateWhatsappStatusByProviderId(id, channelStatus, error);
+        updated += changed;
+        if (changed) break;
+      }
     }
     res.json({ success: true, updated });
   })

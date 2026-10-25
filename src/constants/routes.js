@@ -62,6 +62,8 @@ export const ROUTES = {
   ADMIN_LOGIN: '/admin/login',
   ADMIN_CARDS: '/admin/cards',
   ADMIN_MEDIA: '/admin/media',
+  ADMIN_SCAN: '/admin/scan',
+  adminScan: (eventId) => (eventId ? `/admin/scan?eventId=${eventId}` : '/admin/scan'),
   ADMIN_TICKET_EVENTS: '/admin/ticket-events',
   ADMIN_TICKET_EVENT: '/admin/ticket-events/:id',
   adminTicketEvent: (id) => `/admin/ticket-events/${id}`,

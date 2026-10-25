@@ -1,5 +1,6 @@
 import { rm } from 'node:fs/promises';
 import { adminTicketEventsService } from '../services/adminTicketEvents.service.js';
+import { ticketCheckInService } from '../services/ticketCheckIn.service.js';
 import { validateAdminEventDetails } from '../validators/adminEvents.validator.js';
 import { validateTicketSettingsPayload } from '../validators/eventTickets.validator.js';
 import { validateNumericId } from '../validators/adminContent.validator.js';
@@ -59,5 +60,16 @@ export const adminTicketEventsController = {
 
   tickets: asyncHandler(async (req, res) => {
     sendSuccess(res, { data: await adminTicketEventsService.listTickets(validateNumericId(req.params.id), req.query) });
+  }),
+
+  /** Door scanner: always 200 with a verdict (see ticketCheckIn.service.js). */
+  checkIn: asyncHandler(async (req, res) => {
+    const eventId = req.body?.eventId ? validateNumericId(req.body.eventId) : null;
+    const data = await ticketCheckInService.checkIn({ code: req.body?.code, eventId }, req.user.id, meta(req));
+    sendSuccess(res, { data });
+  }),
+
+  checkInStats: asyncHandler(async (req, res) => {
+    sendSuccess(res, { data: await ticketCheckInService.stats(validateNumericId(req.params.id)) });
   }),
 };

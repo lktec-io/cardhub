@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FiAlertCircle, FiArrowLeft, FiExternalLink, FiImage, FiSearch } from 'react-icons/fi';
+import { FiAlertCircle, FiArrowLeft, FiCamera, FiExternalLink, FiImage, FiSearch } from 'react-icons/fi';
 import { Pagination, Seo } from '../../components/common';
 import { Badge, Button, EmptyState, Input, Select, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
@@ -111,6 +111,9 @@ export function AdminTicketEventPage() {
           </div>
         </div>
         <div className="ch-ae-head__actions">
+          <Link to={ROUTES.adminScan(event.id)} className="ch-btn ch-btn--brand ch-btn--sm">
+            <FiCamera aria-hidden="true" /> Scan tickets
+          </Link>
           {live && (
             <Link to={ROUTES.ticketEvent(event.slug)} target="_blank" rel="noopener" className="ch-btn ch-btn--secondary ch-btn--sm">
               <FiExternalLink aria-hidden="true" /> View on /ticket

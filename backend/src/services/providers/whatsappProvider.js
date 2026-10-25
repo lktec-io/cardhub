@@ -101,30 +101,40 @@ async function sendViaBeem(body) {
 
 // ---------------------------------------------------------------------
 // Beem approved-TEMPLATE messages — what a first-contact invitation needs.
-// Request shape from Beem's published WhatsApp API sample
-// (beem.africa/whatsapp-api/):
+// Contract from Beem's Moja docs (docs.beem.africa, "Send template message"
+// and "List message templates"):
 //
+//   POST https://apibroadcast.beem.africa/v1/broadcast/template/api-send
 //   { from_addr, channel: "whatsapp",
 //     destination_addr: [{ phoneNumber, params: [...] }],
-//     messageTemplateData: { id } }
+//     messageTemplateData: { id: <integer> } }
+//   200 -> { data: { successful, message, jobId, validation, credits } }
+//   400 -> { statusCode, message } e.g. "Template id and channel do not match"
 //
-// The endpoint is not printed in that sample, so it comes from the
-// account's own BEEM_WHATSAPP_API_URL. Numbers are sent as digits without
-// "+" (Beem's sample uses "2557…"). The template's language is fixed when
-// Beem/Meta approve the template id, so it isn't sent (the sample has no
-// language field). `params` order must match the approved template — see
-// buildInvitationTemplateParams() in utils/messageTemplates.js.
+// messageTemplateData.id is BEEM's template id (the `id` returned by
+// GET https://apichatcore.beem.africa/v1/message-templates/list), not
+// Meta's `template_id`, and it must belong to the WhatsApp channel that
+// `from_addr` (BEEM_WHATSAPP_FROM) is. `params` replace the template's
+// placeholders in the order they appear, so the array order is what
+// matters (see buildInvitationTemplateParams()). Language is fixed by the
+// approved template and isn't sent.
+// Auth: Basic base64(key:secret), or the access token sent as
+// `Authorization: <token>` with NO "Bearer" prefix (Beem's docs).
 // ---------------------------------------------------------------------
 const beemTemplate = env.whatsapp.beem;
 const isBeemTemplateConfigured = Boolean(
-  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && beemTemplate.apiSecret && env.whatsapp.beemFrom && beemTemplate.templateId
+  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && (beemTemplate.apiSecret || usesTokenAuth()) && env.whatsapp.beemFrom && beemTemplate.templateId
 );
+
+function usesTokenAuth() {
+  return beemTemplate.authMode === 'token' || beemTemplate.authMode === 'bearer';
+}
 
 function missingTemplateFields() {
   const missing = [];
   if (!beemTemplate.apiUrl) missing.push('BEEM_WHATSAPP_API_URL');
   if (!beemTemplate.apiKey) missing.push('BEEM_WHATSAPP_API_KEY');
-  if (!beemTemplate.apiSecret) missing.push('BEEM_WHATSAPP_API_SECRET');
+  if (!beemTemplate.apiSecret && !usesTokenAuth()) missing.push('BEEM_WHATSAPP_API_SECRET');
   if (!env.whatsapp.beemFrom) missing.push('BEEM_WHATSAPP_FROM');
   if (!beemTemplate.templateId) missing.push('BEEM_WHATSAPP_TEMPLATE_ID');
   return missing;
@@ -138,7 +148,8 @@ export const maskPhoneForLog = (phone) => {
 };
 
 function beemAuthHeader() {
-  if (beemTemplate.authMode === 'bearer') return `Bearer ${beemTemplate.apiKey}`;
+  // "token"/"bearer": Beem wants the raw token, no "Bearer " prefix.
+  if (usesTokenAuth()) return beemTemplate.apiKey;
   return `Basic ${Buffer.from(`${beemTemplate.apiKey}:${beemTemplate.apiSecret}`).toString('base64')}`;
 }
 
@@ -162,11 +173,24 @@ function sanitizeProviderBody(data) {
 }
 
 function beemErrorMessage(status, data) {
-  const detail = data?.message || data?.error?.message || data?.error || data?.data?.message;
+  const detail = data?.data?.message || data?.message || data?.error?.message || data?.error;
   const base = typeof detail === 'string' && detail ? detail : `Beem rejected the request (HTTP ${status})`;
   if (status === 401 || status === 403) return `${base} — check BEEM_WHATSAPP_API_KEY/SECRET and BEEM_WHATSAPP_AUTH_MODE`;
   if (status === 404 || status === 405) return `${base} — check BEEM_WHATSAPP_API_URL`;
+  if (/template id and channel do not match/i.test(base)) {
+    return `${base} — BEEM_WHATSAPP_TEMPLATE_ID must be Beem's template id for the sender in BEEM_WHATSAPP_FROM; run: npm run whatsapp:test -- --templates`;
+  }
+  if (/channel settings/i.test(base)) return `${base} — BEEM_WHATSAPP_FROM is not a WhatsApp sender on this Beem account`;
   return base;
+}
+
+async function readJson(response) {
+  const raw = await response.text();
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return raw;
+  }
 }
 
 async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
@@ -174,7 +198,7 @@ async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
     from_addr: digitsOnly(env.whatsapp.beemFrom),
     destination_addr: [{ phoneNumber: digitsOnly(to), params: params.map((p) => String(p)) }],
     channel: 'whatsapp',
-    messageTemplateData: { id: Number(beemTemplate.templateId) || beemTemplate.templateId },
+    messageTemplateData: { id: Number(beemTemplate.templateId) },
   };
   await waitForRateSlot();
 
@@ -192,16 +216,11 @@ async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
     return { status: 'failed', provider: PROVIDER_BEEM, providerMessageId: null, error: reason, httpStatus: null, providerResponse: null };
   }
 
-  const raw = await response.text();
-  let data = null;
-  try {
-    data = raw ? JSON.parse(raw) : null;
-  } catch {
-    data = raw;
-  }
+  const data = await readJson(response);
   const providerResponse = sanitizeProviderBody(data);
-  // Beem can answer HTTP 200 with an error flag in the body; treat that as a rejection too.
-  const bodySaysFailed = data && typeof data === 'object' && (data.successful === false || data.success === false || data.status === 'failed');
+  // Beem documents { data: { successful, jobId } }; an HTTP 200 with successful:false is still a rejection.
+  const result = data && typeof data === 'object' ? data.data ?? data : null;
+  const bodySaysFailed = result && typeof result === 'object' && (result.successful === false || result.success === false || result.status === 'failed');
 
   if (!response.ok || bodySaysFailed) {
     const error = beemErrorMessage(response.status, data);
@@ -209,10 +228,48 @@ async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
     return { status: 'failed', provider: PROVIDER_BEEM, providerMessageId: null, error, httpStatus: response.status, providerResponse };
   }
 
-  // Accepted for sending, not delivered. Only surface an id Beem actually returned.
-  const providerMessageId = data?.data?.id ?? data?.id ?? data?.message_id ?? data?.request_id ?? data?.job_id ?? null;
+  // Accepted for sending (a broadcast job), not delivered. jobId is what delivery reports carry as broadcast_id.
+  const providerMessageId = result?.jobId ?? result?.job_id ?? result?.id ?? data?.request_id ?? null;
   logger.info('Beem WhatsApp template accepted', { to: maskPhoneForLog(to), templateId: beemTemplate.templateId, httpStatus: response.status, providerMessageId, transactionId });
   return { status: 'queued', provider: PROVIDER_BEEM, providerMessageId: providerMessageId ? String(providerMessageId) : null, error: null, httpStatus: response.status, providerResponse };
+}
+
+/**
+ * Read-only: Beem's approved templates (GET message-templates/list). With
+ * `channelNumber` set, Beem returns only templates on that sender channel,
+ * which is exactly what "Template id and channel do not match" checks.
+ * Returns { ok, httpStatus, templates: [{ id, metaTemplateId, name, category, status, language, placeholders, content }], error }.
+ */
+async function listBeemTemplates({ q, id, channelNumber, limit = 50 } = {}) {
+  const url = new URL(beemTemplate.templatesUrl);
+  if (q) url.searchParams.set('q', q);
+  if (id) url.searchParams.set('id', String(id));
+  if (channelNumber) url.searchParams.set('channel_number', digitsOnly(channelNumber));
+  url.searchParams.set('limit', String(limit));
+  let response;
+  try {
+    response = await fetch(url, { headers: { Authorization: beemAuthHeader(), Accept: 'application/json' }, signal: AbortSignal.timeout(beemTemplate.timeoutMs) });
+  } catch (error) {
+    return { ok: false, httpStatus: null, templates: [], error: error.name === 'TimeoutError' ? 'timeout' : error.message };
+  }
+  const data = await readJson(response);
+  if (!response.ok) return { ok: false, httpStatus: response.status, templates: [], error: beemErrorMessage(response.status, data) };
+  const rows = Array.isArray(data?.data) ? data.data : [];
+  return {
+    ok: true,
+    httpStatus: response.status,
+    templates: rows.map((t) => ({
+      id: t.id,
+      metaTemplateId: t.template_id ?? null,
+      name: t.name,
+      category: t.category,
+      status: t.status,
+      language: t.language,
+      content: typeof t.content === 'string' ? t.content : '',
+      placeholders: typeof t.content === 'string' ? (t.content.match(/\{\{\s*\d+\s*\}\}/g) || []).length : null,
+    })),
+    error: null,
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -292,6 +349,9 @@ export const whatsappProvider = {
    * Approved-template invitation (Beem). `to` is E.164; `params` is the
    * template's variables in its approved order.
    */
+  /** Read-only template lookup for npm run whatsapp:test (see listBeemTemplates). */
+  listTemplates: listBeemTemplates,
+
   async sendInvitationTemplate({ to, params }) {
     if (!isBeemTemplateConfigured) return unavailable(PROVIDER_BEEM, `provider not configured (missing: ${missingTemplateFields().join(', ') || 'WHATSAPP_PROVIDER=beem'})`, maskPhoneForLog(to));
     return sendBeemTemplate({ to, params });

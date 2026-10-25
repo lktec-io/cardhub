@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { env } from '../config/env';
 import { STORAGE_KEYS } from '../constants/storageKeys';
+import { absolutizeMediaUrls } from '../utils/mediaUrl';
 
 export const api = axios.create({
   baseURL: env.apiUrl,
@@ -55,7 +56,11 @@ function refreshAccessToken() {
 }
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Uploaded media arrive as same-site paths; make them loadable from this app.
+    absolutizeMediaUrls(response.data);
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;

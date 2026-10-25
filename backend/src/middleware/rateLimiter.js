@@ -9,9 +9,23 @@ function limitHandler(req, res) {
   });
 }
 
+const CHECK_IN_PATH = '/api/v1/admin/tickets/check-in';
+
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: limitHandler,
+  // A busy entrance scans hundreds of tickets from one phone; that admin-only
+  // route has its own limiter (checkInLimiter) instead.
+  skip: (req) => req.path === CHECK_IN_PATH,
+});
+
+/** Door check-in: admin-only, one request per scan — roughly two scans a second per device. */
+export const checkInLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
   standardHeaders: true,
   legacyHeaders: false,
   handler: limitHandler,

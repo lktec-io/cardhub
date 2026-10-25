@@ -110,10 +110,11 @@ export async function renderTicketImage(ticket) {
   await ensureFonts();
 
   const qrDataUrl = await QRCode.toDataURL(ticket.qrPayload, {
+    // Same plain code as the on-screen ticket: level L, 4-module quiet zone, black on white.
     width: 600,
-    margin: 1,
-    errorCorrectionLevel: 'M',
-    color: { dark: COLORS.navy, light: COLORS.white },
+    margin: 4,
+    errorCorrectionLevel: 'L',
+    color: { dark: '#000000', light: '#ffffff' },
   });
   const qrImage = await loadImage(qrDataUrl);
 

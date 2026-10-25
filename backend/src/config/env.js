@@ -109,6 +109,8 @@ export const env = {
       apiKey: trimmed(process.env.BEEM_WHATSAPP_API_KEY) || trimmed(process.env.BEEM_API_KEY) || '',
       apiSecret: trimmed(process.env.BEEM_WHATSAPP_API_SECRET) || trimmed(process.env.BEEM_SECRET_KEY) || '',
       templateId: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_ID) || '',
+      // Read-only template lookup (npm run whatsapp:test -- --templates); Beem's documented endpoint by default.
+      templatesUrl: firstCleanUrl(process.env.BEEM_WHATSAPP_TEMPLATES_URL) || 'https://apichatcore.beem.africa/v1/message-templates/list',
       templateLanguage: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_LANGUAGE) || '',
       callbackUrl: firstCleanUrl(process.env.BEEM_WHATSAPP_CALLBACK_URL) || '',
       callbackSecret: trimmed(process.env.BEEM_WHATSAPP_CALLBACK_SECRET) || '',

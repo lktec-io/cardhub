@@ -108,8 +108,19 @@ export const mediaStorage = {
   },
 
   /** Public URL for a stored key: <API_URL>/media/... (served by app.js). */
+  /** Absolute URL, for server-side consumers (e.g. a provider fetching a card image). Depends on API_URL. */
   urlFor(key) {
     return this.isMediaKey(key) ? `${env.apiUrl}/${key}` : null;
+  },
+
+  /**
+   * Same-site path the browser loads, e.g. "/api/v1/media/posters/2026/<uuid>.jpg"
+   * (served by the express.static mount in app.js). Used in API responses so
+   * images never break because API_URL is unset or points at localhost; the
+   * frontend resolves it against the API base it already uses.
+   */
+  publicPath(key) {
+    return this.isMediaKey(key) ? `/api/v1/${key}` : null;
   },
 };
 
@@ -120,7 +131,7 @@ export const mediaStorage = {
  */
 export function resolveMediaUrl(value) {
   if (!value || typeof value !== 'string') return null;
-  if (mediaStorage.isMediaKey(value)) return mediaStorage.urlFor(value);
+  if (mediaStorage.isMediaKey(value)) return mediaStorage.publicPath(value);
   if (value.startsWith('/') && !value.startsWith('//')) return value;
   return /^https?:\/\//i.test(value) ? value : null;
 }

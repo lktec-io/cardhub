@@ -18,10 +18,11 @@ export function TicketPass({ ticket }) {
   useEffect(() => {
     let active = true;
     QRCode.toDataURL(ticket.qrPayload, {
+      // Plain, fast-scanning code: level L, standard 4-module quiet zone, pure black on white.
       width: 480,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#081827', light: '#ffffff' },
+      margin: 4,
+      errorCorrectionLevel: 'L',
+      color: { dark: '#000000', light: '#ffffff' },
     })
       .then((dataUrl) => active && setQr({ payload: ticket.qrPayload, dataUrl }))
       .catch(() => active && setQr({ payload: ticket.qrPayload, dataUrl: null }));
