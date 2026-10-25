@@ -36,6 +36,9 @@ console.log('\nBeem WhatsApp configuration');
 for (const [name, value] of VARS) console.log(`  ${value ? 'set    ' : 'MISSING'}  ${name}`);
 console.log(`  provider: ${env.whatsapp.provider || '(none)'} · auth mode: ${env.whatsapp.beem.authMode} · rate: ${env.whatsapp.beem.ratePerSecond}/s · timeout: ${env.whatsapp.beem.timeoutMs} ms`);
 if (env.whatsapp.beem.apiUrl) console.log(`  endpoint host: ${new URL(env.whatsapp.beem.apiUrl).host}`);
+if (env.whatsapp.provider && env.whatsapp.provider !== 'beem' && env.whatsapp.beem.apiUrl) {
+  console.log(`  !! WHATSAPP_PROVIDER is "${env.whatsapp.provider}", which overrides the Beem template. Set WHATSAPP_PROVIDER=beem (or remove it) and restart.`);
+}
 console.log(`  template mode: ${whatsappProvider.usesTemplate ? `ON (template ${whatsappProvider.templateId})` : `OFF (missing: ${whatsappProvider.missingFields.join(', ') || 'n/a'})`}`);
 
 const to = normalizePhoneForDelivery(toArg || '');

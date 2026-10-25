@@ -41,14 +41,21 @@ export function TicketMarketplacePage() {
     );
   }
 
-  // Search as you type (debounced); Enter searches immediately.
+  // Search as you type (debounced); Enter/Search applies immediately and
+  // cancels the pending timer so it can't fire after the buyer moves on.
+  const typingTimer = useRef(null);
   useEffect(() => {
     const value = searchInput.trim();
     if (value === search) return undefined;
-    const timer = setTimeout(() => setQuery(value), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
+    typingTimer.current = setTimeout(() => setQuery(value), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(typingTimer.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
+
+  function searchNow(value) {
+    clearTimeout(typingTimer.current);
+    setQuery(value);
+  }
 
   useEffect(() => {
     const current = ++requestId.current;
@@ -71,7 +78,7 @@ export function TicketMarketplacePage() {
 
   function clearSearch() {
     setSearchInput('');
-    setQuery('');
+    searchNow('');
     inputRef.current?.focus();
   }
 
@@ -91,7 +98,7 @@ export function TicketMarketplacePage() {
             role="search"
             onSubmit={(e) => {
               e.preventDefault();
-              setQuery(searchInput.trim());
+              searchNow(searchInput.trim());
               document.getElementById('ch-tix-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
           >

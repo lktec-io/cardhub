@@ -290,6 +290,7 @@ html.ch-theme-dark .ch-tix-card__category {
 html.ch-theme-dark .ch-tix-pass {
   --tix-navy: var(--color-brand-navy);
   --tix-navy-2: var(--color-navy-800);
+  --tix-royal: var(--color-royal-600);
   --tix-ink: var(--color-navy-950);
   --tix-text: #3c4557;
   --tix-muted: #687189;

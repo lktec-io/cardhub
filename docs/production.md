@@ -110,10 +110,57 @@ npm install && npm run build    # publish dist/ as usual
 ```
 
 - **Admin access:** `https://cardhub.co.tz/admin/login`. There is no admin
-  sign-up and no default password. To make an existing account an admin,
-  run once in MySQL: `UPDATE users SET role = 'admin' WHERE email = '<email>';`
-  Every `/api/v1/admin/*` route is checked server-side (`authenticate` +
-  `authorize('admin')`), and admin changes are written to the audit log.
+  sign-up and no default password; create the owner account with the
+  command in "Owner admin account" below. Every `/api/v1/admin/*` route is
+  checked server-side (`authenticate` + `authorize('admin')`), and admin
+  changes are written to the audit log.
+
+### Owner admin account
+
+Run on the VPS, in an SSH session (it refuses non-interactive input):
+
+```bash
+cd /path/to/cardhub/backend      # the deployed backend, where its .env lives
+npm run admin:create
+```
+
+It asks for the email (any address, e.g. your Gmail), then:
+- **new email** → asks for a name and a password (at least 10 characters,
+  typed twice, never shown) and creates an active `admin` account;
+- **existing account** → asks to promote it (its events/orders are kept) and
+  optionally sets a new password, which signs out its other sessions.
+
+The password is hashed with the app's bcrypt helper (cost 12); nothing is
+stored or logged in plain text, and an audit-log entry records the change.
+Verify: open `https://cardhub.co.tz/admin/login`, sign in, and you should
+land in the admin portal. A non-admin account is refused at that screen and
+by the API (`403` on `/api/v1/admin/*`).
+
+### Beem WhatsApp invitations (template 1850)
+
+Invitations go out as Beem's approved WhatsApp **template** (a first
+contact can't be a free-form message). Variables, in order: guest name,
+event name, event date (e.g. "12 December 2026"), event time ("04:30 PM"),
+venue, invitation URL. Settings are the `BEEM_WHATSAPP_*` block in
+`backend/.env.example`; `BEEM_WHATSAPP_API_URL` must be the template-send
+endpoint from your Beem account (Beem's public sample omits it). If
+`WHATSAPP_PROVIDER` is present it must be `beem`.
+
+```bash
+cd /path/to/cardhub/backend
+npm run whatsapp:test -- --to 07XXXXXXXX           # config check + preview, sends nothing
+npm run whatsapp:test -- --to 07XXXXXXXX --send    # ONE real template message to a consenting number
+pm2 restart cardhub-api --update-env               # after any .env change
+```
+
+`--send` prints Beem's real HTTP status and (credential-scrubbed) response.
+"ACCEPTED" means Beem took the request; only the phone receiving it, or a
+delivery report, proves delivery. For delivery reports set Beem's callback
+to `<API_URL>/webhooks/beem/whatsapp?secret=<BEEM_WHATSAPP_CALLBACK_SECRET>`;
+reported "delivered/read" moves the order's WhatsApp status from `queued`
+to `sent`. Rejections (wrong keys, wrong URL, timeout) are stored on the
+order and shown to admins in Orders; customers only see a plain notice.
+SMS is unchanged and sent independently.
 - **Retired public pages:** `/login` → `/admin/login`, `/register` and
   `/create` → `/try`; `/dashboard/*` is admin-only. The backend auth API,
   customer rows and their events are untouched.
