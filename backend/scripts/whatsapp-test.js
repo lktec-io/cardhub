@@ -41,6 +41,12 @@ const VARS = [
 console.log('\nBeem WhatsApp configuration');
 for (const [name, value] of VARS) console.log(`  ${value ? 'set    ' : 'MISSING'}  ${name}`);
 console.log(`  provider: ${env.whatsapp.provider || '(none)'} · auth mode: ${b.authMode} · rate: ${b.ratePerSecond}/s · timeout: ${b.timeoutMs} ms`);
+console.log(`  config file: ${env.configSource.envFile} (${env.configSource.envFileLoaded ? 'loaded' : 'NOT FOUND'})`);
+if (env.configSource.overriddenByProcessEnv.length) {
+  console.log(`  !! this shell's environment overrides backend/.env for: ${env.configSource.overriddenByProcessEnv.join(', ')}`);
+}
+console.log('  note: this checks THIS shell. The running API reports its own settings at startup ("WhatsApp effective configuration" in pm2 logs)');
+console.log('        and at GET /api/v1/admin/diagnostics/whatsapp (admin login).');
 if (b.apiUrl) console.log(`  send endpoint:  ${new URL(b.apiUrl).host}${new URL(b.apiUrl).pathname}`);
 console.log(`  list endpoint:  ${new URL(b.templatesUrl).host}${new URL(b.templatesUrl).pathname}`);
 console.log(`  template id that will be sent: ${b.templateId || '(none)'} (from BEEM_WHATSAPP_TEMPLATE_ID)`);

@@ -4,7 +4,7 @@ import { env } from '../../config/env.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
 import { orderRepository } from '../../repositories/order.repository.js';
-import { CHANNEL_STATUS } from '../../constants/orderStatus.js';
+import { parseBeemDeliveryReports } from '../../utils/beemDeliveryReports.js';
 import { maskPhoneForLog } from '../../services/providers/whatsappProvider.js';
 
 export const webhooksRouter = Router();
@@ -16,9 +16,6 @@ function secretMatches(given) {
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
 }
-
-const DELIVERED = /^(delivered|read|seen)$/i;
-const FAILED = /^(failed|undelivered|rejected|expired)$/i;
 
 /**
  * Beem WhatsApp delivery reports (BEEM_WHATSAPP_CALLBACK_URL should point
@@ -39,18 +36,12 @@ webhooksRouter.post(
     if (!env.whatsapp.beem.callbackSecret) return res.status(503).json({ success: false, message: 'Callback not configured' });
     if (!secretMatches(req.get('x-callback-secret') || req.query.secret)) return res.status(401).json({ success: false });
 
-    const reports = Array.isArray(req.body) ? req.body : Array.isArray(req.body?.data) ? req.body.data : [req.body || {}];
     let updated = 0;
-    for (const report of reports.slice(0, 100)) {
-      const ids = [report.broadcast_id, report.message_id, report.id].filter(Boolean).map(String);
-      const status = String(report.status ?? report.state ?? '');
-      logger.info('Beem WhatsApp delivery report', { broadcastId: report.broadcast_id ?? null, messageId: report.message_id ?? null, status, to: maskPhoneForLog(report.destination ?? report.phoneNumber ?? report.to) });
-      if (!ids.length) continue;
-      const channelStatus = DELIVERED.test(status) ? CHANNEL_STATUS.SENT : FAILED.test(status) ? CHANNEL_STATUS.FAILED : null;
-      if (!channelStatus) continue;
-      const error = channelStatus === CHANNEL_STATUS.FAILED ? String(report.message ?? report.reason ?? status).slice(0, 255) : null;
-      for (const id of ids) {
-        const changed = await orderRepository.updateWhatsappStatusByProviderId(id, channelStatus, error);
+    for (const report of parseBeemDeliveryReports(req.body)) {
+      logger.info('Beem WhatsApp delivery report', { ids: report.ids, status: report.status, to: maskPhoneForLog(report.destination) });
+      if (!report.ids.length || !report.channelStatus) continue;
+      for (const id of report.ids) {
+        const changed = await orderRepository.updateWhatsappStatusByProviderId(id, report.channelStatus, report.error);
         updated += changed;
         if (changed) break;
       }

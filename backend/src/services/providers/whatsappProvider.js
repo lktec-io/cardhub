@@ -123,8 +123,12 @@ async function sendViaBeem(body) {
 // `Authorization: <token>` with NO "Bearer" prefix (Beem's docs).
 // ---------------------------------------------------------------------
 const beemTemplate = env.whatsapp.beem;
+/** messageTemplateData.id is an integer in Beem's API; one configured value, never guessed or substituted. */
+function isValidTemplateId(value) {
+  return /^\d+$/.test(String(value || ''));
+}
 const isBeemTemplateConfigured = Boolean(
-  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && (beemTemplate.apiSecret || usesTokenAuth()) && env.whatsapp.beemFrom && beemTemplate.templateId
+  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && (beemTemplate.apiSecret || usesTokenAuth()) && env.whatsapp.beemFrom && isValidTemplateId(beemTemplate.templateId)
 );
 
 function usesTokenAuth() {
@@ -138,6 +142,7 @@ function missingTemplateFields() {
   if (!beemTemplate.apiSecret && !usesTokenAuth()) missing.push('BEEM_WHATSAPP_API_SECRET');
   if (!env.whatsapp.beemFrom) missing.push('BEEM_WHATSAPP_FROM');
   if (!beemTemplate.templateId) missing.push('BEEM_WHATSAPP_TEMPLATE_ID');
+  else if (!isValidTemplateId(beemTemplate.templateId)) missing.push('BEEM_WHATSAPP_TEMPLATE_ID (must be a whole number)');
   return missing;
 }
 
@@ -380,6 +385,31 @@ export const whatsappProvider = {
   /** True when invitations go out as the approved Beem template (BEEM_WHATSAPP_TEMPLATE_ID). */
   usesTemplate: isBeemTemplateConfigured,
   templateId: isBeemTemplateConfigured ? beemTemplate.templateId : null,
+
+  /**
+   * The effective WhatsApp configuration of THIS process (no secrets; sender
+   * masked). Logged at startup and served to admins, because the shell that
+   * runs npm run whatsapp:test can hold different variables than the PM2 process.
+   */
+  describeConfig() {
+    const sender = toBeemNumber(env.whatsapp.beemFrom);
+    return {
+      provider: selectedProvider || '(none)',
+      templateMode: isBeemTemplateConfigured,
+      sendEndpoint: beemTemplate.apiUrl ? `${new URL(beemTemplate.apiUrl).host}${new URL(beemTemplate.apiUrl).pathname}` : null,
+      authMode: beemTemplate.authMode,
+      sender: sender ? maskPhoneForLog(sender) : null,
+      senderFormatOk: /^255[67]\d{8}$/.test(sender),
+      templateId: beemTemplate.templateId || null,
+      templateIdValid: isValidTemplateId(beemTemplate.templateId),
+      templateParams: TEMPLATE_PARAM_NAMES.length,
+      includesMedia: false,
+      missing: isBeemTemplateConfigured ? [] : selectedProvider === PROVIDER_BEEM ? missingTemplateFields() : missingFieldsFor(),
+      envFile: env.configSource.envFile,
+      envFileLoaded: env.configSource.envFileLoaded,
+      overriddenByProcessEnv: env.configSource.overriddenByProcessEnv,
+    };
+  },
 
   /**
    * Approved-template invitation (Beem). `to` is E.164; `params` is the

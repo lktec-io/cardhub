@@ -151,8 +151,10 @@ export const orderRepository = {
   /** Applies a provider delivery report to the order whose WhatsApp send returned this message id. Returns rows changed. */
   async updateWhatsappStatusByProviderId(providerMessageId, whatsappStatus, whatsappError) {
     const [result] = await pool.query(
-      'UPDATE orders SET whatsapp_status = ?, whatsapp_error = ? WHERE whatsapp_provider_message_id = ?',
-      [whatsappStatus, whatsappError, providerMessageId]
+      // A confirmed delivery is final: a late or duplicate "failed" report never downgrades it.
+      `UPDATE orders SET whatsapp_status = ?, whatsapp_error = ?
+       WHERE whatsapp_provider_message_id = ? AND NOT (whatsapp_status = 'sent' AND ? = 'failed')`,
+      [whatsappStatus, whatsappError, providerMessageId, whatsappStatus]
     );
     return result.affectedRows;
   },

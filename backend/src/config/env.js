@@ -2,7 +2,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
-dotenv.config();
+// Always backend/.env, whatever directory PM2/npm was started from (dotenv's
+// default is the current working directory, so a process started from the
+// repo root silently read a different file or none). dotenv never overrides
+// variables already in the process environment, so a stale value held by
+// PM2 still wins over the file; the names of any such WhatsApp settings are
+// recorded below and reported at startup (values are never logged).
+const ENV_FILE = process.env.CARDHUB_ENV_FILE || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env');
+const loadedEnv = dotenv.config({ path: ENV_FILE });
+const DELIVERY_KEYS = /^(BEEM_WHATSAPP_|WHATSAPP_PROVIDER$|BEEM_API_KEY$|BEEM_SECRET_KEY$)/;
+const envOverriddenKeys = loadedEnv.parsed
+  ? Object.keys(loadedEnv.parsed).filter((key) => DELIVERY_KEYS.test(key) && process.env[key] !== loadedEnv.parsed[key])
+  : [];
 
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
@@ -163,4 +174,12 @@ export const env = {
 
   frontendUrl: firstCleanUrl(process.env.FRONTEND_URL) || DEFAULT_FRONTEND_URL,
   apiUrl: firstCleanUrl(process.env.API_URL) || DEFAULT_API_URL,
+
+  /** Where configuration came from (names only — safe to log). */
+  configSource: {
+    envFile: ENV_FILE,
+    envFileLoaded: !loadedEnv.error,
+    // Delivery settings whose running value differs from backend/.env because the process environment set them first.
+    overriddenByProcessEnv: envOverriddenKeys,
+  },
 };

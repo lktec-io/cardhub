@@ -25,6 +25,19 @@ function logProviderStatus() {
     });
   }
 
+  // The settings THIS process will really use (may differ from what an SSH shell shows).
+  const wa = whatsappProvider.describeConfig();
+  logger.info('WhatsApp effective configuration', wa);
+  if (wa.overriddenByProcessEnv.length) {
+    logger.warn('WhatsApp settings come from the process environment, not backend/.env (stale PM2 env?)', {
+      keys: wa.overriddenByProcessEnv,
+      fix: 'pm2 delete cardhub-api && cd backend && PORT=<port> pm2 start src/server.js --name cardhub-api && pm2 save',
+    });
+  }
+  if (wa.provider === 'beem' && (!wa.templateIdValid || !wa.senderFormatOk)) {
+    logger.warn('WhatsApp template configuration looks invalid', { templateIdValid: wa.templateIdValid, senderFormatOk: wa.senderFormatOk });
+  }
+
   if (whatsappProvider.isConfigured) {
     logger.info(`WhatsApp provider (${whatsappProvider.providerName}) is configured and active`);
   } else {

@@ -8,6 +8,7 @@ import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
 import { checkInLimiter, writeLimiter } from '../../middleware/rateLimiter.js';
 import { ROLES } from '../../constants/roles.js';
+import { whatsappProvider } from '../../services/providers/whatsappProvider.js';
 
 export const adminRouter = Router();
 
@@ -77,3 +78,6 @@ adminRouter.delete('/audit-logs/:id', writeLimiter, adminDeletionController.dele
 adminRouter.get('/audit-logs/purge-preview', adminDeletionController.previewAuditPurge);
 adminRouter.post('/audit-logs/purge', writeLimiter, adminDeletionController.purgeAuditLogs);
 adminRouter.get('/security-events', adminDeletionController.securityEvents);
+
+// ---- Diagnostics: effective WhatsApp configuration of the RUNNING process (no secrets) ----
+adminRouter.get('/diagnostics/whatsapp', (req, res) => res.json({ success: true, data: whatsappProvider.describeConfig() }));

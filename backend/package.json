@@ -16,7 +16,8 @@
     "smoke:tickets": "node scripts/smoke-tickets.js",
     "admin:create": "node scripts/create-admin.js",
     "whatsapp:test": "node scripts/whatsapp-test.js",
-    "media:check": "node scripts/media-check.js"
+    "media:check": "node scripts/media-check.js",
+    "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
