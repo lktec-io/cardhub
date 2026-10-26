@@ -47,9 +47,44 @@ test('non-numeric template id is rejected, never guessed', () => {
   assert.ok(cfg.missingFields.some((m) => /whole number/.test(m)));
 });
 
+test('template header defaults to text; an unknown value is rejected, never guessed', () => {
+  assert.equal(describe(BASE).templateMedia, 'none');
+  assert.equal(describe(BASE).includesMedia, false);
+  const bad = describe({ ...BASE, BEEM_WHATSAPP_TEMPLATE_MEDIA: 'video' });
+  assert.equal(bad.usesTemplate, false);
+  assert.ok(bad.missingFields.some((m) => /BEEM_WHATSAPP_TEMPLATE_MEDIA/.test(m)));
+});
+
+test('key pair source: WhatsApp pair, or the SMS pair as fallback (names only)', () => {
+  assert.equal(describe(BASE).credentialSource, 'BEEM_WHATSAPP_API_KEY');
+  const fallback = describe({ ...BASE, BEEM_WHATSAPP_API_KEY: undefined, BEEM_WHATSAPP_API_SECRET: undefined, BEEM_API_KEY: 'sms-k', BEEM_SECRET_KEY: 'sms-s' });
+  assert.equal(fallback.credentialSource, 'BEEM_API_KEY (SMS pair fallback)');
+  assert.equal(JSON.stringify(fallback).includes('sms-s'), false);
+});
+
 test('backend/.env is found regardless of the working directory', () => {
   const cfg = describe({ ...BASE, CARDHUB_ENV_FILE: undefined }, { cwd: os.tmpdir() });
   assert.equal(path.normalize(cfg.envFile), path.join(BACKEND, '.env'));
+});
+
+test('whatsapp:compare reports match/DIFFERENT and never prints a key, secret or sender', () => {
+  const ch = path.join(os.tmpdir(), `cardhub-cmp-a-${process.pid}`);
+  const cg = path.join(os.tmpdir(), `cardhub-cmp-b-${process.pid}`);
+  // CardHub file as a NUL-separated /proc/<pid>/environ dump, using the SMS-pair fallback.
+  fs.writeFileSync(ch, ['BEEM_API_KEY=shared-key-111', 'BEEM_SECRET_KEY=sms-secret-222', 'BEEM_WHATSAPP_FROM=0706422927', 'BEEM_WHATSAPP_TEMPLATE_ID=1850', ''].join('\0'));
+  fs.writeFileSync(cg, 'BEEM_WHATSAPP_API_KEY=shared-key-111\nBEEM_WHATSAPP_API_SECRET="wa-secret-333"\nBEEM_WHATSAPP_FROM=255706422927\nBEEM_WHATSAPP_TEMPLATE_ID=1850\n');
+  try {
+    const out = execFileSync(process.execPath, [path.join(BACKEND, 'scripts/compare-whatsapp-env.js'), ch, cg], { encoding: 'utf8' });
+    for (const secret of ['shared-key-111', 'sms-secret-222', 'wa-secret-333', '706422927']) assert.equal(out.includes(secret), false, `printed ${secret}`);
+    assert.match(out, /API key\s+match/);
+    assert.match(out, /API secret\s+DIFFERENT/);
+    assert.match(out, /BEEM_API_KEY \(SMS fallback\)/);
+    assert.match(out, /sender \(from_addr\)\s+match/);
+    assert.match(out, /template id\s+same\s+cardhub: 1850/);
+  } finally {
+    fs.rmSync(ch, { force: true });
+    fs.rmSync(cg, { force: true });
+  }
 });
 
 test('a stale process environment overriding the .env file is detected (names only)', () => {

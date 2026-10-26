@@ -127,8 +127,10 @@ const beemTemplate = env.whatsapp.beem;
 function isValidTemplateId(value) {
   return /^\d+$/.test(String(value || ''));
 }
+const TEMPLATE_MEDIA_MODES = ['none', 'image'];
+const usesMediaHeader = beemTemplate.templateMedia === 'image';
 const isBeemTemplateConfigured = Boolean(
-  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && (beemTemplate.apiSecret || usesTokenAuth()) && env.whatsapp.beemFrom && isValidTemplateId(beemTemplate.templateId)
+  selectedProvider === PROVIDER_BEEM && beemTemplate.apiUrl && beemTemplate.apiKey && (beemTemplate.apiSecret || usesTokenAuth()) && env.whatsapp.beemFrom && isValidTemplateId(beemTemplate.templateId) && TEMPLATE_MEDIA_MODES.includes(beemTemplate.templateMedia)
 );
 
 function usesTokenAuth() {
@@ -143,6 +145,7 @@ function missingTemplateFields() {
   if (!env.whatsapp.beemFrom) missing.push('BEEM_WHATSAPP_FROM');
   if (!beemTemplate.templateId) missing.push('BEEM_WHATSAPP_TEMPLATE_ID');
   else if (!isValidTemplateId(beemTemplate.templateId)) missing.push('BEEM_WHATSAPP_TEMPLATE_ID (must be a whole number)');
+  if (!TEMPLATE_MEDIA_MODES.includes(beemTemplate.templateMedia)) missing.push('BEEM_WHATSAPP_TEMPLATE_MEDIA (none or image)');
   return missing;
 }
 
@@ -208,13 +211,17 @@ function beemErrorMessage(status, data, endpoint = 'send') {
 
 const TEMPLATE_PARAM_NAMES = ['guest name', 'event name', 'event date', 'event time', 'venue', 'invitation URL'];
 
-/** The approved template has exactly six variables and WhatsApp rejects empty ones; checked before any request. */
-export function validateTemplateParams(to, params) {
+/**
+ * The approved template has exactly six variables and WhatsApp rejects empty ones; checked before any request.
+ * With an image header (BEEM_WHATSAPP_TEMPLATE_MEDIA=image) WhatsApp fetches the image itself, so it must be public HTTPS.
+ */
+export function validateTemplateParams(to, params, mediaUrl) {
   if (!/^255[67]\d{8}$|^[1-9]\d{9,14}$/.test(toBeemNumber(to))) return 'recipient phone number is not a valid international number';
   if (!Array.isArray(params) || params.length !== TEMPLATE_PARAM_NAMES.length) return `template needs ${TEMPLATE_PARAM_NAMES.length} values, got ${Array.isArray(params) ? params.length : 0}`;
   const empty = params.findIndex((p) => typeof p !== 'string' || !p.trim());
   if (empty !== -1) return `template value {{${empty}}} (${TEMPLATE_PARAM_NAMES[empty]}) is empty`;
   if (!/^https?:\/\/\S+$/.test(params[5])) return 'template value {{5}} (invitation URL) is not a URL';
+  if (usesMediaHeader && !/^https:\/\/\S+$/.test(mediaUrl || '')) return 'template image header needs a public HTTPS card image URL (BEEM_WHATSAPP_TEMPLATE_MEDIA=image)';
   return null;
 }
 
@@ -228,17 +235,20 @@ async function readJson(response) {
 }
 
 /** The exact JSON sent to Beem's api-send; also printed (masked) by npm run whatsapp:test for support tickets. */
-export function buildBeemTemplateBody(to, params) {
-  return {
+export function buildBeemTemplateBody(to, params, mediaUrl) {
+  const body = {
     from_addr: toBeemNumber(env.whatsapp.beemFrom),
     destination_addr: [{ phoneNumber: toBeemNumber(to), params: params.map((p) => String(p)) }],
     channel: 'whatsapp',
     messageTemplateData: { id: Number(beemTemplate.templateId) },
   };
+  // Same shape Card Generator sends for its image-header template.
+  if (usesMediaHeader && mediaUrl) body.content = { mediaUrl };
+  return body;
 }
 
-async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
-  const body = buildBeemTemplateBody(to, params);
+async function sendBeemTemplate({ to, params, mediaUrl, transactionId = randomUUID() }) {
+  const body = buildBeemTemplateBody(to, params, mediaUrl);
   await waitForRateSlot();
 
   let response;
@@ -398,12 +408,14 @@ export const whatsappProvider = {
       templateMode: isBeemTemplateConfigured,
       sendEndpoint: beemTemplate.apiUrl ? `${new URL(beemTemplate.apiUrl).host}${new URL(beemTemplate.apiUrl).pathname}` : null,
       authMode: beemTemplate.authMode,
+      credentialSource: beemTemplate.credentialSource,
       sender: sender ? maskPhoneForLog(sender) : null,
       senderFormatOk: /^255[67]\d{8}$/.test(sender),
       templateId: beemTemplate.templateId || null,
       templateIdValid: isValidTemplateId(beemTemplate.templateId),
       templateParams: TEMPLATE_PARAM_NAMES.length,
-      includesMedia: false,
+      templateMedia: beemTemplate.templateMedia,
+      includesMedia: usesMediaHeader,
       missing: isBeemTemplateConfigured ? [] : selectedProvider === PROVIDER_BEEM ? missingTemplateFields() : missingFieldsFor(),
       envFile: env.configSource.envFile,
       envFileLoaded: env.configSource.envFileLoaded,
@@ -418,14 +430,15 @@ export const whatsappProvider = {
   /** Read-only template lookup for npm run whatsapp:test (see listBeemTemplates). */
   listTemplates: listBeemTemplates,
 
-  async sendInvitationTemplate({ to, params }) {
+  /** `mediaUrl` (the card image) is only sent when BEEM_WHATSAPP_TEMPLATE_MEDIA=image. */
+  async sendInvitationTemplate({ to, params, mediaUrl }) {
     if (!isBeemTemplateConfigured) return unavailable(PROVIDER_BEEM, `provider not configured (missing: ${missingTemplateFields().join(', ') || 'WHATSAPP_PROVIDER=beem'})`, maskPhoneForLog(to));
-    const problem = validateTemplateParams(to, params);
+    const problem = validateTemplateParams(to, params, mediaUrl);
     if (problem) {
       logger.warn('Beem WhatsApp template not sent: invalid payload', { to: maskPhoneForLog(to), templateId: beemTemplate.templateId, problem });
       return { status: 'failed', provider: PROVIDER_BEEM, providerMessageId: null, error: problem, httpStatus: null, providerResponse: null };
     }
-    return sendBeemTemplate({ to, params });
+    return sendBeemTemplate({ to, params, mediaUrl });
   },
 
   /** payload: { to, message } — `to` must already be E.164-normalized (see utils/phone.js). */

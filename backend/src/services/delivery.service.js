@@ -125,7 +125,11 @@ export const deliveryService = {
       try {
         if (whatsappProvider.usesTemplate) {
           // First contact must be the approved template (Meta's 24h rule); see whatsappProvider.js.
-          result = await whatsappProvider.sendInvitationTemplate({ to: order.guest_phone, params: buildInvitationTemplateParams({ ...fields, publicUrl }) });
+          result = await whatsappProvider.sendInvitationTemplate({
+            to: order.guest_phone,
+            params: buildInvitationTemplateParams({ ...fields, publicUrl }),
+            mediaUrl: getPublicCardImageUrl(template), // used only for an image-header template
+          });
         } else {
           const imageUrl = getPublicCardImageUrl(template);
           const caption = buildInvitationWhatsapp({ ...fields, publicUrl });

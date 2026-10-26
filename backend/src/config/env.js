@@ -120,6 +120,11 @@ export const env = {
       apiKey: trimmed(process.env.BEEM_WHATSAPP_API_KEY) || trimmed(process.env.BEEM_API_KEY) || '',
       apiSecret: trimmed(process.env.BEEM_WHATSAPP_API_SECRET) || trimmed(process.env.BEEM_SECRET_KEY) || '',
       templateId: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_ID) || '',
+      // Which key pair is in use (names only, for diagnostics).
+      credentialSource: trimmed(process.env.BEEM_WHATSAPP_API_KEY) ? 'BEEM_WHATSAPP_API_KEY' : trimmed(process.env.BEEM_API_KEY) ? 'BEEM_API_KEY (SMS pair fallback)' : null,
+      // Header of the approved template: "none" (text) or "image" (sends the card image as content.mediaUrl).
+      // Must match how the template is defined in Beem; never switched automatically.
+      templateMedia: (trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_MEDIA) || 'none').toLowerCase(),
       // Read-only template lookup (npm run whatsapp:test -- --templates); Beem's documented endpoint by default.
       templatesUrl: firstCleanUrl(process.env.BEEM_WHATSAPP_TEMPLATES_URL) || 'https://apichatcore.beem.africa/v1/message-templates/list',
       templateLanguage: trimmed(process.env.BEEM_WHATSAPP_TEMPLATE_LANGUAGE) || '',

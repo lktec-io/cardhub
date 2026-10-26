@@ -4,6 +4,7 @@
  *   npm run whatsapp:test -- --templates                 # list approved templates on your sender (read-only)
  *   npm run whatsapp:test -- --to 0712345678             # config + template check + payload validation; sends nothing
  *   npm run whatsapp:test -- --to 0712345678 --send      # sends ONE real message to that (consenting) number
+ *   ... --media-url https://…/card.jpg                    # the header image, when BEEM_WHATSAPP_TEMPLATE_MEDIA=image
  *
  * The template check asks Beem (GET message-templates/list, read-only)
  * whether BEEM_WHATSAPP_TEMPLATE_ID is on the sender in BEEM_WHATSAPP_FROM —
@@ -25,6 +26,7 @@ const argValue = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] :
 const toArg = argValue('--to');
 const send = args.includes('--send');
 const listMode = args.includes('--templates');
+const mediaUrl = argValue('--media-url');
 const b = env.whatsapp.beem;
 const rawFrom = env.whatsapp.beemFrom;
 const sentFrom = toBeemNumber(rawFrom);
@@ -50,6 +52,8 @@ console.log('        and at GET /api/v1/admin/diagnostics/whatsapp (admin login)
 if (b.apiUrl) console.log(`  send endpoint:  ${new URL(b.apiUrl).host}${new URL(b.apiUrl).pathname}`);
 console.log(`  list endpoint:  ${new URL(b.templatesUrl).host}${new URL(b.templatesUrl).pathname}`);
 console.log(`  template id that will be sent: ${b.templateId || '(none)'} (from BEEM_WHATSAPP_TEMPLATE_ID)`);
+console.log(`  template header: ${b.templateMedia}${b.templateMedia === 'image' ? ' (content.mediaUrl is sent)' : ' (no content.mediaUrl)'} (from BEEM_WHATSAPP_TEMPLATE_MEDIA)`);
+console.log(`  key pair in use: ${b.credentialSource || '(none)'}`);
 console.log(`  sender (from_addr) sent as: ${maskPhoneForLog(sentFrom)}${/^255\d{9}$/.test(sentFrom) ? '' : '  !! not a 255XXXXXXXXX number — check BEEM_WHATSAPP_FROM'}`);
 if (rawFrom && rawFrom.replace(/\D/g, '') !== sentFrom) {
   console.log('  note: BEEM_WHATSAPP_FROM is written in local/+ format; it is now sent in international digits (older builds sent it as typed).');
@@ -138,14 +142,14 @@ const params = buildInvitationTemplateParams({
 });
 console.log(`\nPayload (from ${maskPhoneForLog(sentFrom)} to ${maskPhoneForLog(toBeemNumber(to))}, messageTemplateData.id ${b.templateId}, channel whatsapp):`);
 INVITATION_TEMPLATE_VARIABLES.forEach((label, i) => console.log(`  params[${i}] -> {{${i}}} ${label}: ${params[i]}`));
-const masked = buildBeemTemplateBody(to, params);
+const masked = buildBeemTemplateBody(to, params, mediaUrl);
 masked.from_addr = maskPhoneForLog(masked.from_addr);
 masked.destination_addr[0].phoneNumber = maskPhoneForLog(masked.destination_addr[0].phoneNumber);
 console.log(`  exact request body (numbers masked, no credentials; safe to send to Beem support):
   POST ${b.apiUrl ? new URL(b.apiUrl).host + new URL(b.apiUrl).pathname : '(no URL)'}  auth: ${b.authMode}
   ${JSON.stringify(masked)}`);
-const payloadProblem = validateTemplateParams(to, params);
-console.log(payloadProblem ? `  FAIL payload: ${payloadProblem}` : '  ok   payload: 6 non-empty values in template order, valid recipient');
+const payloadProblem = validateTemplateParams(to, params, mediaUrl);
+console.log(payloadProblem ? `  FAIL payload: ${payloadProblem}${b.templateMedia === 'image' ? ' (pass --media-url https://…)' : ''}` : '  ok   payload: 6 non-empty values in template order, valid recipient');
 
 const provenBad = !listingUnavailable && !verified;
 if (!send) {
@@ -157,7 +161,7 @@ if (provenBad || payloadProblem || !whatsappProvider.usesTemplate) {
   process.exit(1);
 }
 
-const result = await whatsappProvider.sendInvitationTemplate({ to, params });
+const result = await whatsappProvider.sendInvitationTemplate({ to, params, mediaUrl });
 console.log(`\nBeem HTTP status: ${result.httpStatus ?? 'no response'}`);
 console.log(`Beem response:    ${result.providerResponse ?? '(empty)'}`);
 if (result.status === 'queued') {
