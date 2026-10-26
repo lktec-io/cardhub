@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FiAlertCircle, FiSearch } from 'react-icons/fi';
+import { FiAlertCircle, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Input, Select, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useToast } from '../../hooks/useToast';
 import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
+import { DangerDialog } from './content/DangerDialog';
+import './content/admin-content.css';
 import {
   ORDER_STATUS_VALUES,
   PAYMENT_STATUS_VALUES,
@@ -35,6 +37,7 @@ export function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
 
   const load = useCallback(() => {
     adminService
@@ -119,6 +122,7 @@ export function AdminOrdersPage() {
                   <th>{t('channel.sms')}</th>
                   <th>{t('channel.whatsapp')}</th>
                   <th>{t('admin.orders.placed')}</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -179,6 +183,13 @@ export function AdminOrdersPage() {
                         {order.whatsapp?.error && <span className="ch-admin-orders__phone">{order.whatsapp.error}</span>}
                       </td>
                       <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        {order.paymentStatus !== 'paid' && (
+                          <button type="button" className="ch-tm-icon-btn ch-tm-icon-btn--danger" onClick={() => setToDelete(order)} aria-label={`Delete order #${order.invitationNumber || order.id}`} title="Delete permanently">
+                            <FiTrash2 aria-hidden="true" />
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -188,6 +199,18 @@ export function AdminOrdersPage() {
           <Pagination page={page} totalPages={pagination?.totalPages} onChange={setPage} />
         </>
       )}
+      <DangerDialog
+        isOpen={Boolean(toDelete)}
+        title="Delete order permanently?"
+        subject={toDelete ? `Order #${toDelete.invitationNumber || toDelete.id} · ${toDelete.guestName || ''} · payment ${toDelete.paymentStatus}` : ''}
+        warning="Only unpaid orders can be deleted. Paid orders are financial records and are refused."
+        onClose={() => setToDelete(null)}
+        onConfirm={async () => {
+          await adminService.deleteCardOrder(toDelete.id);
+          toast.success('Order deleted.');
+          load();
+        }}
+      />
     </div>
   );
 }

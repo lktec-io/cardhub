@@ -24,7 +24,7 @@ export function AdminLayout() {
     <div className="ch-dashboard">
       <AdminSidebar isMobileOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
       <div className="ch-dashboard__main">
-        <Topbar onMenuClick={() => setIsMobileNavOpen(true)} />
+        <Topbar onMenuClick={() => setIsMobileNavOpen(true)} showNotifications={false} />
         <div className="ch-dashboard__content">
           <Outlet />
         </div>

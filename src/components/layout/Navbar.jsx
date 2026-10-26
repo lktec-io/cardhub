@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { ROUTES } from '../../constants/routes';
-import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../hooks/useLanguage';
 import { LanguageToggle } from './LanguageToggle';
 
@@ -18,7 +17,6 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -44,9 +42,8 @@ export function Navbar() {
     };
   }, [isOpen]);
 
-  // No public customer accounts: the CTA always starts the guest Try flow. Signed-in
-  // staff get a quiet link back to the admin portal instead of a public "Log in".
-  const isStaff = isAuthenticated && user?.role === 'admin';
+  // No public customer accounts and no admin entry point on the public site:
+  // the CTA always starts the guest Try flow. Staff use /admin/login directly.
 
   return (
     <>
@@ -66,11 +63,6 @@ export function Navbar() {
 
           <div className="ch-navbar__actions ch-navbar__actions--desktop">
             <LanguageToggle />
-            {isStaff && (
-              <NavLink to={ROUTES.ADMIN} className="ch-navbar__login">
-                {t('nav.admin')}
-              </NavLink>
-            )}
             <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--sm">
               {t('nav.tryService')}
             </Link>
@@ -119,7 +111,6 @@ export function Navbar() {
           ))}
         </nav>
         <div className="ch-navbar__sidebar-actions">
-          {isStaff && <Link to={ROUTES.ADMIN}>{t('nav.admin')}</Link>}
           <Link to={ROUTES.TRY} className="ch-btn ch-btn--conversion ch-btn--full">
             {t('nav.tryService')}
           </Link>

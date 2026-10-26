@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { env } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
+import { normalizePhoneForDelivery } from '../../utils/phone.js';
 
 const PROVIDER_META = 'meta';
 const PROVIDER_BEEM = 'beem';
@@ -141,6 +142,18 @@ function missingTemplateFields() {
 }
 
 const digitsOnly = (phone) => String(phone || '').replace(/\D/g, '');
+
+/**
+ * Beem identifies the WhatsApp channel by the sender number exactly as
+ * registered (international digits, e.g. 2557XXXXXXXX). A local "07…" or
+ * "+255 7…" value in BEEM_WHATSAPP_FROM would not match the channel that owns
+ * the template ("Template id and channel do not match"), so both sender and
+ * recipient are normalised the same way.
+ */
+export function toBeemNumber(phone) {
+  const e164 = normalizePhoneForDelivery(String(phone || ''));
+  return e164 ? e164.replace(/^\+/, '') : digitsOnly(phone);
+}
 /** For logs only: "+255712345678" -> "2557******78". */
 export const maskPhoneForLog = (phone) => {
   const d = digitsOnly(phone);
@@ -172,16 +185,32 @@ function sanitizeProviderBody(data) {
     .slice(0, 500);
 }
 
-function beemErrorMessage(status, data) {
+/** `endpoint`: 'send' (BEEM_WHATSAPP_API_URL) or 'list' (BEEM_WHATSAPP_TEMPLATES_URL), so the hint names the right setting. */
+function beemErrorMessage(status, data, endpoint = 'send') {
   const detail = data?.data?.message || data?.message || data?.error?.message || data?.error;
   const base = typeof detail === 'string' && detail ? detail : `Beem rejected the request (HTTP ${status})`;
   if (status === 401 || status === 403) return `${base} — check BEEM_WHATSAPP_API_KEY/SECRET and BEEM_WHATSAPP_AUTH_MODE`;
+  if ((status === 404 || status === 405) && endpoint === 'list') {
+    return `${base} — the template-list endpoint is not available to this account (this does NOT mean the template is missing; the send itself is the authoritative check)`;
+  }
   if (status === 404 || status === 405) return `${base} — check BEEM_WHATSAPP_API_URL`;
   if (/template id and channel do not match/i.test(base)) {
     return `${base} — BEEM_WHATSAPP_TEMPLATE_ID must be Beem's template id for the sender in BEEM_WHATSAPP_FROM; run: npm run whatsapp:test -- --templates`;
   }
   if (/channel settings/i.test(base)) return `${base} — BEEM_WHATSAPP_FROM is not a WhatsApp sender on this Beem account`;
   return base;
+}
+
+const TEMPLATE_PARAM_NAMES = ['guest name', 'event name', 'event date', 'event time', 'venue', 'invitation URL'];
+
+/** The approved template has exactly six variables and WhatsApp rejects empty ones; checked before any request. */
+export function validateTemplateParams(to, params) {
+  if (!/^255[67]\d{8}$|^[1-9]\d{9,14}$/.test(toBeemNumber(to))) return 'recipient phone number is not a valid international number';
+  if (!Array.isArray(params) || params.length !== TEMPLATE_PARAM_NAMES.length) return `template needs ${TEMPLATE_PARAM_NAMES.length} values, got ${Array.isArray(params) ? params.length : 0}`;
+  const empty = params.findIndex((p) => typeof p !== 'string' || !p.trim());
+  if (empty !== -1) return `template value {{${empty}}} (${TEMPLATE_PARAM_NAMES[empty]}) is empty`;
+  if (!/^https?:\/\/\S+$/.test(params[5])) return 'template value {{5}} (invitation URL) is not a URL';
+  return null;
 }
 
 async function readJson(response) {
@@ -195,8 +224,8 @@ async function readJson(response) {
 
 async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
   const body = {
-    from_addr: digitsOnly(env.whatsapp.beemFrom),
-    destination_addr: [{ phoneNumber: digitsOnly(to), params: params.map((p) => String(p)) }],
+    from_addr: toBeemNumber(env.whatsapp.beemFrom),
+    destination_addr: [{ phoneNumber: toBeemNumber(to), params: params.map((p) => String(p)) }],
     channel: 'whatsapp',
     messageTemplateData: { id: Number(beemTemplate.templateId) },
   };
@@ -244,16 +273,18 @@ async function listBeemTemplates({ q, id, channelNumber, limit = 50 } = {}) {
   const url = new URL(beemTemplate.templatesUrl);
   if (q) url.searchParams.set('q', q);
   if (id) url.searchParams.set('id', String(id));
-  if (channelNumber) url.searchParams.set('channel_number', digitsOnly(channelNumber));
+  if (channelNumber) url.searchParams.set('channel_number', toBeemNumber(channelNumber));
   url.searchParams.set('limit', String(limit));
   let response;
   try {
     response = await fetch(url, { headers: { Authorization: beemAuthHeader(), Accept: 'application/json' }, signal: AbortSignal.timeout(beemTemplate.timeoutMs) });
   } catch (error) {
-    return { ok: false, httpStatus: null, templates: [], error: error.name === 'TimeoutError' ? 'timeout' : error.message };
+    return { ok: false, httpStatus: null, templates: [], endpoint: `${url.host}${url.pathname}`, error: error.name === 'TimeoutError' ? 'timeout' : error.message };
   }
   const data = await readJson(response);
-  if (!response.ok) return { ok: false, httpStatus: response.status, templates: [], error: beemErrorMessage(response.status, data) };
+  if (!response.ok) {
+    return { ok: false, httpStatus: response.status, templates: [], endpoint: `${url.host}${url.pathname}`, providerResponse: sanitizeProviderBody(data), error: beemErrorMessage(response.status, data, 'list') };
+  }
   const rows = Array.isArray(data?.data) ? data.data : [];
   return {
     ok: true,
@@ -354,6 +385,11 @@ export const whatsappProvider = {
 
   async sendInvitationTemplate({ to, params }) {
     if (!isBeemTemplateConfigured) return unavailable(PROVIDER_BEEM, `provider not configured (missing: ${missingTemplateFields().join(', ') || 'WHATSAPP_PROVIDER=beem'})`, maskPhoneForLog(to));
+    const problem = validateTemplateParams(to, params);
+    if (problem) {
+      logger.warn('Beem WhatsApp template not sent: invalid payload', { to: maskPhoneForLog(to), templateId: beemTemplate.templateId, problem });
+      return { status: 'failed', provider: PROVIDER_BEEM, providerMessageId: null, error: problem, httpStatus: null, providerResponse: null };
+    }
     return sendBeemTemplate({ to, params });
   },
 

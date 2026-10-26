@@ -75,6 +75,16 @@ async function generateCardSlug(name) {
  * mediaStorage (server disk). A replaced or deleted file is removed only
  * after the database no longer points at it.
  */
+/** Runs the DB write for a just-stored file; if it fails the new file is removed so nothing is orphaned. */
+export async function saveOrRollback(newKey, write) {
+  try {
+    return await write();
+  } catch (error) {
+    await mediaStorage.remove(newKey);
+    throw error;
+  }
+}
+
 export const adminContentService = {
   // ---------------- Invitation cards ----------------
 
@@ -116,8 +126,8 @@ export const adminContentService = {
     if (!existing) throw ApiError.notFound('Card not found');
     if (!file) throw ApiError.validation([{ field: 'image', message: 'Choose an image to upload' }]);
     const stored = await mediaStorage.commit(file.path, { kind: 'image', folder: 'cards' });
-    const row = await templateRepository.updatePreviewImage(id, stored.key);
-    await mediaStorage.remove(existing.preview_image); // only removes files this provider created
+    const row = await saveOrRollback(stored.key, () => templateRepository.updatePreviewImage(id, stored.key));
+    await mediaStorage.removeIfUnreferenced(existing.preview_image);
     await audit(adminUserId, 'admin.card_image_replaced', 'template', id, {}, requestMeta);
     return toAdminCardDTO(row, { eventsUsing: await templateRepository.countEventsUsing(id) });
   },
@@ -137,7 +147,7 @@ export const adminContentService = {
       throw ApiError.conflict(`This card is used by ${inUse} event${inUse === 1 ? '' : 's'}, so it can't be deleted. Hide it instead.`);
     }
     await templateRepository.deleteById(id);
-    await mediaStorage.remove(existing.preview_image);
+    await mediaStorage.removeIfUnreferenced(existing.preview_image);
     await audit(adminUserId, 'admin.card_deleted', 'template', id, { name: existing.name }, requestMeta);
   },
 
@@ -177,8 +187,8 @@ export const adminContentService = {
     if (!existing) throw ApiError.notFound('Media item not found');
     if (!file) throw ApiError.validation([{ field: 'image', message: 'Choose a poster image' }]);
     const stored = await mediaStorage.commit(file.path, { kind: 'image', folder: 'video-posters' });
-    const row = await mediaAssetRepository.updatePoster(id, stored.key);
-    await mediaStorage.remove(existing.poster_key);
+    const row = await saveOrRollback(stored.key, () => mediaAssetRepository.updatePoster(id, stored.key));
+    await mediaStorage.removeIfUnreferenced(existing.poster_key);
     await audit(adminUserId, 'admin.media_poster_replaced', 'media', id, {}, requestMeta);
     return toMediaDTO(row);
   },
@@ -193,8 +203,8 @@ export const adminContentService = {
     const existing = await mediaAssetRepository.findById(id);
     if (!existing) throw ApiError.notFound('Media item not found');
     await mediaAssetRepository.deleteById(id);
-    await mediaStorage.remove(existing.file_key);
-    await mediaStorage.remove(existing.poster_key);
+    await mediaStorage.removeIfUnreferenced(existing.file_key);
+    await mediaStorage.removeIfUnreferenced(existing.poster_key);
     await audit(adminUserId, 'admin.media_deleted', 'media', id, { kind: existing.kind, title: existing.title }, requestMeta);
   },
 };

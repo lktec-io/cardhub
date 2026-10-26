@@ -197,11 +197,12 @@ export function buildInvitationTemplateParams({ guestName, eventName, eventDate,
     return text || fallback;
   };
   return [
-    clean(guestName, 'Mgeni'),
-    clean(eventName, 'Tukio'),
+    // Required by the Try/checkout flows; left empty (and so refused before sending) rather than invented.
+    clean(guestName, ''),
+    clean(eventName, ''),
     clean(formatDateLong(eventDate), 'Itatangazwa'),
     clean(formatTimePlain(eventTime), 'Itatangazwa'),
     clean(venue, 'Itatangazwa'),
-    publicUrl,
+    publicUrl || '',
   ];
 }

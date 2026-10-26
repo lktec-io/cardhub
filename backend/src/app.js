@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import { logger } from './utils/logger.js';
 import { env } from './config/env.js';
 import { v1Router } from './routes/v1/index.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
@@ -30,7 +31,11 @@ app.use(
     next();
   },
   express.static(env.media.root, { index: false, dotfiles: 'deny', redirect: false, maxAge: '30d', immutable: true }),
-  (req, res) => res.status(404).end()
+  (req, res) => {
+    // A missing upload is worth knowing about (deleted file, wrong MEDIA_ROOT, stale DB key).
+    logger.warn('Media file not found', { path: req.path });
+    res.status(404).end();
+  }
 );
 
 // This API serves dynamic JSON, never static assets — Express's default

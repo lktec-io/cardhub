@@ -4,6 +4,13 @@ import { FiX } from 'react-icons/fi';
 
 export function Modal({ isOpen, onClose, title, children, footer, size = 'md', className = '' }) {
   const dialogRef = useRef(null);
+  // Latest onClose without re-running the open effect: callers often pass an
+  // inline function, and re-running would re-focus the dialog on every render,
+  // stealing focus from whatever input the user is typing in.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -13,7 +20,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md', c
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.();
+      if (event.key === 'Escape') onCloseRef.current?.();
     };
     document.addEventListener('keydown', handleKeyDown);
 
@@ -22,7 +29,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md', c
       document.body.style.overflow = '';
       previouslyFocused?.focus?.();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

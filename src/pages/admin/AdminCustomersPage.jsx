@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiAlertCircle, FiSearch } from 'react-icons/fi';
+import { FiAlertCircle, FiSearch, FiTrash2 } from 'react-icons/fi';
 import { PageHeader, Seo, Pagination } from '../../components/common';
 import { Button, Input, Badge, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
@@ -8,6 +8,8 @@ import { useToast } from '../../hooks/useToast';
 import { useLanguage } from '../../hooks/useLanguage';
 import { getErrorMessage } from '../../utils/mapValidationErrors';
 import { ROUTES } from '../../constants/routes';
+import { DangerDialog } from './content/DangerDialog';
+import './content/admin-content.css';
 
 const PAGE_SIZE = 20;
 
@@ -17,6 +19,7 @@ export function AdminCustomersPage() {
   const { t } = useLanguage();
   const toast = useToast();
   const [customers, setCustomers] = useState([]);
+  const [toDelete, setToDelete] = useState(null);
   const [pagination, setPagination] = useState(null);
   const [status, setStatus] = useState('loading');
   const [page, setPage] = useState(1);
@@ -115,6 +118,7 @@ export function AdminCustomersPage() {
                     <td>{new Date(customer.createdAt).toLocaleDateString()}</td>
                     <td>
                       {customer.role !== 'admin' && (
+                        <span className="ch-row-actions">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -123,6 +127,10 @@ export function AdminCustomersPage() {
                         >
                           {customer.status === 'suspended' ? t('admin.customers.reactivate') : t('admin.customers.suspend')}
                         </Button>
+                        <button type="button" className="ch-tm-icon-btn ch-tm-icon-btn--danger" onClick={() => setToDelete(customer)} aria-label={`Delete ${customer.name}`} title="Delete account permanently">
+                          <FiTrash2 aria-hidden="true" />
+                        </button>
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -133,6 +141,19 @@ export function AdminCustomersPage() {
           <Pagination page={page} totalPages={pagination?.totalPages} onChange={setPage} />
         </>
       )}
+      <DangerDialog
+        isOpen={Boolean(toDelete)}
+        title="Delete customer account?"
+        subject={toDelete ? `${toDelete.name} · ${toDelete.email}` : ''}
+        warning="Only accounts with no events, payments or orders can be deleted (the server checks). Otherwise suspend the account."
+        confirmPhrase={toDelete?.email}
+        onClose={() => setToDelete(null)}
+        onConfirm={async (confirm) => {
+          await adminService.deleteUser(toDelete.id, confirm);
+          toast.success('Customer deleted.');
+          load();
+        }}
+      />
     </div>
   );
 }

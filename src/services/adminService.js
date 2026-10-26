@@ -116,6 +116,37 @@ export const adminService = {
   checkInStats(eventId) {
     return api.get(`/admin/ticket-events/${eventId}/check-in-stats`);
   },
+  // ---- Hard deletes (server re-checks every rule) ----
+  eventDeletePreview(id) {
+    return api.get(`/admin/events/${id}/delete-preview`);
+  },
+  deleteEvent(id, confirm) {
+    return api.delete(`/admin/events/${id}`, { data: { confirm } });
+  },
+  deleteTicketOrder(id) {
+    return api.delete(`/admin/ticket-orders/${id}`);
+  },
+  cancelTicket(id) {
+    return api.post(`/admin/tickets/${id}/cancel`);
+  },
+  deleteCardOrder(id) {
+    return api.delete(`/admin/orders/${id}`);
+  },
+  deleteUser(id, confirm) {
+    return api.delete(`/admin/users/${id}`, { data: { confirm } });
+  },
+  deleteAuditLog(id) {
+    return api.delete(`/admin/audit-logs/${id}`);
+  },
+  auditPurgePreview(olderThanDays) {
+    return api.get('/admin/audit-logs/purge-preview', { params: { olderThanDays } });
+  },
+  purgeAuditLogs(olderThanDays, confirm) {
+    return api.post('/admin/audit-logs/purge', { olderThanDays, confirm });
+  },
+  listSecurityEvents(params) {
+    return api.get('/admin/security-events', { params });
+  },
   listTicketEventTickets(id, params) {
     return api.get(`/admin/ticket-events/${id}/tickets`, { params });
   },

@@ -420,6 +420,19 @@
   object-fit: cover;
   display: block;
 }
+/* The whole poster, uncropped, on a blurred fill of itself (any aspect ratio). */
+.ch-tix-cover .ch-tix-cover__fill {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  filter: blur(22px) brightness(0.7) saturate(1.1);
+}
+.ch-tix-cover .ch-tix-cover__art {
+  position: relative;
+  object-fit: contain;
+}
 .ch-tix-cover--fallback {
   display: flex;
   align-items: center;

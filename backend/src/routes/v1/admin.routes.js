@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { adminController } from '../../controllers/admin.controller.js';
 import { adminContentController } from '../../controllers/adminContent.controller.js';
 import { adminTicketEventsController } from '../../controllers/adminTicketEvents.controller.js';
+import { adminDeletionController } from '../../controllers/adminDeletion.controller.js';
 import { singleMediaUpload } from '../../middleware/mediaUpload.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { authorize } from '../../middleware/authorize.js';
@@ -64,3 +65,15 @@ adminRouter.get('/ticket-events/:id/check-in-stats', adminTicketEventsController
 
 // ---- Door scanner (Scan & verify) ----
 adminRouter.post('/tickets/check-in', checkInLimiter, adminTicketEventsController.checkIn);
+
+// ---- Hard deletes (admin only; each re-checks eligibility server-side in a transaction) ----
+adminRouter.get('/events/:id/delete-preview', adminDeletionController.previewEvent);
+adminRouter.delete('/events/:id', writeLimiter, adminDeletionController.deleteEvent);
+adminRouter.delete('/ticket-orders/:id', writeLimiter, adminDeletionController.deleteTicketOrder);
+adminRouter.post('/tickets/:id/cancel', writeLimiter, adminDeletionController.cancelTicket);
+adminRouter.delete('/orders/:id', writeLimiter, adminDeletionController.deleteCardOrder);
+adminRouter.delete('/users/:id', writeLimiter, adminDeletionController.deleteUser);
+adminRouter.delete('/audit-logs/:id', writeLimiter, adminDeletionController.deleteAuditLog);
+adminRouter.get('/audit-logs/purge-preview', adminDeletionController.previewAuditPurge);
+adminRouter.post('/audit-logs/purge', writeLimiter, adminDeletionController.purgeAuditLogs);
+adminRouter.get('/security-events', adminDeletionController.securityEvents);

@@ -883,7 +883,7 @@ export const TRANSLATIONS = {
 
   // Admin audit logs
   'admin.auditLogs.title': { en: 'Audit Logs', sw: 'Kumbukumbu za Ukaguzi' },
-  'admin.auditLogs.description': { en: 'Read-only history of account and platform actions.', sw: 'Historia ya kusoma tu ya vitendo vya akaunti na jukwaa.' },
+  'admin.auditLogs.description': { en: 'History of account and platform actions. Deleting entries is permanent and is itself recorded in the deletion log.', sw: 'Historia ya vitendo vya akaunti na jukwaa. Kufuta kumbukumbu ni kwa kudumu na kunarekodiwa kwenye kumbukumbu ya ufutaji.' },
   'admin.auditLogs.loadFailed': { en: "Couldn't load audit logs", sw: 'Imeshindikana kupakia kumbukumbu za ukaguzi' },
   'admin.auditLogs.empty': { en: 'No audit log entries yet', sw: 'Hakuna kumbukumbu za ukaguzi bado' },
   'admin.auditLogs.action': { en: 'Action', sw: 'Kitendo' },

@@ -5,6 +5,8 @@ import { Button, Input, EmptyState, Skeleton } from '../../components/ui';
 import { EventStatusBadge } from '../../components/events';
 import { adminService } from '../../services/adminService';
 import { useLanguage } from '../../hooks/useLanguage';
+import { EventDeleteButton } from './content/EventDeleteButton';
+import './content/admin-content.css';
 
 const PAGE_SIZE = 20;
 
@@ -75,6 +77,7 @@ export function AdminEventsPage() {
                   <th>{t('admin.events.owner')}</th>
                   <th>{t('admin.customers.status')}</th>
                   <th>{t('admin.created')}</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -91,6 +94,9 @@ export function AdminEventsPage() {
                       <EventStatusBadge status={event.status} />
                     </td>
                     <td>{new Date(event.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <EventDeleteButton compact eventId={event.id} title={event.title} onDeleted={load} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
-import { FiAlertCircle, FiClock, FiCreditCard, FiDollarSign, FiShoppingBag, FiUsers, FiXCircle } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { FiAlertCircle, FiCalendar, FiCamera, FiClock, FiCreditCard, FiDollarSign, FiLayers, FiShoppingBag, FiUsers, FiXCircle } from 'react-icons/fi';
 import { PageHeader, Seo } from '../../components/common';
 import { Button, EmptyState, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
 import { useLanguage } from '../../hooks/useLanguage';
+import { ROUTES } from '../../constants/routes';
+import './content/admin-content.css';
+
+/** The tasks staff open most, especially on event day. */
+const QUICK_ACTIONS = [
+  { to: ROUTES.ADMIN_SCAN, icon: FiCamera, label: 'Scan & verify tickets' },
+  { to: ROUTES.ADMIN_TICKET_EVENTS, icon: FiCalendar, label: 'Events & tickets' },
+  { to: ROUTES.ADMIN_CARDS, icon: FiLayers, label: 'Invitation cards' },
+];
 
 function StatTile({ icon: Icon, label, value }) {
   return (
@@ -43,6 +53,15 @@ export function AdminDashboardPage() {
     <div className="ch-admin-dashboard">
       <Seo title="Admin Dashboard" />
       <PageHeader eyebrow={t('admin.eyebrow')} title={t('admin.dashboard.title')} description={t('admin.dashboard.description')} />
+
+      <nav className="ch-admin-quick" aria-label="Quick actions">
+        {QUICK_ACTIONS.map(({ to, icon: Icon, label }) => (
+          <Link key={to} to={to} className="ch-admin-quick__item">
+            <Icon aria-hidden="true" />
+            <span>{label}</span>
+          </Link>
+        ))}
+      </nav>
 
       {status === 'loading' && (
         <div className="ch-admin-stats-grid">

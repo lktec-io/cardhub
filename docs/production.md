@@ -166,14 +166,28 @@ template list = `GET https://apichatcore.beem.africa/v1/message-templates/list`.
 channel do not match". Auth: `basic` (key:secret) or `token`
 (`Authorization: <token>`, no "Bearer").
 
+The owner-approved template is **1859** (`BEEM_WHATSAPP_TEMPLATE_ID=1859`).
+The sender is always sent as international digits (`2557XXXXXXXX`), whatever
+format `BEEM_WHATSAPP_FROM` is written in; earlier builds sent it exactly as
+typed, so a local `07…` / `+255 …` value did not match the channel that owns
+the template.
+
 ```bash
 cd /path/to/cardhub/backend
 npm run whatsapp:test -- --templates                 # read-only: approved templates on your sender, with Beem ids
-# put the id of the enabled "KADI YA MWALIKO" template in BEEM_WHATSAPP_TEMPLATE_ID, then:
-pm2 restart cardhub-api --update-env
-npm run whatsapp:test -- --to 07XXXXXXXX             # verifies id/sender/status/6 placeholders + payload preview; sends nothing
-npm run whatsapp:test -- --to 07XXXXXXXX --send      # ONE real message, refused unless verification passed
+npm run whatsapp:test -- --to 07XXXXXXXX             # template check + payload validation; sends nothing
+npm run whatsapp:test -- --to 07XXXXXXXX --send      # ONE real message to a consenting number
+pm2 restart cardhub-api --update-env                 # after any .env change
 ```
+
+If `--templates` answers HTTP 404, the template-list API is not available to
+this account; that does **not** mean 1859 is missing, and the check is then
+skipped (not failed). `--send` is refused only when Beem's own list proves
+1859 is on a different sender, or the payload is invalid. If a real send
+still returns "Template id and channel do not match", 1859 is approved on a
+different WhatsApp number than `BEEM_WHATSAPP_FROM`: confirm the sender
+number for template 1859 in Beem Engage → Templates (or with
+support@beem.africa) and set `BEEM_WHATSAPP_FROM` to that number.
 
 "ACCEPTED" means Beem queued a broadcast job (`jobId`); only the phone
 receiving it, or a delivery report, proves delivery. Delivery reports: set
@@ -217,6 +231,34 @@ pick the event, tap "Start scanning". The server admits each ticket once
 the time and the staff member. Ticket QR codes are plain black-on-white,
 error-correction level L, 4-module quiet zone, encoding only
 `/ticket/verify/<random token>`. Rollback: `npm run migrate:down` once.
+
+### Admin hard deletes — migration 028
+
+Additive: creates `security_events`, an append-only record of every hard
+delete (no endpoint can edit or delete it), shown in Admin → Audit Logs →
+Deletion log.
+
+```bash
+mysqldump -u <user> -p cardhub | gzip > ~/cardhub-before-028-$(date +%Y%m%d).sql.gz
+cd /path/to/cardhub/backend && npm run migrate      # "Applied migration: 028_create_security_events_table.sql"
+pm2 restart cardhub-api --update-env
+```
+
+What can be deleted (every rule is re-checked server-side, in a transaction
+with the row locked; refusals are HTTP 409 with the safe alternative):
+
+| Record | Hard delete | Otherwise |
+|---|---|---|
+| Event | only with no ticket orders; type `DELETE`; ticket types + guests go with it | unpublish |
+| Ticket order | only expired / failed / cancelled, no tickets, no live payment | — (paid = sales record) |
+| Ticket | never | **Cancel ticket** (QR refused at the door) |
+| Card order | only unpaid, no paid/pending payment | cancel via status |
+| Customer | only with no events, payments or orders; type their email | suspend |
+| Audit log | single entries; bulk only older than ≥ 30 days, type `DELETE AUDIT LOGS` | — |
+| Payments, security events | never | — |
+| Cards, videos | yes (existing); files removed only when nothing else uses them | hide |
+
+Rollback: `npm run migrate:down` once (drops `security_events` only).
 
 Nginx should terminate TLS for `cardhub.co.tz`, proxy `/api/` to
 `http://127.0.0.1:4006` (the PM2-managed Node process — `127.0.0.1` here

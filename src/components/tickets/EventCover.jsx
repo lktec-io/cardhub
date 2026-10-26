@@ -10,16 +10,21 @@ export function EventCover({ src, alt, className = '', eager = false }) {
   return (
     <div className={`ch-tix-cover ${showImage ? '' : 'ch-tix-cover--fallback'} ${className}`}>
       {showImage ? (
-        <img
-          src={src}
-          alt={alt}
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-          onError={() => {
-            console.warn('Event image failed to load:', src);
-            setFailedSrc(src);
-          }}
-        />
+        <>
+          {/* Same image, blurred, fills the frame so the full poster can be shown uncropped on top. */}
+          <img className="ch-tix-cover__fill" src={src} alt="" aria-hidden="true" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+          <img
+            className="ch-tix-cover__art"
+            src={src}
+            alt={alt}
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
+            onError={() => {
+              console.warn('Event image failed to load:', src);
+              setFailedSrc(src);
+            }}
+          />
+        </>
       ) : (
         <FiCalendar aria-hidden="true" />
       )}

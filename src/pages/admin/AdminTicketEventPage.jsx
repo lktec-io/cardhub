@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { FiAlertCircle, FiArrowLeft, FiCamera, FiExternalLink, FiImage, FiSearch } from 'react-icons/fi';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { FiAlertCircle, FiArrowLeft, FiCamera, FiExternalLink, FiImage, FiSearch, FiSlash, FiTrash2 } from 'react-icons/fi';
 import { Pagination, Seo } from '../../components/common';
 import { Badge, Button, EmptyState, Input, Select, Skeleton } from '../../components/ui';
 import { adminService } from '../../services/adminService';
@@ -12,6 +12,8 @@ import { StatusBadge } from './AdminTicketEventsPage';
 import { EventDetailsFields } from './content/EventDetailsFields';
 import { FilePickField } from './content/FilePickField';
 import { fieldErrors, formatEventDate, formatTzs, toDetailsForm, validateEventDetails } from './content/adminContent';
+import { DangerDialog } from './content/DangerDialog';
+import { EventDeleteButton } from './content/EventDeleteButton';
 import './content/admin-content.css';
 
 const TABS = [
@@ -24,6 +26,7 @@ const TABS = [
 /** Admin → one event: details, poster, publication, ticket types, orders and issued tickets. */
 export function AdminTicketEventPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const toast = useToast();
   const [event, setEvent] = useState(null);
   const [loadState, setLoadState] = useState('loading');
@@ -111,6 +114,7 @@ export function AdminTicketEventPage() {
           </div>
         </div>
         <div className="ch-ae-head__actions">
+          <EventDeleteButton eventId={event.id} title={event.title} onDeleted={() => navigate(ROUTES.ADMIN_TICKET_EVENTS, { replace: true })} />
           <Link to={ROUTES.adminScan(event.id)} className="ch-btn ch-btn--brand ch-btn--sm">
             <FiCamera aria-hidden="true" /> Scan tickets
           </Link>
@@ -245,10 +249,15 @@ const ORDER_STATUS_OPTIONS = [
 ];
 const ORDER_TONE = { paid: 'success', pending: 'warning', processing: 'warning',failed: 'danger', expired: 'default', cancelled: 'default' };
 
+const DELETABLE_ORDER_STATUSES = ['expired', 'failed', 'cancelled'];
+
 function OrdersPanel({ eventId }) {
+  const toast = useToast();
   const [state, setState] = useState({ status: 'loading', orders: [], pagination: null });
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('');
+  const [reload, setReload] = useState(0);
+  const [toDelete, setToDelete] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -259,7 +268,7 @@ function OrdersPanel({ eventId }) {
     return () => {
       active = false;
     };
-  }, [eventId, page, filter]);
+  }, [eventId, page, filter, reload]);
 
   return (
     <div className="ch-tm-panel">
@@ -290,6 +299,7 @@ function OrdersPanel({ eventId }) {
                   <th>Total</th>
                   <th>Status</th>
                   <th>Placed</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -311,6 +321,13 @@ function OrdersPanel({ eventId }) {
                       </span>
                     </td>
                     <td>{formatDateTime(order.paidAt || order.createdAt)}</td>
+                    <td>
+                      {DELETABLE_ORDER_STATUSES.includes(order.status) && (
+                        <button type="button" className="ch-tm-icon-btn ch-tm-icon-btn--danger" onClick={() => setToDelete(order)} aria-label={`Delete order ${order.reference}`} title="Delete permanently">
+                          <FiTrash2 aria-hidden="true" />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -319,6 +336,18 @@ function OrdersPanel({ eventId }) {
           <Pagination page={page} totalPages={state.pagination?.totalPages} onChange={setPage} />
         </>
       )}
+      <DangerDialog
+        isOpen={Boolean(toDelete)}
+        title="Delete order permanently?"
+        subject={toDelete ? `${toDelete.reference} · ${toDelete.buyerName} · ${toDelete.status}` : ''}
+        warning="Only unpaid (expired, failed or cancelled) orders can be deleted. Payment attempts stay in Payments."
+        onClose={() => setToDelete(null)}
+        onConfirm={async () => {
+          await adminService.deleteTicketOrder(toDelete.id);
+          toast.success('Order deleted.');
+          setReload((n) => n + 1);
+        }}
+      />
     </div>
   );
 }
@@ -326,7 +355,10 @@ function OrdersPanel({ eventId }) {
 const TICKET_TONE = { valid: 'success', used: 'accent', cancelled: 'default' };
 
 function IssuedTicketsPanel({ eventId }) {
+  const toast = useToast();
   const [state, setState] = useState({ status: 'loading', tickets: [], pagination: null });
+  const [reload, setReload] = useState(0);
+  const [toCancel, setToCancel] = useState(null);
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -340,7 +372,7 @@ function IssuedTicketsPanel({ eventId }) {
     return () => {
       active = false;
     };
-  }, [eventId, page, search]);
+  }, [eventId, page, search, reload]);
 
   const checkedIn = state.tickets.filter((t) => t.checkedInAt).length;
 
@@ -377,6 +409,7 @@ function IssuedTicketsPanel({ eventId }) {
                   <th>Type</th>
                   <th>Status</th>
                   <th>Checked in</th>
+                  <th aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -397,6 +430,13 @@ function IssuedTicketsPanel({ eventId }) {
                       </span>
                     </td>
                     <td>{ticket.checkedInAt ? formatDateTime(ticket.checkedInAt) : 'Not yet'}</td>
+                    <td>
+                      {ticket.status === 'valid' && (
+                        <button type="button" className="ch-tm-icon-btn ch-tm-icon-btn--danger" onClick={() => setToCancel(ticket)} aria-label={`Cancel ticket ${ticket.ticketId}`} title="Cancel ticket">
+                          <FiSlash aria-hidden="true" />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -405,6 +445,20 @@ function IssuedTicketsPanel({ eventId }) {
           <Pagination page={page} totalPages={state.pagination?.totalPages} onChange={setPage} />
         </>
       )}
+      {/* Tickets are never hard-deleted (paid admissions); cancelling voids the QR at the door. */}
+      <DangerDialog
+        isOpen={Boolean(toCancel)}
+        title="Cancel this ticket?"
+        subject={toCancel ? `${toCancel.ticketId} · ${toCancel.holderName} · ${toCancel.ticketType}` : ''}
+        warning="The ticket stays on record but its QR will be refused at the door. This can't be undone."
+        confirmLabel="Cancel ticket"
+        onClose={() => setToCancel(null)}
+        onConfirm={async () => {
+          await adminService.cancelTicket(toCancel.id);
+          toast.success('Ticket cancelled.');
+          setReload((n) => n + 1);
+        }}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { ticketRepository } from '../repositories/ticket.repository.js';
 import { auditLogRepository } from '../repositories/auditLog.repository.js';
 import { eventTicketsService } from './eventTickets.service.js';
 import { mediaStorage, resolveMediaUrl } from './providers/mediaStorage.js';
+import { saveOrRollback } from './adminContent.service.js';
 import { TICKET_ORDER_STATUS } from '../constants/ticketStatus.js';
 
 const toHHMM = (time) => (time ? String(time).slice(0, 5) : null);
@@ -141,8 +142,8 @@ export const adminTicketEventsService = {
     const event = await getEventOrThrow(id);
     if (!file) throw ApiError.validation([{ field: 'image', message: 'Choose a poster image' }]);
     const stored = await mediaStorage.commit(file.path, { kind: 'image', folder: 'posters' });
-    await eventRepository.updateCoverById(id, stored.key);
-    await mediaStorage.remove(event.cover_image); // only removes files this provider created
+    await saveOrRollback(stored.key, () => eventRepository.updateCoverById(id, stored.key));
+    await mediaStorage.removeIfUnreferenced(event.cover_image);
     await audit(adminUserId, 'admin.event_poster_uploaded', id, {}, requestMeta);
     return this.get(id);
   },

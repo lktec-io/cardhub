@@ -3,6 +3,8 @@ import { mkdir, open, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { env } from '../../config/env.js';
 import { ApiError } from '../../utils/ApiError.js';
+import { logger } from '../../utils/logger.js';
+import { pool } from '../../config/db.js';
 
 /**
  * Admin-managed media on this server's own disk (the VPS), under
@@ -89,6 +91,7 @@ export const mediaStorage = {
       return { key, mimeType: type.mime, sizeBytes: size };
     } catch (error) {
       await rm(tempPath, { force: true }).catch(() => {});
+      logger.warn('Media upload rejected', { folder, reason: error.message });
       throw error;
     }
   },
@@ -104,7 +107,34 @@ export const mediaStorage = {
   /** Best-effort delete of a file this provider created. Never throws for a missing file. */
   async remove(key) {
     if (!this.isMediaKey(key)) return;
-    await rm(this.pathFor(key), { force: true }).catch(() => {});
+    await rm(this.pathFor(key), { force: true }).catch((error) => logger.warn('Media file could not be removed', { key, reason: error.code || error.message }));
+  },
+
+  /** How many rows still point at a stored file (events, cards, videos and their posters). */
+  async countReferences(key, db = pool) {
+    const [rows] = await db.query(
+      `SELECT (SELECT COUNT(*) FROM events WHERE cover_image = ?)
+            + (SELECT COUNT(*) FROM event_templates WHERE preview_image = ?)
+            + (SELECT COUNT(*) FROM media_assets WHERE file_key = ? OR poster_key = ?) AS n`,
+      [key, key, key, key]
+    );
+    return Number(rows[0].n);
+  },
+
+  /**
+   * Deletes a managed file only when nothing references it any more. Call it
+   * AFTER the database change that dropped the reference has succeeded, so a
+   * failed update never leaves a record pointing at a deleted file.
+   */
+  async removeIfUnreferenced(key) {
+    if (!this.isMediaKey(key)) return false;
+    const refs = await this.countReferences(key);
+    if (refs > 0) {
+      logger.info('Media file kept: still referenced', { key, refs });
+      return false;
+    }
+    await this.remove(key);
+    return true;
   },
 
   /** Public URL for a stored key: <API_URL>/media/... (served by app.js). */

@@ -2,18 +2,20 @@
  * Beem WhatsApp template check — run ON THE SERVER, from backend/:
  *
  *   npm run whatsapp:test -- --templates                 # list approved templates on your sender (read-only)
- *   npm run whatsapp:test -- --to 0712345678             # config + template verification + payload preview, sends nothing
- *   npm run whatsapp:test -- --to 0712345678 --send      # sends ONE real message, only if verification passes
+ *   npm run whatsapp:test -- --to 0712345678             # config + template check + payload validation; sends nothing
+ *   npm run whatsapp:test -- --to 0712345678 --send      # sends ONE real message to that (consenting) number
  *
- * Verification asks Beem (GET message-templates/list, read-only) whether
- * BEEM_WHATSAPP_TEMPLATE_ID exists ON the sender in BEEM_WHATSAPP_FROM —
- * the exact pairing behind "Template id and channel do not match" — and
- * whether it is enabled with 6 placeholders. Prints variable names only,
- * never values. "Accepted" means Beem took the job; delivery is only
- * confirmed by the phone or a delivery report.
+ * The template check asks Beem (GET message-templates/list, read-only)
+ * whether BEEM_WHATSAPP_TEMPLATE_ID is on the sender in BEEM_WHATSAPP_FROM —
+ * the pairing behind "Template id and channel do not match". If that list
+ * endpoint is unavailable to the account (e.g. HTTP 404) the check is
+ * skipped, not failed: a 404 there says nothing about the template, and
+ * Beem's answer to a real send is the authoritative check. --send is refused
+ * only when the list PROVES the pairing is wrong or the payload is invalid.
+ * Prints variable names and masked numbers only, never secrets.
  */
 import { env } from '../src/config/env.js';
-import { whatsappProvider, maskPhoneForLog } from '../src/services/providers/whatsappProvider.js';
+import { whatsappProvider, maskPhoneForLog, toBeemNumber, validateTemplateParams } from '../src/services/providers/whatsappProvider.js';
 import { buildInvitationTemplateParams, INVITATION_TEMPLATE_VARIABLES } from '../src/utils/messageTemplates.js';
 import { normalizePhoneForDelivery } from '../src/utils/phone.js';
 import { getPublicOrderUrl } from '../src/utils/publicUrl.js';
@@ -24,12 +26,14 @@ const toArg = argValue('--to');
 const send = args.includes('--send');
 const listMode = args.includes('--templates');
 const b = env.whatsapp.beem;
+const rawFrom = env.whatsapp.beemFrom;
+const sentFrom = toBeemNumber(rawFrom);
 
 const VARS = [
   ['BEEM_WHATSAPP_API_URL', b.apiUrl],
   ['BEEM_WHATSAPP_API_KEY (or BEEM_API_KEY)', b.apiKey],
   ['BEEM_WHATSAPP_API_SECRET (or BEEM_SECRET_KEY)', b.apiSecret || (b.authMode === 'token' || b.authMode === 'bearer' ? 'n/a for token auth' : '')],
-  ['BEEM_WHATSAPP_FROM', env.whatsapp.beemFrom],
+  ['BEEM_WHATSAPP_FROM', rawFrom],
   ['BEEM_WHATSAPP_TEMPLATE_ID', b.templateId],
   ['BEEM_WHATSAPP_CALLBACK_SECRET (delivery reports)', b.callbackSecret],
 ];
@@ -37,14 +41,22 @@ const VARS = [
 console.log('\nBeem WhatsApp configuration');
 for (const [name, value] of VARS) console.log(`  ${value ? 'set    ' : 'MISSING'}  ${name}`);
 console.log(`  provider: ${env.whatsapp.provider || '(none)'} · auth mode: ${b.authMode} · rate: ${b.ratePerSecond}/s · timeout: ${b.timeoutMs} ms`);
-if (b.apiUrl) console.log(`  send endpoint: ${new URL(b.apiUrl).host}${new URL(b.apiUrl).pathname}`);
-console.log(`  sender (from_addr): ${maskPhoneForLog(env.whatsapp.beemFrom)}`);
+if (b.apiUrl) console.log(`  send endpoint:  ${new URL(b.apiUrl).host}${new URL(b.apiUrl).pathname}`);
+console.log(`  list endpoint:  ${new URL(b.templatesUrl).host}${new URL(b.templatesUrl).pathname}`);
+console.log(`  template id that will be sent: ${b.templateId || '(none)'} (from BEEM_WHATSAPP_TEMPLATE_ID)`);
+console.log(`  sender (from_addr) sent as: ${maskPhoneForLog(sentFrom)}${/^255\d{9}$/.test(sentFrom) ? '' : '  !! not a 255XXXXXXXXX number — check BEEM_WHATSAPP_FROM'}`);
+if (rawFrom && rawFrom.replace(/\D/g, '') !== sentFrom) {
+  console.log('  note: BEEM_WHATSAPP_FROM is written in local/+ format; it is now sent in international digits (older builds sent it as typed).');
+}
+if (b.apiUrl && !/\/v1\/broadcast\/template\/api-send$/.test(new URL(b.apiUrl).pathname)) {
+  console.log("  !! BEEM_WHATSAPP_API_URL path is not Beem's documented template send path (/v1/broadcast/template/api-send).");
+}
 if (env.whatsapp.provider && env.whatsapp.provider !== 'beem' && b.apiUrl) {
   console.log(`  !! WHATSAPP_PROVIDER is "${env.whatsapp.provider}", which overrides the Beem template. Set WHATSAPP_PROVIDER=beem (or remove it) and restart.`);
 }
-if (b.templateId && !/^\d+$/.test(b.templateId)) console.log('  !! BEEM_WHATSAPP_TEMPLATE_ID must be a whole number (Beem\'s template id).');
+if (b.templateId && !/^\d+$/.test(b.templateId)) console.log("  !! BEEM_WHATSAPP_TEMPLATE_ID must be a whole number (Beem's template id).");
 
-if (!b.apiKey || !env.whatsapp.beemFrom) {
+if (!b.apiKey || !rawFrom) {
   console.log('\nSet the MISSING variables in backend/.env first.\n');
   process.exit(1);
 }
@@ -54,25 +66,36 @@ function printTemplates(list) {
   for (const t of list) console.log(`  id ${t.id} · "${t.name}" · ${t.status} · ${t.language || '?'} · ${t.category || '?'} · ${t.placeholders ?? '?'} placeholders${t.metaTemplateId ? ` · Meta id ${t.metaTemplateId}` : ''}`);
 }
 
+function explainListFailure(res) {
+  console.log(`  Could not list templates (${res.endpoint || 'list endpoint'} HTTP ${res.httpStatus ?? 'no response'}): ${res.error}`);
+  if (res.providerResponse) console.log(`  Beem replied: ${res.providerResponse}`);
+}
+
 if (listMode) {
   const q = argValue('--q');
-  const res = await whatsappProvider.listTemplates({ q, channelNumber: env.whatsapp.beemFrom });
-  console.log(`\nApproved templates on sender ${maskPhoneForLog(env.whatsapp.beemFrom)}${q ? ` matching "${q}"` : ''} (HTTP ${res.httpStatus ?? 'no response'}):`);
+  const res = await whatsappProvider.listTemplates({ q, channelNumber: rawFrom });
+  console.log(`\nApproved templates on sender ${maskPhoneForLog(sentFrom)}${q ? ` matching "${q}"` : ''}:`);
   if (!res.ok) {
-    console.log(`  Could not list templates: ${res.error}\n`);
+    explainListFailure(res);
+    console.log('  Listing is only a diagnostic. Confirm template/sender in Beem Engage (Templates) or with Beem support;');
+    console.log('  then run --to <phone> (validation) and --to <phone> --send (Beem decides).\n');
     process.exit(1);
   }
   printTemplates(res.templates);
-  console.log('\nUse the "id" (not the Meta id) of the enabled KADI YA MWALIKO template as BEEM_WHATSAPP_TEMPLATE_ID.\n');
+  const configured = res.templates.find((t) => String(t.id) === String(b.templateId));
+  console.log(configured ? `\nTemplate ${b.templateId} IS on this sender.\n` : `\nTemplate ${b.templateId} is NOT in this sender's list.\n`);
   process.exit(0);
 }
 
-// ---- template verification (read-only)
-console.log('\nTemplate verification (read-only)');
+// ---- template check (read-only)
+console.log('\nTemplate check (read-only)');
 let verified = false;
-const onChannel = await whatsappProvider.listTemplates({ id: b.templateId, channelNumber: env.whatsapp.beemFrom });
+let listingUnavailable = false;
+const onChannel = await whatsappProvider.listTemplates({ id: b.templateId, channelNumber: rawFrom });
 if (!onChannel.ok) {
-  console.log(`  Could not reach Beem's template list: ${onChannel.error}`);
+  listingUnavailable = true;
+  console.log(`  skip  template list unavailable (${onChannel.endpoint || 'list endpoint'} HTTP ${onChannel.httpStatus ?? 'no response'}).`);
+  console.log(`        Template ${b.templateId} on sender ${maskPhoneForLog(sentFrom)} could not be pre-checked; a real send is the authoritative check.`);
 } else {
   const match = onChannel.templates.find((t) => String(t.id) === String(b.templateId));
   if (!match) {
@@ -80,24 +103,23 @@ if (!onChannel.ok) {
     const elsewhere = anywhere.ok && anywhere.templates.find((t) => String(t.id) === String(b.templateId));
     console.log(
       elsewhere
-        ? `  FAIL template ${b.templateId} ("${elsewhere.name}") exists but NOT on sender ${maskPhoneForLog(env.whatsapp.beemFrom)} — this is the "Template id and channel do not match" error.`
-        : `  FAIL Beem has no template with id ${b.templateId}. It may be Meta's id; Beem needs its own id.`
+        ? `  FAIL template ${b.templateId} ("${elsewhere.name}") exists but NOT on sender ${maskPhoneForLog(sentFrom)} — this is the "Template id and channel do not match" error.`
+        : `  FAIL Beem lists no template ${b.templateId} for this account. It may be Meta's id; Beem needs its own id.`
     );
-    console.log('       List the right one with: npm run whatsapp:test -- --templates');
   } else {
     const enabled = /^(enabled|approved|active)$/i.test(match.status || '');
     const sixVars = match.placeholders === INVITATION_TEMPLATE_VARIABLES.length;
     console.log(`  ${enabled ? 'ok  ' : 'FAIL'} template ${match.id} "${match.name}" status: ${match.status}`);
     console.log(`  ${sixVars ? 'ok  ' : 'FAIL'} placeholders in template: ${match.placeholders} (CardHub sends ${INVITATION_TEMPLATE_VARIABLES.length})`);
-    console.log(`  ok   on sender ${maskPhoneForLog(env.whatsapp.beemFrom)} · language ${match.language || '?'}`);
+    console.log(`  ok   on sender ${maskPhoneForLog(sentFrom)} · language ${match.language || '?'}`);
     verified = enabled && sixVars;
   }
 }
 
 const to = normalizePhoneForDelivery(toArg || '');
 if (!to) {
-  console.log(`\n${toArg ? 'That phone number is not valid.' : 'Add --to <phone> to preview the payload.'}\n`);
-  process.exit(toArg || !verified ? 1 : 0);
+  console.log(`\n${toArg ? 'That phone number is not valid.' : 'Add --to <phone> to validate the payload.'}\n`);
+  process.exit(toArg || (!listingUnavailable && !verified) ? 1 : 0);
 }
 
 const params = buildInvitationTemplateParams({
@@ -108,14 +130,17 @@ const params = buildInvitationTemplateParams({
   venue: 'CardHub',
   publicUrl: getPublicOrderUrl('whatsapp-test'),
 });
-console.log(`\nPayload preview (recipient ${maskPhoneForLog(to)}, template ${b.templateId}, channel whatsapp):`);
-INVITATION_TEMPLATE_VARIABLES.forEach((label, i) => console.log(`  params[${i}] -> {{${i}}}/{{${i + 1}}} ${label}: ${params[i]}`));
+console.log(`\nPayload (from ${maskPhoneForLog(sentFrom)} to ${maskPhoneForLog(toBeemNumber(to))}, messageTemplateData.id ${b.templateId}, channel whatsapp):`);
+INVITATION_TEMPLATE_VARIABLES.forEach((label, i) => console.log(`  params[${i}] -> {{${i}}} ${label}: ${params[i]}`));
+const payloadProblem = validateTemplateParams(to, params);
+console.log(payloadProblem ? `  FAIL payload: ${payloadProblem}` : '  ok   payload: 6 non-empty values in template order, valid recipient');
 
+const provenBad = !listingUnavailable && !verified;
 if (!send) {
-  console.log(`\nPreview only${verified ? '' : ' (verification did not pass)'}. Add --send to send one real message.\n`);
-  process.exit(verified ? 0 : 1);
+  console.log(`\nNothing sent${provenBad ? ' (template check FAILED)' : listingUnavailable ? ' (template not pre-checked)' : ''}. Add --send to send one real message.\n`);
+  process.exit(provenBad || payloadProblem ? 1 : 0);
 }
-if (!verified || !whatsappProvider.usesTemplate) {
+if (provenBad || payloadProblem || !whatsappProvider.usesTemplate) {
   console.log('\nNot sent: fix the FAIL lines above first (nothing was sent to Beem).\n');
   process.exit(1);
 }
@@ -124,7 +149,7 @@ const result = await whatsappProvider.sendInvitationTemplate({ to, params });
 console.log(`\nBeem HTTP status: ${result.httpStatus ?? 'no response'}`);
 console.log(`Beem response:    ${result.providerResponse ?? '(empty)'}`);
 if (result.status === 'queued') {
-  console.log(`\nACCEPTED by Beem${result.providerMessageId ? ` (job ${result.providerMessageId})` : ''}. Check the phone: only a received message or a "delivered" report proves delivery.\n`);
+  console.log(`\nACCEPTED by Beem${result.providerMessageId ? ` (job ${result.providerMessageId})` : ''}. Not yet delivered: only the phone receiving it, or a "delivered" report, proves delivery.\n`);
   process.exit(0);
 }
 console.log(`\nNOT ACCEPTED: ${result.error}\n`);
