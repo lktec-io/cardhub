@@ -15,7 +15,7 @@
  * Prints variable names and masked numbers only, never secrets.
  */
 import { env } from '../src/config/env.js';
-import { whatsappProvider, maskPhoneForLog, toBeemNumber, validateTemplateParams } from '../src/services/providers/whatsappProvider.js';
+import { whatsappProvider, maskPhoneForLog, toBeemNumber, validateTemplateParams, buildBeemTemplateBody } from '../src/services/providers/whatsappProvider.js';
 import { buildInvitationTemplateParams, INVITATION_TEMPLATE_VARIABLES } from '../src/utils/messageTemplates.js';
 import { normalizePhoneForDelivery } from '../src/utils/phone.js';
 import { getPublicOrderUrl } from '../src/utils/publicUrl.js';
@@ -132,6 +132,12 @@ const params = buildInvitationTemplateParams({
 });
 console.log(`\nPayload (from ${maskPhoneForLog(sentFrom)} to ${maskPhoneForLog(toBeemNumber(to))}, messageTemplateData.id ${b.templateId}, channel whatsapp):`);
 INVITATION_TEMPLATE_VARIABLES.forEach((label, i) => console.log(`  params[${i}] -> {{${i}}} ${label}: ${params[i]}`));
+const masked = buildBeemTemplateBody(to, params);
+masked.from_addr = maskPhoneForLog(masked.from_addr);
+masked.destination_addr[0].phoneNumber = maskPhoneForLog(masked.destination_addr[0].phoneNumber);
+console.log(`  exact request body (numbers masked, no credentials; safe to send to Beem support):
+  POST ${b.apiUrl ? new URL(b.apiUrl).host + new URL(b.apiUrl).pathname : '(no URL)'}  auth: ${b.authMode}
+  ${JSON.stringify(masked)}`);
 const payloadProblem = validateTemplateParams(to, params);
 console.log(payloadProblem ? `  FAIL payload: ${payloadProblem}` : '  ok   payload: 6 non-empty values in template order, valid recipient');
 

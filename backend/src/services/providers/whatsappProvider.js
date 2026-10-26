@@ -222,13 +222,18 @@ async function readJson(response) {
   }
 }
 
-async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
-  const body = {
+/** The exact JSON sent to Beem's api-send; also printed (masked) by npm run whatsapp:test for support tickets. */
+export function buildBeemTemplateBody(to, params) {
+  return {
     from_addr: toBeemNumber(env.whatsapp.beemFrom),
     destination_addr: [{ phoneNumber: toBeemNumber(to), params: params.map((p) => String(p)) }],
     channel: 'whatsapp',
     messageTemplateData: { id: Number(beemTemplate.templateId) },
   };
+}
+
+async function sendBeemTemplate({ to, params, transactionId = randomUUID() }) {
+  const body = buildBeemTemplateBody(to, params);
   await waitForRateSlot();
 
   let response;
